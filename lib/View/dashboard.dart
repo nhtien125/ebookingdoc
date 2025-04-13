@@ -3,7 +3,12 @@ import 'dart:io';
 import 'package:ebookingdoc/Controller/dashboard_controller.dart';
 import 'package:ebookingdoc/Global/app_color.dart';
 import 'package:ebookingdoc/Service/device_helper.dart';
+import 'package:ebookingdoc/Utils/custom_dialog.dart';
+import 'package:ebookingdoc/View/Appointment/appointment.dart';
 import 'package:ebookingdoc/View/Home/home.dart';
+import 'package:ebookingdoc/View/News/new.dart';
+import 'package:ebookingdoc/View/Notification/notification.dart';
+import 'package:ebookingdoc/View/Profile/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
@@ -22,7 +27,19 @@ class Dashboard extends StatelessWidget {
         if (didPop) {
           return;
         }
-        _showDialog(context);
+        CustomDialog.showCustomDialog(
+          context: context,
+          title: 'Đóng ứng dụng',
+          content: 'Ứng dụng sẽ được đóng lại ?',
+          onPressed: () {
+            Get.back();
+            if (Platform.isAndroid) {
+              SystemNavigator.pop();
+            } else if (Platform.isIOS) {
+              exit(0);
+            }
+          },
+        );
       },
       child: Scaffold(
         backgroundColor: AppColor.subMain,
@@ -33,11 +50,13 @@ class Dashboard extends StatelessWidget {
             case 0:
               return Home();
             case 1:
-              return Container();
+              return MyNotification();
             case 2:
-              return Container();
+              return Appointment();
             case 3:
-              return Container();
+              return News();
+            case 4:
+              return Profile();
             default:
               return Container();
           }
@@ -72,7 +91,7 @@ class Dashboard extends StatelessWidget {
                                   : null,
                             ),
                             Text(
-                              'Tổng quan',
+                              'Teang chủ',
                               textAlign: TextAlign.center,
                               style: controller.currentIndex.value == 0
                                   ? TextStyle(
@@ -108,7 +127,7 @@ class Dashboard extends StatelessWidget {
                                   : null,
                             ),
                             Text(
-                              'Sổ giao dịch',
+                              'Thông báo',
                               textAlign: TextAlign.center,
                               style: controller.currentIndex.value == 1
                                   ? TextStyle(
@@ -126,7 +145,7 @@ class Dashboard extends StatelessWidget {
                     ),
                   ),
 
-                  // Trang ngân sách
+                  // Trang Lịch hẹn
                   Expanded(
                     child: GestureDetector(
                       onTap: () => controller.changePage(2),
@@ -145,9 +164,45 @@ class Dashboard extends StatelessWidget {
                                   : null,
                             ),
                             Text(
-                              'Ngân sách',
+                              'Lịch hẹn',
                               textAlign: TextAlign.center,
                               style: controller.currentIndex.value == 2
+                                  ? TextStyle(
+                                      fontSize: DeviceHelper.getFontSize(12),
+                                      color: AppColor.fourthMain,
+                                      fontWeight: FontWeight.w700)
+                                  : TextStyle(
+                                      fontSize: DeviceHelper.getFontSize(12),
+                                      color: AppColor.grey,
+                                    ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  //Trang tin tức
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => controller.changePage(3),
+                      child: Container(
+                        color: Colors.transparent,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SvgPicture.asset(
+                              'assets/icons/budget.svg',
+                              height: 20,
+                              width: 20,
+                              colorFilter: controller.currentIndex.value == 3
+                                  ? ColorFilter.mode(
+                                      AppColor.fourthMain, BlendMode.srcIn)
+                                  : null,
+                            ),
+                            Text(
+                              'Tin tức',
+                              textAlign: TextAlign.center,
+                              style: controller.currentIndex.value == 3
                                   ? TextStyle(
                                       fontSize: DeviceHelper.getFontSize(12),
                                       color: AppColor.fourthMain,
@@ -165,7 +220,7 @@ class Dashboard extends StatelessWidget {
                   // Trang Cá nhân
                   Expanded(
                     child: GestureDetector(
-                      onTap: () => controller.changePage(3),
+                      onTap: () => controller.changePage(4),
                       child: Container(
                         color: Colors.transparent,
                         child: Column(
@@ -175,7 +230,7 @@ class Dashboard extends StatelessWidget {
                               'assets/icons/user_octagon.svg',
                               height: 20,
                               width: 20,
-                              colorFilter: controller.currentIndex.value == 3
+                              colorFilter: controller.currentIndex.value == 4
                                   ? ColorFilter.mode(
                                       AppColor.fourthMain, BlendMode.srcIn)
                                   : null,
@@ -183,7 +238,7 @@ class Dashboard extends StatelessWidget {
                             Text(
                               'Cá nhân',
                               textAlign: TextAlign.center,
-                              style: controller.currentIndex.value == 3
+                              style: controller.currentIndex.value == 4
                                   ? TextStyle(
                                       fontSize: DeviceHelper.getFontSize(12),
                                       color: AppColor.fourthMain,
@@ -202,89 +257,6 @@ class Dashboard extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  _showDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: AppColor.main,
-          contentPadding: const EdgeInsets.all(20),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "Đóng ứng dụng",
-                style: TextStyle(
-                  fontSize: DeviceHelper.getFontSize(20),
-                  color: AppColor.text1,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                "Ứng dụng sẽ được đóng lại ?",
-                style: TextStyle(
-                  fontSize: DeviceHelper.getFontSize(14),
-                  color: AppColor.grey,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      Get.back();
-                    },
-                    child: Text(
-                      "Hủy bỏ",
-                      style: TextStyle(
-                        fontSize: DeviceHelper.getFontSize(15),
-                        color: AppColor.fourthMain,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 20),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColor.fourthMain,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 12, horizontal: 20),
-                    ),
-                    onPressed: () {
-                      Get.back();
-                      if (Platform.isAndroid) {
-                        SystemNavigator.pop();
-                      } else if (Platform.isIOS) {
-                        exit(0);
-                      }
-                    },
-                    child: Text(
-                      "Xác nhận",
-                      style: TextStyle(
-                        fontSize: DeviceHelper.getFontSize(14),
-                        color: AppColor.white,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  )
-                ],
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }
