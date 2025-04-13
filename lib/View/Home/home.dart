@@ -19,7 +19,7 @@ class Home extends GetView<HomeController> {
         child: NestedScrollView(
           headerSliverBuilder: (context, innerBoxIsScrolled) => [
             SliverAppBar(
-              backgroundColor: AppColor.primary,
+              backgroundColor: AppColor.fourthMain,
               elevation: 0,
               pinned: true,
               floating: false,
@@ -39,7 +39,7 @@ class Home extends GetView<HomeController> {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        AppColor.primary,
+                        AppColor.fourthMain,
                         AppColor.primaryDark,
                       ],
                     ),
@@ -93,7 +93,7 @@ class Home extends GetView<HomeController> {
             onTap: controller.changeTabIndex,
             type: BottomNavigationBarType.fixed,
             backgroundColor: Colors.white,
-            selectedItemColor: AppColor.primary,
+            selectedItemColor: AppColor.fourthMain,
             unselectedItemColor: Colors.grey,
             selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
             items: const [
@@ -162,13 +162,13 @@ class Home extends GetView<HomeController> {
       child: ElevatedButton(
         onPressed: () => controller.selectCategory(title),
         style: ElevatedButton.styleFrom(
-          backgroundColor: isSelected ? AppColor.primary : Colors.white,
-          foregroundColor: isSelected ? Colors.white : AppColor.primary,
+          backgroundColor: isSelected ? AppColor.fourthMain : Colors.white,
+          foregroundColor: isSelected ? Colors.white : AppColor.fourthMain,
           elevation: isSelected ? 2 : 0,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            side: BorderSide(color: AppColor.primary),
+            side: BorderSide(color: AppColor.fourthMain),
           ),
         ),
         child: Text(title),
@@ -252,7 +252,7 @@ class Home extends GetView<HomeController> {
                         shape: BoxShape.circle,
                         color:
                             controller.currentCarouselIndex.value == entry.key
-                                ? AppColor.primary
+                                ? AppColor.fourthMain
                                 : Colors.grey.shade300,
                       ),
                     );
@@ -464,14 +464,14 @@ class Home extends GetView<HomeController> {
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: AppColor.primary.withOpacity(0.1),
+                                      color: AppColor.fourthMain.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(
                                       '${hospital.rating}★',
                                       style: TextStyle(
                                         fontSize: 12,
-                                        color: AppColor.primary,
+                                        color: AppColor.fourthMain,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -600,7 +600,7 @@ class Home extends GetView<HomeController> {
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: AppColor.primary.withOpacity(0.1),
+                                      color: AppColor.fourthMain.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(
@@ -799,14 +799,14 @@ class Home extends GetView<HomeController> {
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: AppColor.primary.withOpacity(0.1),
+                                      color: AppColor.fourthMain.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(
                                       article.category,
                                       style: TextStyle(
                                         fontSize: 10,
-                                        color: AppColor.primary,
+                                        color: AppColor.fourthMain,
                                       ),
                                     ),
                                   ),
@@ -913,7 +913,7 @@ Widget _buildUpcomingAppointments() {
                         onPressed: () =>
                             controller.viewAppointmentDetails(appointment.id),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColor.primary,
+                          backgroundColor: AppColor.fourthMain,
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                           minimumSize: const Size(60, 36),
                         ),

@@ -82,7 +82,7 @@ class Dashboard extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             SvgPicture.asset(
-                              'assets/icons/home_hashtag.svg',
+                              'assets/icons/home.svg',
                               height: 20,
                               width: 20,
                               colorFilter: controller.currentIndex.value == 0
@@ -108,7 +108,7 @@ class Dashboard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Trang sổ giao dịch
+                  // Trang thông báo
                   Expanded(
                     child: GestureDetector(
                       onTap: () => controller.changePage(1),
@@ -118,7 +118,7 @@ class Dashboard extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             SvgPicture.asset(
-                              'assets/icons/wallet.svg',
+                              'assets/icons/notification-13-svgrepo-com.svg',
                               height: 20,
                               width: 20,
                               colorFilter: controller.currentIndex.value == 1
@@ -155,7 +155,7 @@ class Dashboard extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             SvgPicture.asset(
-                              'assets/icons/budget.svg',
+                              'assets/icons/appointment-symbolic-svgrepo-com.svg',
                               height: 20,
                               width: 20,
                               colorFilter: controller.currentIndex.value == 2
@@ -191,7 +191,7 @@ class Dashboard extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             SvgPicture.asset(
-                              'assets/icons/budget.svg',
+                              'assets/icons/news-svgrepo-com.svg',
                               height: 20,
                               width: 20,
                               colorFilter: controller.currentIndex.value == 3
@@ -227,7 +227,7 @@ class Dashboard extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             SvgPicture.asset(
-                              'assets/icons/user_octagon.svg',
+                              'assets/icons/person-svgrepo-com.svg',
                               height: 20,
                               width: 20,
                               colorFilter: controller.currentIndex.value == 4
