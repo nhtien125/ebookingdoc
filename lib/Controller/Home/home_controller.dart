@@ -16,6 +16,7 @@ class HomeController extends GetxController {
   final RxInt currentCarouselIndex = 0.obs;
   final RxBool isLoading = true.obs;
   final RxBool hasUpcomingAppointment = false.obs;
+  final featuredDoctors = <Doctor>[].obs;
 
   // Mock data lists
   final List<CarouselItem> carouselItems = [
@@ -36,48 +37,51 @@ class HomeController extends GetxController {
     ),
   ];
 
-  final List<Doctor> featuredDoctors = [
-    Doctor(
-      id: '1',
-      name: 'Bác sĩ Nguyễn Văn A',
-      specialty: 'Tim mạch',
-      imageUrl: 'https://via.placeholder.com/150',
-      rating: 4.8,
-      experience: '15 năm kinh nghiệm',
-      hospital: 'Bệnh viện Bạch Mai',
-      address: '78 Giải Phóng, Hà Nội',
-    ),
-    Doctor(
-      id: '1',
-      name: 'Bác sĩ Nguyễn Văn A',
-      specialty: 'Tim mạch',
-      imageUrl: 'https://via.placeholder.com/150',
-      rating: 4.8,
-      experience: '15 năm kinh nghiệm',
-      hospital: 'Bệnh viện Bạch Mai',
-      address: '78 Giải Phóng, Hà Nội',
-    ),
-    Doctor(
-      id: '1',
-      name: 'Bác sĩ Nguyễn Văn A',
-      specialty: 'Tim mạch',
-      imageUrl: 'https://via.placeholder.com/150',
-      rating: 4.8,
-      experience: '15 năm kinh nghiệm',
-      hospital: 'Bệnh viện Bạch Mai',
-      address: '78 Giải Phóng, Hà Nội',
-    ),
-    Doctor(
-      id: '1',
-      name: 'Bác sĩ Nguyễn Văn A',
-      specialty: 'Tim mạch',
-      imageUrl: 'https://via.placeholder.com/150',
-      rating: 4.8,
-      experience: '15 năm kinh nghiệm',
-      hospital: 'Bệnh viện Bạch Mai',
-      address: '78 Giải Phóng, Hà Nội',
-    ),
-  ];
+  // void onInit() {
+  //   super.onInit();
+  //   featuredDoctors.value = [
+  //     Doctor(
+  //       id: '1',
+  //       title: "TS. BS",
+  //       name: 'Bác sĩ Nguyễn Văn Chiến',
+  //       specialty: 'Tim mạch',
+  //       imageUrl: 'https://via.placeholder.com/150',
+  //       rating: 4.8,
+  //       experience: '15 năm kinh nghiệm',
+  //       hospital: 'Bệnh viện Bạch Mai',
+  //     ),
+  //     Doctor(
+  //     id: '2',
+  //     title: "PGS. TS. BS",
+  //     name: 'Bác sĩ Phạm Ngọc Ánh',
+  //     specialty: 'Tim mạch',
+  //     imageUrl: 'https://via.placeholder.com/150',
+  //     rating: 4.8,
+  //     experience: '15 năm kinh nghiệm',
+  //     hospital: 'Bệnh viện Bạch Mai',
+  //   ),
+  //   Doctor(
+  //     id: '3',
+  //     title: "GS. PGS. BS",
+  //     name: 'Bác sĩ Ngô Diệu Linh',
+  //     specialty: 'Tim mạch',
+  //     imageUrl: 'https://via.placeholder.com/150',
+  //     rating: 4.8,
+  //     experience: '15 năm kinh nghiệm',
+  //     hospital: 'Bệnh viện Bạch Mai',
+  //   ),
+  //   Doctor(
+  //     id: '4',
+  //     title: "BS. CK2",
+  //     name: 'Bác sĩ Đào Khánh Toàn',
+  //     specialty: 'Tim mạch',
+  //     imageUrl: 'https://via.placeholder.com/150',
+  //     rating: 4.8,
+  //     experience: '15 năm kinh nghiệm',
+  //     hospital: 'Bệnh viện Bạch Mai',
+  //   ),
+  //   ];
+  // }
 
   final List<Hospital> recommendedHospitals = [
     Hospital(
@@ -275,6 +279,49 @@ class HomeController extends GetxController {
       isLoading.value = false;
       hasUpcomingAppointment.value = upcomingAppointments.isNotEmpty;
     });
+
+    featuredDoctors.value = [
+      Doctor(
+        id: '1',
+        title: "TS. BS",
+        name: 'Bác sĩ Nguyễn Văn Chiến',
+        specialty: 'Tim mạch',
+        imageUrl: 'assets/images/bs4.jpg',
+        rating: 4.8,
+        experience: '15 năm kinh nghiệm',
+        hospital: 'Bệnh viện Bạch Mai',
+      ),
+      Doctor(
+        id: '2',
+        title: "PGS. TS. BS",
+        name: 'Bác sĩ Phạm Ngọc Ánh',
+        specialty: 'Tim mạch',
+        imageUrl: 'assets/images/bs5.jpg',
+        rating: 4.8,
+        experience: '15 năm kinh nghiệm',
+        hospital: 'Bệnh viện Bạch Mai',
+      ),
+      Doctor(
+        id: '3',
+        title: "GS. PGS. BS",
+        name: 'Bác sĩ Ngô Diệu Linh',
+        specialty: 'Tim mạch',
+        imageUrl: 'assets/images/bs6.jpg',
+        rating: 4.8,
+        experience: '15 năm kinh nghiệm',
+        hospital: 'Bệnh viện Bạch Mai',
+      ),
+      Doctor(
+        id: '4',
+        title: "BS. CK2",
+        name: 'Bác sĩ Đào Khánh Toàn',
+        specialty: 'Tim mạch',
+        imageUrl: 'assets/images/bs7.jpg',
+        rating: 4.8,
+        experience: '15 năm kinh nghiệm',
+        hospital: 'Bệnh viện Bạch Mai',
+      ),
+    ];
   }
 
   // Navigation methods
