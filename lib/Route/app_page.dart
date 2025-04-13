@@ -1,4 +1,6 @@
 import 'package:ebookingdoc/View/Appointment/appointment.dart';
+import 'package:ebookingdoc/View/Home/Category/category.dart';
+import 'package:ebookingdoc/View/Home/Excellent_doctor/excellent_doctor.dart';
 import 'package:ebookingdoc/View/Home/home.dart';
 import 'package:ebookingdoc/View/Login/login.dart';
 import 'package:ebookingdoc/View/News/new.dart';
@@ -30,5 +32,7 @@ class AppPage {
     GetPage(name: Routes.notification, page: () => MyNotification()),
     GetPage(name: Routes.appointment, page: () => Appointment()),
     GetPage(name: Routes.news, page: () => News()),
+    GetPage(name: Routes.category, page: () => Category()),
+    GetPage(name: Routes.excellentDoctor, page: () => ExcellentDoctor()),
   ];
 }

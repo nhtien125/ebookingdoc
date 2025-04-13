@@ -1,3 +1,4 @@
+import 'package:ebookingdoc/Global/app_color.dart';
 import 'package:flutter/material.dart';
 
 class News extends StatefulWidget {
@@ -87,7 +88,7 @@ class _NewsState extends State<News> {
               )
             : const Text('Tin tức y tế'),
         centerTitle: true,
-        backgroundColor: Colors.blue.shade700,
+        backgroundColor: AppColor.main,
         actions: [
           IconButton(
             icon: Icon(_isSearching ? Icons.close : Icons.search),

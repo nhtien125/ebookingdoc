@@ -38,13 +38,13 @@ class Profile extends StatelessWidget {
                   height: 100,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.blue.shade100,
-                    border: Border.all(color: Colors.blue, width: 2),
+                    color: AppColor.thirdMain,
+                    border: Border.all(color: AppColor.fourthMain, width: 2),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.person_outline,
                     size: 50,
-                    color: Colors.blue,
+                    color: AppColor.fourthMain,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -143,7 +143,7 @@ class Profile extends StatelessWidget {
             Icon(
               icon,
               size: 24,
-              color: Colors.blue,
+              color: AppColor.fourthMain,
             ),
             const SizedBox(width: 12),
             Text(

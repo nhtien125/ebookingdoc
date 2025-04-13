@@ -1,4 +1,5 @@
 import 'package:ebookingdoc/Controller/Appointment/appointment_controller.dart';
+import 'package:ebookingdoc/Global/app_color.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -10,9 +11,9 @@ class Appointment extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Lịch hẹn của tôi'),
+        title: const Text('Lịch hẹn của tôi' ),
         centerTitle: true,
-        backgroundColor: Colors.blue.shade700,
+        backgroundColor: AppColor.main ,
         elevation: 0,
       ),
       body: Padding(
@@ -154,7 +155,7 @@ class AppointmentCard extends StatelessWidget {
           child: ElevatedButton(
             onPressed: onReschedule,
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue.shade700,
+              backgroundColor: AppColor.fourthMain,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),

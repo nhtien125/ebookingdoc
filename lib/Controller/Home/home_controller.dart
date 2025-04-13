@@ -1,3 +1,4 @@
+import 'package:ebookingdoc/Global/app_color.dart';
 import 'package:ebookingdoc/Models/appointment_model.dart';
 import 'package:ebookingdoc/Models/article_model.dart';
 import 'package:ebookingdoc/Models/carousel_item_model.dart';
@@ -5,8 +6,8 @@ import 'package:ebookingdoc/Models/clinic_model.dart';
 import 'package:ebookingdoc/Models/doctor_model.dart';
 import 'package:ebookingdoc/Models/hospital_model.dart';
 import 'package:ebookingdoc/Models/medical_service_model.dart';
-
-import 'package:flutter/material.dart';
+import 'package:ebookingdoc/Route/app_page.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
 class HomeController extends GetxController {
@@ -38,31 +39,43 @@ class HomeController extends GetxController {
   final List<Doctor> featuredDoctors = [
     Doctor(
       id: '1',
-      name: 'BS. Trần Văn B',
+      name: 'Bác sĩ Nguyễn Văn A',
       specialty: 'Tim mạch',
-      imageUrl: 'assets/images/doctor1.jpg',
-      rating: 4.9,
-    ),
-    Doctor(
-      id: '2',
-      name: 'BS. Nguyễn Thị C',
-      specialty: 'Nhi khoa',
-      imageUrl: 'assets/images/doctor2.jpg',
+      imageUrl: 'https://via.placeholder.com/150',
       rating: 4.8,
+      experience: '15 năm kinh nghiệm',
+      hospital: 'Bệnh viện Bạch Mai',
+      address: '78 Giải Phóng, Hà Nội',
     ),
     Doctor(
-      id: '3',
-      name: 'BS. Lê Văn D',
-      specialty: 'Da liễu',
-      imageUrl: 'assets/images/doctor3.jpg',
-      rating: 4.7,
+      id: '1',
+      name: 'Bác sĩ Nguyễn Văn A',
+      specialty: 'Tim mạch',
+      imageUrl: 'https://via.placeholder.com/150',
+      rating: 4.8,
+      experience: '15 năm kinh nghiệm',
+      hospital: 'Bệnh viện Bạch Mai',
+      address: '78 Giải Phóng, Hà Nội',
     ),
     Doctor(
-      id: '4',
-      name: 'BS. Phạm Thị E',
-      specialty: 'Sản phụ khoa',
-      imageUrl: 'assets/images/doctor4.jpg',
-      rating: 4.9,
+      id: '1',
+      name: 'Bác sĩ Nguyễn Văn A',
+      specialty: 'Tim mạch',
+      imageUrl: 'https://via.placeholder.com/150',
+      rating: 4.8,
+      experience: '15 năm kinh nghiệm',
+      hospital: 'Bệnh viện Bạch Mai',
+      address: '78 Giải Phóng, Hà Nội',
+    ),
+    Doctor(
+      id: '1',
+      name: 'Bác sĩ Nguyễn Văn A',
+      specialty: 'Tim mạch',
+      imageUrl: 'https://via.placeholder.com/150',
+      rating: 4.8,
+      experience: '15 năm kinh nghiệm',
+      hospital: 'Bệnh viện Bạch Mai',
+      address: '78 Giải Phóng, Hà Nội',
     ),
   ];
 
@@ -124,56 +137,92 @@ class HomeController extends GetxController {
     MedicalService(
       id: '1',
       name: 'Khám tổng quát',
-      icon: Icons.medical_services,
-      color: Colors.blue,
+      icon: SvgPicture.asset(
+        'assets/icons/tongquat.svg',
+        height: 20,
+        width: 20,
+      ),
+      color: AppColor.fourthMain,
     ),
     MedicalService(
       id: '2',
       name: 'Khám chuyên khoa',
-      icon: Icons.science,
-      color: Colors.green,
+      icon: SvgPicture.asset(
+        'assets/icons/chuyenkhoa.svg',
+        height: 20,
+        width: 20,
+      ),
+      color: AppColor.fourthMain,
     ),
     MedicalService(
       id: '3',
       name: 'Xét nghiệm y học',
-      icon: Icons.science,
-      color: Colors.green,
+      icon: SvgPicture.asset(
+        'assets/icons/xetnghiem.svg',
+        height: 20,
+        width: 20,
+      ),
+      color: AppColor.fourthMain,
     ),
     MedicalService(
       id: '4',
       name: 'khám nha khoa',
-      icon: Icons.vaccines,
-      color: Colors.green,
+      icon: SvgPicture.asset(
+        'assets/icons/nhakhoa.svg',
+        height: 20,
+        width: 20,
+      ),
+      color: AppColor.fourthMain,
     ),
     MedicalService(
       id: '5',
       name: 'Tiêm chủng',
-      icon: Icons.vaccines,
-      color: Colors.purple,
+      icon: SvgPicture.asset(
+        'assets/icons/tiemchung.svg',
+        height: 20,
+        width: 20,
+      ),
+      color: AppColor.fourthMain,
     ),
     MedicalService(
       id: '6',
       name: 'Gói phẫu thuật',
-      icon: Icons.fastfood,
-      color: Colors.teal,
+      icon: SvgPicture.asset(
+        'assets/icons/phauthuat.svg',
+        height: 20,
+        width: 20,
+      ),
+      color: AppColor.fourthMain,
     ),
     MedicalService(
       id: '7',
       name: 'Vật lý trị liệu',
-      icon: Icons.accessible,
-      color: Colors.red,
+      icon: SvgPicture.asset(
+        'assets/icons/trilieu.svg',
+        height: 20,
+        width: 20,
+      ),
+      color: AppColor.fourthMain,
     ),
     MedicalService(
       id: '8',
       name: 'Tư vấn dinh dưỡng',
-      icon: Icons.fastfood,
-      color: Colors.teal,
+      icon: SvgPicture.asset(
+        'assets/icons/dinhduong.svg',
+        height: 20,
+        width: 20,
+      ),
+      color: AppColor.fourthMain,
     ),
     MedicalService(
       id: '9',
       name: 'Sống khoẻ tiểu đường',
-      icon: Icons.fastfood,
-      color: Colors.teal,
+      icon: SvgPicture.asset(
+        'assets/icons/tieuduong.svg',
+        height: 20,
+        width: 20,
+      ),
+      color: AppColor.fourthMain,
     ),
   ];
 
@@ -270,11 +319,8 @@ class HomeController extends GetxController {
     currentCarouselIndex.value = index;
   }
 
-  void selectCategory(String category) {
-    // Implement category selection logic
-    Get.snackbar('Đã chọn', category,
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 1));
+  void selectCategory() {
+    Get.toNamed(Routes.category);
   }
 
   // Detail view methods
@@ -300,7 +346,7 @@ class HomeController extends GetxController {
 
   // View all methods
   void viewAllDoctors() {
-    // Get.toNamed(Routes.DOCTORS);
+    Get.toNamed(Routes.excellentDoctor);
   }
 
   void viewAllHospitals() {

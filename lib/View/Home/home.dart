@@ -160,7 +160,7 @@ class Home extends GetView<HomeController> {
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: ElevatedButton(
-        onPressed: () => controller.selectCategory(title),
+        onPressed: () => controller.selectCategory(),
         style: ElevatedButton.styleFrom(
           backgroundColor: isSelected ? AppColor.fourthMain : Colors.white,
           foregroundColor: isSelected ? Colors.white : AppColor.fourthMain,
@@ -633,85 +633,84 @@ class Home extends GetView<HomeController> {
     );
   }
 
-  Widget _buildComprehensiveServices() {
-    return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              'Dịch vụ toàn diện',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
+Widget _buildComprehensiveServices() {
+  return Container(
+    color: Colors.white,
+    padding: const EdgeInsets.symmetric(vertical: 16),
+    margin: const EdgeInsets.only(bottom: 12),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            'Dịch vụ toàn diện',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 12),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              childAspectRatio: 0.9,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-            ),
-            itemCount: controller.medicalServices.length,
-            itemBuilder: (context, index) {
-              final service = controller.medicalServices[index];
-              return GestureDetector(
-                onTap: () => controller.selectService(service.id),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        spreadRadius: 1,
-                        blurRadius: 5,
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: service.color.withOpacity(0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child:
-                            Icon(service.icon, color: service.color, size: 28),
-                      ),
-                      const SizedBox(height: 8),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: Text(
-                          service.name,
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+        ),
+        const SizedBox(height: 12),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            childAspectRatio: 0.9,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+          ),
+          itemCount: controller.medicalServices.length,
+          itemBuilder: (context, index) {
+            final service = controller.medicalServices[index];
+            return GestureDetector(
+              onTap: () => controller.selectService(service.id),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      spreadRadius: 1,
+                      blurRadius: 5,
+                    ),
+                  ],
                 ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: service.color.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: service.icon,
+                    ),
+                    const SizedBox(height: 8),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Text(
+                        service.name,
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ],
+    ),
+  );
+}
 
   Widget _buildHealthArticles() {
     return Container(

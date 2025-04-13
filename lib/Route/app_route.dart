@@ -13,6 +13,8 @@ abstract class Routes {
   static const notification = _Paths.notification;
   static const appointment = _Paths.appointment;
   static const news = _Paths.news;
+  static const category = _Paths.category;
+  static const excellentDoctor = _Paths.excellentDoctor;
 }
 
 abstract class _Paths {
@@ -28,4 +30,6 @@ abstract class _Paths {
   static const String notification = '/notification';
   static const String appointment = '/appointment';
   static const String news = '/news';
+  static const String category = '/category';
+  static const String excellentDoctor = '/excellent-doctor';
 }

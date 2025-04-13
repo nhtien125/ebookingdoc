@@ -4,6 +4,9 @@ class Doctor {
   final String specialty;
   final String imageUrl;
   final double rating;
+  final String experience;
+  final String hospital;
+  final String address;
 
   Doctor({
     required this.id,
@@ -11,5 +14,8 @@ class Doctor {
     required this.specialty,
     required this.imageUrl,
     required this.rating,
+    required this.experience,
+    required this.hospital,
+    required this.address,
   });
 }

@@ -91,7 +91,7 @@ class Dashboard extends StatelessWidget {
                                   : null,
                             ),
                             Text(
-                              'Teang chủ',
+                              'Trang chủ',
                               textAlign: TextAlign.center,
                               style: controller.currentIndex.value == 0
                                   ? TextStyle(
@@ -118,7 +118,7 @@ class Dashboard extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             SvgPicture.asset(
-                              'assets/icons/notification-13-svgrepo-com.svg',
+                              'assets/icons/thongbao.svg',
                               height: 20,
                               width: 20,
                               colorFilter: controller.currentIndex.value == 1
@@ -155,7 +155,7 @@ class Dashboard extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             SvgPicture.asset(
-                              'assets/icons/appointment-symbolic-svgrepo-com.svg',
+                              'assets/icons/lichhen.svg',
                               height: 20,
                               width: 20,
                               colorFilter: controller.currentIndex.value == 2
@@ -191,7 +191,7 @@ class Dashboard extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             SvgPicture.asset(
-                              'assets/icons/news-svgrepo-com.svg',
+                              'assets/icons/news.svg',
                               height: 20,
                               width: 20,
                               colorFilter: controller.currentIndex.value == 3
@@ -227,7 +227,7 @@ class Dashboard extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             SvgPicture.asset(
-                              'assets/icons/person-svgrepo-com.svg',
+                              'assets/icons/nguoi.svg',
                               height: 20,
                               width: 20,
                               colorFilter: controller.currentIndex.value == 4
