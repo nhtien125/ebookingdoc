@@ -22,4 +22,6 @@ class Doctor {
    
     // required this.reviewCount,
   });
+
+
 }

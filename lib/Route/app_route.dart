@@ -15,6 +15,7 @@ abstract class Routes {
   static const news = _Paths.news;
   static const category = _Paths.category;
   static const excellentDoctor = _Paths.excellentDoctor;
+  static const detaildoctor = _Paths.detaildoctor;
 }
 
 abstract class _Paths {
@@ -32,4 +33,5 @@ abstract class _Paths {
   static const String news = '/news';
   static const String category = '/category';
   static const String excellentDoctor = '/excellent-doctor';
+  static const String detaildoctor = '/detail-doctor';
 }

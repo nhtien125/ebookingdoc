@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 // import 'package:carousel_slider/carousel_slider.dart';
 import '../../Global/app_text_style.dart';
-// import 'widgets.dart'; 
+// import 'widgets.dart';
 
 class Home extends GetView<HomeController> {
   Home({Key? key}) : super(key: key);
@@ -143,11 +143,12 @@ class Home extends GetView<HomeController> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
-                _buildCategoryButton('Tất cả', isSelected: true),
-                _buildCategoryButton('Tại nhà'),
-                _buildCategoryButton('Tại viện'),
-                _buildCategoryButton('Chuyên khoa'),
-                _buildCategoryButton('Khám tổng quát'),
+                _buildCategoryButton('Tất cả', isSelected: true, onTap: () {}),
+                _buildCategoryButton('Bác sĩ', onTap: () => controller.viewAllDoctors()),
+                _buildCategoryButton('Bệnh viện', onTap: () {}),
+                // Tương tự
+                _buildCategoryButton('Phòng khám'),
+                _buildCategoryButton('Trung tâm tiêm chủng'),
               ],
             ),
           ),
@@ -156,11 +157,11 @@ class Home extends GetView<HomeController> {
     );
   }
 
-  Widget _buildCategoryButton(String title, {bool isSelected = false}) {
+  Widget _buildCategoryButton(String title, {bool isSelected = false, void Function()? onTap}) {
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: ElevatedButton(
-        onPressed: () => controller.selectCategory(),
+        onPressed: onTap,
         style: ElevatedButton.styleFrom(
           backgroundColor: isSelected ? AppColor.fourthMain : Colors.white,
           foregroundColor: isSelected ? Colors.white : AppColor.fourthMain,
@@ -464,7 +465,8 @@ class Home extends GetView<HomeController> {
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: AppColor.fourthMain.withOpacity(0.1),
+                                      color:
+                                          AppColor.fourthMain.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(
@@ -600,7 +602,8 @@ class Home extends GetView<HomeController> {
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: AppColor.fourthMain.withOpacity(0.1),
+                                      color:
+                                          AppColor.fourthMain.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(
@@ -633,84 +636,84 @@ class Home extends GetView<HomeController> {
     );
   }
 
-Widget _buildComprehensiveServices() {
-  return Container(
-    color: Colors.white,
-    padding: const EdgeInsets.symmetric(vertical: 16),
-    margin: const EdgeInsets.only(bottom: 12),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16),
-          child: Text(
-            'Dịch vụ toàn diện',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+  Widget _buildComprehensiveServices() {
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              'Dịch vụ toàn diện',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
           ),
-        ),
-        const SizedBox(height: 12),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            childAspectRatio: 0.9,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-          ),
-          itemCount: controller.medicalServices.length,
-          itemBuilder: (context, index) {
-            final service = controller.medicalServices[index];
-            return GestureDetector(
-              onTap: () => controller.selectService(service.id),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      spreadRadius: 1,
-                      blurRadius: 5,
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: service.color.withOpacity(0.1),
-                        shape: BoxShape.circle,
+          const SizedBox(height: 12),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              childAspectRatio: 0.9,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+            ),
+            itemCount: controller.medicalServices.length,
+            itemBuilder: (context, index) {
+              final service = controller.medicalServices[index];
+              return GestureDetector(
+                onTap: () => controller.selectService(service.id),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        spreadRadius: 1,
+                        blurRadius: 5,
                       ),
-                      child: service.icon,
-                    ),
-                    const SizedBox(height: 8),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: Text(
-                        service.name,
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: service.color.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: service.icon,
+                      ),
+                      const SizedBox(height: 8),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Text(
+                          service.name,
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            );
-          },
-        ),
-      ],
-    ),
-  );
-}
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildHealthArticles() {
     return Container(
@@ -798,7 +801,8 @@ Widget _buildComprehensiveServices() {
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: AppColor.fourthMain.withOpacity(0.1),
+                                      color:
+                                          AppColor.fourthMain.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(

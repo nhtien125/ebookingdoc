@@ -140,7 +140,7 @@ class HomeController extends GetxController {
   final List<MedicalService> medicalServices = [
     MedicalService(
       id: '1',
-      name: 'Khám tổng quát',
+      name: 'Đặt khám tại cơ sở',
       icon: SvgPicture.asset(
         'assets/icons/tongquat.svg',
         height: 20,
@@ -150,7 +150,7 @@ class HomeController extends GetxController {
     ),
     MedicalService(
       id: '2',
-      name: 'Khám chuyên khoa',
+      name: 'Đặt khám tại nhà',
       icon: SvgPicture.asset(
         'assets/icons/chuyenkhoa.svg',
         height: 20,
@@ -160,7 +160,7 @@ class HomeController extends GetxController {
     ),
     MedicalService(
       id: '3',
-      name: 'Xét nghiệm y học',
+      name: 'Đặt lịch xét nghiệm',
       icon: SvgPicture.asset(
         'assets/icons/xetnghiem.svg',
         height: 20,
@@ -170,7 +170,7 @@ class HomeController extends GetxController {
     ),
     MedicalService(
       id: '4',
-      name: 'khám nha khoa',
+      name: 'Đặt bác sĩ',
       icon: SvgPicture.asset(
         'assets/icons/nhakhoa.svg',
         height: 20,
@@ -180,7 +180,7 @@ class HomeController extends GetxController {
     ),
     MedicalService(
       id: '5',
-      name: 'Tiêm chủng',
+      name: 'Gói khám sức khoẻ',
       icon: SvgPicture.asset(
         'assets/icons/tiemchung.svg',
         height: 20,
@@ -190,36 +190,6 @@ class HomeController extends GetxController {
     ),
     MedicalService(
       id: '6',
-      name: 'Gói phẫu thuật',
-      icon: SvgPicture.asset(
-        'assets/icons/phauthuat.svg',
-        height: 20,
-        width: 20,
-      ),
-      color: AppColor.fourthMain,
-    ),
-    MedicalService(
-      id: '7',
-      name: 'Vật lý trị liệu',
-      icon: SvgPicture.asset(
-        'assets/icons/trilieu.svg',
-        height: 20,
-        width: 20,
-      ),
-      color: AppColor.fourthMain,
-    ),
-    MedicalService(
-      id: '8',
-      name: 'Tư vấn dinh dưỡng',
-      icon: SvgPicture.asset(
-        'assets/icons/dinhduong.svg',
-        height: 20,
-        width: 20,
-      ),
-      color: AppColor.fourthMain,
-    ),
-    MedicalService(
-      id: '9',
       name: 'Sống khoẻ tiểu đường',
       icon: SvgPicture.asset(
         'assets/icons/tieuduong.svg',
@@ -372,7 +342,7 @@ class HomeController extends GetxController {
 
   // Detail view methods
   void viewDoctorDetails(String doctorId) {
-    // Get.toNamed(Routes.DOCTOR_DETAIL, arguments: doctorId);
+    Get.toNamed(Routes.detaildoctor, arguments: doctorId);
   }
 
   void viewHospitalDetails(String hospitalId) {
@@ -397,7 +367,7 @@ class HomeController extends GetxController {
   }
 
   void viewAllHospitals() {
-    // Get.toNamed(Routes.HOSPITALS);
+    Get.toNamed(Routes.excellentDoctor, arguments: {'hospitals': true});
   }
 
   void viewAllClinics() {
