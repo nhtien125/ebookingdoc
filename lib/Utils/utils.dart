@@ -1,5 +1,9 @@
+import 'dart:io';
+
+// import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -41,6 +45,39 @@ class Utils {
     final formatter =
         NumberFormat.currency(locale: 'vi_VN', name: ' ', decimalDigits: 0);
     return formatter.format(amount);
+  }
+
+  static String formatDate(String? isoString) {
+    if (isoString == null || isoString.trim().isEmpty) {
+      return "Không xác định";
+    }
+
+    try {
+      DateTime dateTime =
+          DateTime.parse(isoString);
+      return DateFormat('HH:mm - dd/MM/yyyy').format(dateTime);
+    } catch (e) {
+      return "Không xác định";
+    }
+  }
+
+  static getImagePicker(int source) async {
+    ImagePicker picker = ImagePicker();
+    File? file;
+    try {
+      await picker
+          .pickImage(
+        source: source == 1 ? ImageSource.camera : ImageSource.gallery,
+      )
+          .then((value) {
+        if (value != null) {
+          file = File(value.path);
+        }
+      });
+    } catch (e) {
+      return null;
+    }
+    return file;
   }
 
   static void showSnackBar(

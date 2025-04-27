@@ -1,164 +1,207 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+// // appointment_controller.dart - Controller xử lý logic cho màn hình đặt lịch khám
 
-class Hospital {
-  final String id;
-  final String name;
-  final String address;
+// import 'package:flutter/material.dart';
+// import 'package:get/get.dart';
 
-  Hospital({required this.id, required this.name, required this.address});
-}
 
-class AppointmentInfo {
-  String? specialtyId;
-  String? serviceId;
-  String? roomId;
-  DateTime? date;
-  String? timeSlot;
-}
-class AppointmentScreenController extends GetxController {
-  // Hospital information
-  final hospital = Hospital(
-    id: '1',
-    name: 'Bệnh viện Đa khoa Quốc tế Vinmec',
-    address: '458 Minh Khai, Vĩnh Tuy, Hai Bà Trưng, Hà Nội',
-  );
+// class AppointmentScreenController extends GetxController {
+//   // Observable state
+//   final Rx<AppointmentInfo> appointmentInfo;
+  
+//   // Data lists
+//   final List<Specialty> specialties;
+//   final List<Service> services;
+//   final List<Room> rooms;
+//   final List<TimeSlot> timeSlots;
 
-  // Appointment information
-  var appointmentInfo = AppointmentInfo().obs;
+//   AppointmentScreenController()
+//       : appointmentInfo = Rx<AppointmentInfo>(
+//           AppointmentInfo(
+//             hospital: Hospital(
+//               id: '1',
+//               name: 'Bệnh viện Đa khoa Quốc tế Vinmec',
+//               address: '458 Minh Khai, Vĩnh Tuy, Hai Bà Trưng, Hà Nội',
+//             ),
+//           ),
+//         ),
+//         specialties = [],
+//         services = [],
+//         rooms = [],
+//         timeSlots = [];
 
-  // Mock data for specialties, services, and rooms
-  final specialties = <Specialty>[
-    Specialty(id: '1', name: 'Khoa Nội tổng quát'),
-    Specialty(id: '2', name: 'Khoa Nhi'),
-    Specialty(id: '3', name: 'Khoa Tai Mũi Họng'),
-    Specialty(id: '4', name: 'Khoa Mắt'),
-  ];
+//   @override
+//   void onInit() {
+//     super.onInit();
+//     _initializeData();
+//   }
 
-  final services = [
-    {'id': '1', 'name': 'Khám tổng quát', 'specialtyId': '1'},
-    {'id': '2', 'name': 'Khám nhi khoa', 'specialtyId': '2'},
-    {'id': '3', 'name': 'Khám Tai Mũi Họng', 'specialtyId': '3'},
-    {'id': '4', 'name': 'Khám Mắt', 'specialtyId': '4'},
-  ];
-
-  final rooms = [
-    {'id': '1', 'name': 'Phòng 101 - Tầng 1', 'specialtyId': '1'},
-    {'id': '2', 'name': 'Phòng 201 - Tầng 2', 'specialtyId': '2'},
-    {'id': '3', 'name': 'Phòng 301 - Tầng 3', 'specialtyId': '3'},
-    {'id': '4', 'name': 'Phòng 401 - Tầng 4', 'specialtyId': '4'},
-  ];
-
-  // Time slots available
-  final timeSlots = [
-    '08:00 - 08:30',
-    '08:30 - 09:00',
-    '09:00 - 09:30',
-    '09:30 - 10:00',
-    '10:00 - 10:30',
-    '13:30 - 14:00',
-    '14:00 - 14:30',
-    '14:30 - 15:00',
-  ];
-
-  // Select specialty
-  void selectSpecialty(String specialtyId) {
-    appointmentInfo.update((info) {
-      info?.specialtyId = specialtyId;
-      info?.serviceId = null; // Reset service when specialty changes
-      info?.roomId = null; // Reset room when specialty changes
-    });
+//   void _initializeData() {
+//     // Initialize specialties
+//     specialties.addAll([
+//       Specialty(id: '1', name: 'Khoa Nội tổng quát'),
+//       Specialty(id: '2', name: 'Khoa Nhi'),
+//       Specialty(id: '3', name: 'Khoa Tai Mũi Họng'),
+//       Specialty(id: '4', name: 'Khoa Mắt'),
+//     ]);
     
-    // In a real app, you might fetch services for this specialty here
-  }
+//     // Initialize services
+//     services.addAll([
+//       Service(id: '1', name: 'Khám tổng quát', specialtyId: '1'),
+//       Service(id: '2', name: 'Điều trị nội khoa', specialtyId: '1'),
+//       Service(id: '3', name: 'Khám nhi khoa', specialtyId: '2'),
+//       Service(id: '4', name: 'Tiêm chủng', specialtyId: '2'),
+//       Service(id: '5', name: 'Khám Tai Mũi Họng', specialtyId: '3'),
+//       Service(id: '6', name: 'Nội soi Tai Mũi Họng', specialtyId: '3'),
+//       Service(id: '7', name: 'Khám Mắt', specialtyId: '4'),
+//       Service(id: '8', name: 'Đo thị lực', specialtyId: '4'),
+//     ]);
 
-  // Select service
-  void selectService(String serviceId) {
-    appointmentInfo.update((info) {
-      info?.serviceId = serviceId;
-    });
-  }
+//     // Initialize rooms
+//     rooms.addAll([
+//       Room(id: '1', name: 'Phòng 101 - Tầng 1', specialtyId: '1'),
+//       Room(id: '2', name: 'Phòng 102 - Tầng 1', specialtyId: '1'),
+//       Room(id: '3', name: 'Phòng 201 - Tầng 2', specialtyId: '2'),
+//       Room(id: '4', name: 'Phòng 202 - Tầng 2', specialtyId: '2'),
+//       Room(id: '5', name: 'Phòng 301 - Tầng 3', specialtyId: '3'),
+//       Room(id: '6', name: 'Phòng 302 - Tầng 3', specialtyId: '3'),
+//       Room(id: '7', name: 'Phòng 401 - Tầng 4', specialtyId: '4'),
+//       Room(id: '8', name: 'Phòng 402 - Tầng 4', specialtyId: '4'),
+//     ]);
 
-  // Select room
-  void selectRoom(String roomId) {
-    appointmentInfo.update((info) {
-      info?.roomId = roomId;
-    });
-  }
+//     // Initialize time slots
+//     timeSlots.addAll([
+//       TimeSlot(id: '1', time: '08:00 - 08:30'),
+//       TimeSlot(id: '2', time: '08:30 - 09:00'),
+//       TimeSlot(id: '3', time: '09:00 - 09:30'),
+//       TimeSlot(id: '4', time: '09:30 - 10:00'),
+//       TimeSlot(id: '5', time: '10:00 - 10:30'),
+//       TimeSlot(id: '6', time: '13:30 - 14:00'),
+//       TimeSlot(id: '7', time: '14:00 - 14:30'),
+//       TimeSlot(id: '8', time: '14:30 - 15:00'),
+//     ]);
+//   }
 
-  // Select date
-  void selectDate(DateTime date) {
-    appointmentInfo.update((info) {
-      info?.date = date;
-    });
-  }
+//   // Filter services by selected specialty
+//   List<Service> getServicesBySpecialty(String specialtyId) {
+//     return services.where((service) => service.specialtyId == specialtyId).toList();
+//   }
 
-  // Select time slot
-  void selectTimeSlot(String timeSlot) {
-    appointmentInfo.update((info) {
-      info?.timeSlot = timeSlot;
-    });
-  }
+//   // Filter rooms by selected specialty
+//   List<Room> getRoomsBySpecialty(String specialtyId) {
+//     return rooms.where((room) => room.specialtyId == specialtyId).toList();
+//   }
 
-  // Check if all required fields are filled
-  bool canSubmit() {
-    return appointmentInfo.value.specialtyId != null &&
-        appointmentInfo.value.serviceId != null &&
-        appointmentInfo.value.roomId != null &&
-        appointmentInfo.value.date != null &&
-        appointmentInfo.value.timeSlot != null;
-  }
+//   // Getters for selected objects
+//   Specialty? get selectedSpecialty {
+//     final id = appointmentInfo.value.specialtyId;
+//     if (id == null) return null;
+//     try {
+//       return specialties.firstWhere((s) => s.id == id);
+//     } catch (e) {
+//       return null;
+//     }
+//   }
 
-  // Submit appointment with loading state
-  Future<void> submitAppointmentWithLoading() async {
-    // Show loading
-    Get.dialog(
-      Center(child: CircularProgressIndicator()),
-      barrierDismissible: false,
-    );
+//   Service? get selectedService {
+//     final id = appointmentInfo.value.serviceId;
+//     if (id == null) return null;
+//     try {
+//       return services.firstWhere((s) => s.id == id);
+//     } catch (e) {
+//       return null;
+//     }
+//   }
 
-    // Simulate API call
-    await Future.delayed(Duration(seconds: 2));
+//   Room? get selectedRoom {
+//     final id = appointmentInfo.value.roomId;
+//     if (id == null) return null;
+//     try {
+//       return rooms.firstWhere((r) => r.id == id);
+//     } catch (e) {
+//       return null;
+//     }
+//   }
 
-    // Hide loading
-    Get.back();
+//   String? get formattedSelectedDate {
+//     final date = appointmentInfo.value.date;
+//     if (date == null) return null;
+//     return '${date.day}/${date.month}/${date.year}';
+//   }
 
-    // In a real app, you would handle the API response here
-    // For now, we'll just reset the form
-    resetForm();
-  }
+//   // Selection methods
+//   void selectSpecialty(String specialtyId) {
+//     appointmentInfo.update((info) {
+//       appointmentInfo.value = info!.copyWith(
+//         specialtyId: specialtyId,
+//         clearService: true,
+//         clearRoom: true,
+//       );
+//     });
+//   }
 
-  // Reset the appointment form
-  void resetForm() {
-    appointmentInfo.value = AppointmentInfo();
-  }
-}
+//   void selectService(String serviceId) {
+//     appointmentInfo.update((info) {
+//       appointmentInfo.value = info!.copyWith(serviceId: serviceId);
+//     });
+//   }
 
-// Model classes
+//   void selectRoom(String roomId) {
+//     appointmentInfo.update((info) {
+//       appointmentInfo.value = info!.copyWith(roomId: roomId);
+//     });
+//   }
 
+//   void selectDate(DateTime date) {
+//     appointmentInfo.update((info) {
+//       appointmentInfo.value = info!.copyWith(date: date);
+//     });
+//   }
 
-class Specialty {
-  final String id;
-  final String name;
+//   void selectTimeSlot(String timeSlot) {
+//     appointmentInfo.update((info) {
+//       appointmentInfo.value = info!.copyWith(timeSlot: timeSlot);
+//     });
+//   }
 
-  Specialty({
-    required this.id,
-    required this.name,
-  });
-}
+//   // Submission logic
+//   bool canSubmit() {
+//     return appointmentInfo.value.isComplete();
+//   }
 
-class AppointmentInf {
-  String? specialtyId;
-  String? serviceId;
-  String? roomId;
-  DateTime? date;
-  String? timeSlot;
+//   Future<bool> submitAppointment() async {
+//     try {
+//       // In a real app, this would send data to an API
+//       await Future.delayed(Duration(seconds: 2)); // Simulate network request
+//       return true; // Success
+//     } catch (e) {
+//       print("Error submitting appointment: $e");
+//       return false;
+//     }
+//   }
 
-  AppointmentInf({
-    this.specialtyId,
-    this.serviceId,
-    this.roomId,
-    this.date,
-    this.timeSlot,
-  });
-}
+//   // Submit appointment with loading dialog
+//   Future<bool> submitAppointmentWithLoading() async {
+//     // Show loading
+//     Get.dialog(
+//       Center(child: CircularProgressIndicator()),
+//       barrierDismissible: false,
+//     );
+
+//     // Simulate API call
+//     final success = await submitAppointment();
+
+//     // Hide loading
+//     Get.back();
+
+//     // Reset form if successful
+//     if (success) {
+//       resetForm();
+//     }
+
+//     return success;
+//   }
+
+//   void resetForm() {
+//     appointmentInfo.value = AppointmentInfo(hospital: appointmentInfo.value.hospital);
+//   }
+// }
