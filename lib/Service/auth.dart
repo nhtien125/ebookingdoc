@@ -29,7 +29,7 @@ class Auth {
         await Utils.getStringValueWithKey(Constant.PASSWORD);
 
     Map<String, String> param = {
-      "username": userName ?? userNamePreferences,
+      "phone": userName ?? userNamePreferences,
       // "password":
       //     password != null ? Utils.generateMd5(password) : passwordPreferences,
       "password":

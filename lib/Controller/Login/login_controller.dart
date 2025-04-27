@@ -1,3 +1,4 @@
+import 'package:ebookingdoc/Service/auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ebookingdoc/Route/app_page.dart';
@@ -7,33 +8,34 @@ class LoginController extends GetxController {
   // Text controllers
   TextEditingController username = TextEditingController();
   TextEditingController password = TextEditingController();
-  
+
   // Biến observable
   RxBool hidePassword = true.obs;
   RxBool isLoading = false.obs;
   RxString usernameError = ''.obs;
   RxString passwordError = ''.obs;
   RxBool rememberMe = false.obs;
-  RxBool numericPassword = true.obs; // Mặc định sử dụng bàn phím số cho mật khẩu
-  
+  RxBool numericPassword =
+      true.obs; // Mặc định sử dụng bàn phím số cho mật khẩu
+
   @override
   void onInit() {
     super.onInit();
     loadSavedCredentials();
   }
-  
+
   // Hàm chuyển đổi giữa bàn phím số và bàn phím chữ cho mật khẩu
   void togglePasswordKeyboardType() {
     numericPassword.value = !numericPassword.value;
   }
-  
+
   // Tải thông tin đăng nhập đã lưu
   void loadSavedCredentials() async {
     final prefs = await SharedPreferences.getInstance();
     final savedUsername = prefs.getString('username') ?? '';
     final savedPassword = prefs.getString('password') ?? '';
     final savedRememberMe = prefs.getBool('rememberMe') ?? false;
-    
+
     if (savedRememberMe && savedUsername.isNotEmpty) {
       username.text = savedUsername;
       if (savedPassword.isNotEmpty) {
@@ -42,7 +44,7 @@ class LoginController extends GetxController {
       rememberMe.value = true;
     }
   }
-  
+
   // Lưu thông tin đăng nhập
   void saveCredentials() async {
     if (rememberMe.value) {
@@ -73,7 +75,7 @@ class LoginController extends GetxController {
   // Validate form
   bool validateForm() {
     bool isValid = true;
-    
+
     // Kiểm tra username (SĐT)
     if (username.text.isEmpty) {
       usernameError.value = 'Vui lòng nhập số điện thoại';
@@ -84,7 +86,7 @@ class LoginController extends GetxController {
     } else {
       usernameError.value = '';
     }
-    
+
     // Kiểm tra password
     if (password.text.isEmpty) {
       passwordError.value = 'Vui lòng nhập mật khẩu';
@@ -95,63 +97,68 @@ class LoginController extends GetxController {
     } else {
       passwordError.value = '';
     }
-    
+
     return isValid;
   }
 
   // Logic đăng nhập
   void login() async {
     // Kiểm tra form trước
-    if (!validateForm()) return;
-    
-    try {
-      isLoading.value = true;
-      
-      // Mô phỏng gọi API đăng nhập
-      await Future.delayed(Duration(seconds: 1));
-      
-      // TODO: Thay thế bằng logic gọi API thực tế
-      // Đây chỉ là logic đăng nhập giả để kiểm tra giao diện
-      bool loginSuccess = false;
-      
-      // Demo tài khoản (số điện thoại: 0123456789, mật khẩu: 123456)
-      if (username.text == '0123456789' && password.text == '123456') {
-        loginSuccess = true;
-      }
-      
-      if (loginSuccess) {
-        // Lưu thông tin đăng nhập nếu chọn "Ghi nhớ đăng nhập"
-        saveCredentials();
-        
-        // Chuyển hướng đến trang chủ (dashboard)
-        Get.offAllNamed(Routes.dashboard);
-      } else {
-        // Hiển thị thông báo lỗi đăng nhập
-        Get.snackbar(
-          'Đăng nhập thất bại',
-          'Số điện thoại hoặc mật khẩu không chính xác',
-          snackPosition: SnackPosition.TOP,
-          backgroundColor: Colors.red[100],
-          colorText: Colors.red[800],
-          margin: EdgeInsets.all(16),
-          duration: Duration(seconds: 3),
-          icon: Icon(Icons.error_outline, color: Colors.red[800]),
-        );
-      }
-    } catch (e) {
-      Get.snackbar(
-        'Lỗi',
-        'Có lỗi xảy ra. Vui lòng thử lại sau.',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.red[100],
-        colorText: Colors.red[800],
-        margin: EdgeInsets.all(16),
-        icon: Icon(Icons.error_outline, color: Colors.red[800]),
-      );
-      print('Login error: $e');
-    } finally {
-      isLoading.value = false;
-    }
+    // if (!validateForm()) return;
+
+    await Auth.login(
+      userName: username.text.trim(),
+      password: password.text.trim(),
+    );
+
+    // try {
+    //   isLoading.value = true;
+
+    //   // Mô phỏng gọi API đăng nhập
+    //   await Future.delayed(Duration(seconds: 1));
+
+    //   // TODO: Thay thế bằng logic gọi API thực tế
+    //   // Đây chỉ là logic đăng nhập giả để kiểm tra giao diện
+    //   bool loginSuccess = false;
+
+    //   // Demo tài khoản (số điện thoại: 0123456789, mật khẩu: 123456)
+    //   if (username.text == '0123456789' && password.text == '123456') {
+    //     loginSuccess = true;
+    //   }
+
+    //   if (loginSuccess) {
+    //     // Lưu thông tin đăng nhập nếu chọn "Ghi nhớ đăng nhập"
+    //     saveCredentials();
+
+    //     // Chuyển hướng đến trang chủ (dashboard)
+    //     Get.offAllNamed(Routes.dashboard);
+    //   } else {
+    //     // Hiển thị thông báo lỗi đăng nhập
+    //     Get.snackbar(
+    //       'Đăng nhập thất bại',
+    //       'Số điện thoại hoặc mật khẩu không chính xác',
+    //       snackPosition: SnackPosition.TOP,
+    //       backgroundColor: Colors.red[100],
+    //       colorText: Colors.red[800],
+    //       margin: EdgeInsets.all(16),
+    //       duration: Duration(seconds: 3),
+    //       icon: Icon(Icons.error_outline, color: Colors.red[800]),
+    //     );
+    //   }
+    // } catch (e) {
+    //   Get.snackbar(
+    //     'Lỗi',
+    //     'Có lỗi xảy ra. Vui lòng thử lại sau.',
+    //     snackPosition: SnackPosition.TOP,
+    //     backgroundColor: Colors.red[100],
+    //     colorText: Colors.red[800],
+    //     margin: EdgeInsets.all(16),
+    //     icon: Icon(Icons.error_outline, color: Colors.red[800]),
+    //   );
+    //   print('Login error: $e');
+    // } finally {
+    //   isLoading.value = false;
+    // }
   }
 
   // Logic đăng ký
@@ -159,7 +166,7 @@ class LoginController extends GetxController {
     // Xóa các thông báo lỗi khi chuyển trang
     usernameError.value = '';
     passwordError.value = '';
-    
+
     // Điều hướng tới trang đăng ký
     // Get.toNamed(Routes.register);
   }
@@ -169,10 +176,10 @@ class LoginController extends GetxController {
     // Xóa các thông báo lỗi khi chuyển trang
     usernameError.value = '';
     passwordError.value = '';
-    
+
     // Get.toNamed(Routes.forgotPassword);
   }
-  
+
   @override
   void onClose() {
     // Giải phóng bộ nhớ controllers khi không sử dụng

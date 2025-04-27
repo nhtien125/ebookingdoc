@@ -1,3 +1,4 @@
+import 'package:ebookingdoc/Service/auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Import để sử dụng InputFormatter
 import 'package:get/get.dart';
@@ -17,7 +18,7 @@ class Login extends StatelessWidget {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
-          child: Container(
+          child: SizedBox(
             height: size.height,
             width: size.width,
             child: Stack(
@@ -36,7 +37,7 @@ class Login extends StatelessWidget {
                         Colors.blue[300]!,
                       ],
                     ),
-                    borderRadius: BorderRadius.only(
+                    borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(40),
                       bottomRight: Radius.circular(40),
                     ),
@@ -53,7 +54,7 @@ class Login extends StatelessWidget {
                       'assets/images/doctor.png', // Thay thế bằng hình ảnh của bạn
                       height: size.height * 0.2,
                       fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) => Icon(
+                      errorBuilder: (context, error, stackTrace) => const Icon(
                         Icons.medical_services,
                         size: 120,
                         color: Colors.white,
@@ -74,7 +75,7 @@ class Login extends StatelessWidget {
                       borderRadius: BorderRadius.circular(30),
                     ),
                     child: Container(
-                      padding: EdgeInsets.all(32),
+                      padding: const EdgeInsets.all(32),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -90,7 +91,7 @@ class Login extends StatelessWidget {
                                     color: Colors.blue[800],
                                   ),
                                 ),
-                                SizedBox(height: 8),
+                                const SizedBox(height: 8),
                                 Text(
                                   "Xin chào! Đăng nhập để tiếp tục",
                                   style: TextStyle(
@@ -101,7 +102,7 @@ class Login extends StatelessWidget {
                               ],
                             ),
                           ),
-                          SizedBox(height: 32),
+                          const SizedBox(height: 32),
 
                           // Text Fields
                           Text(
@@ -112,7 +113,7 @@ class Login extends StatelessWidget {
                               fontSize: 15,
                             ),
                           ),
-                          SizedBox(height: 8),
+                          const SizedBox(height: 8),
                           Container(
                             decoration: BoxDecoration(
                               color: Colors.grey[100],
@@ -146,13 +147,13 @@ class Login extends StatelessWidget {
                                       Icons.phone_android,
                                       color: Colors.blue[800],
                                     ),
-                                    contentPadding: EdgeInsets.symmetric(
+                                    contentPadding: const EdgeInsets.symmetric(
                                         vertical: 16, horizontal: 16),
                                     counterText: "",
                                   ),
                                 )),
                           ),
-                          SizedBox(height: 20),
+                          const SizedBox(height: 20),
 
                           Text(
                             "Mật khẩu",
@@ -162,7 +163,7 @@ class Login extends StatelessWidget {
                               fontSize: 15,
                             ),
                           ),
-                          SizedBox(height: 8),
+                          const SizedBox(height: 8),
                           Container(
                             decoration: BoxDecoration(
                               color: Colors.grey[100],
@@ -222,7 +223,7 @@ class Login extends StatelessWidget {
                                         ),
                                       ],
                                     ),
-                                    contentPadding: EdgeInsets.symmetric(
+                                    contentPadding: const EdgeInsets.symmetric(
                                         vertical: 16, horizontal: 16),
                                     counterText: "",
                                   ),
@@ -241,7 +242,6 @@ class Login extends StatelessWidget {
                                             .rememberMe.value = value!,
                                         activeColor: Colors.blue[800],
                                       )),
-                                  
                                 ],
                               ),
                               TextButton(
@@ -257,16 +257,19 @@ class Login extends StatelessWidget {
                               ),
                             ],
                           ),
-                          SizedBox(height: 30),
+                          const SizedBox(height: 30),
 
                           // Login Button
                           SizedBox(
                             width: double.infinity,
                             height: 56,
                             child: ElevatedButton(
-                              onPressed: () {
+                              onPressed: () async {
                                 FocusScope.of(context).unfocus();
-                                controller.login();
+                                await Auth.login(
+                                  userName: controller.username.text.trim(),
+                                  password: controller.password.text.trim(),
+                                );
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.blue[800],
@@ -277,7 +280,7 @@ class Login extends StatelessWidget {
                                 elevation: 2,
                               ),
                               child: Obx(() => controller.isLoading.value
-                                  ? SizedBox(
+                                  ? const SizedBox(
                                       height: 24,
                                       width: 24,
                                       child: CircularProgressIndicator(
@@ -285,7 +288,7 @@ class Login extends StatelessWidget {
                                         strokeWidth: 3,
                                       ),
                                     )
-                                  : Text(
+                                  : const Text(
                                       "ĐĂNG NHẬP",
                                       style: TextStyle(
                                         fontSize: 18,
@@ -295,7 +298,7 @@ class Login extends StatelessWidget {
                                     )),
                             ),
                           ),
-                          SizedBox(height: 24),
+                          const SizedBox(height: 24),
 
                           // Register Option
                           Center(
