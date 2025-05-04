@@ -1,4 +1,4 @@
-import 'package:ebookingdoc/Models/hospital_model.dart';
+
 
 class Appointment {
   final String id;
@@ -17,12 +17,3 @@ class Appointment {
   });
 }
 
-class AppointmentInfo {
-  Hospital? hospital;
-  String? specialtyId;
-  String? serviceId;
-  String? roomId;
-  DateTime? date;
-  String? timeSlot;
-
-}

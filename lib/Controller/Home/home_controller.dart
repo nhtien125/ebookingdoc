@@ -371,9 +371,14 @@ class HomeController extends GetxController {
   }
 
   void viewAllClinics() {
-    // Get.toNamed(Routes.CLINICS);
+        Get.toNamed(Routes.excellentDoctor, arguments: {'clinics': true});
+
   }
 
+  void viewAllVaccines() {
+        Get.toNamed(Routes.excellentDoctor, arguments: {'vaccines': true});
+
+  }
   void viewAllArticles() {
     // Get.toNamed(Routes.ARTICLES);
   }

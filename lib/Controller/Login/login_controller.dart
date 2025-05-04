@@ -1,7 +1,7 @@
 import 'package:ebookingdoc/Service/auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ebookingdoc/Route/app_page.dart';
+// import 'package:ebookingdoc/Route/app_page.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // Thêm package này nếu chưa có
 
 class LoginController extends GetxController {

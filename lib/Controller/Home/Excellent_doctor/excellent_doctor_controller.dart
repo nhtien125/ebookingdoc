@@ -1,4 +1,5 @@
 import 'package:ebookingdoc/Global/app_color.dart';
+import 'package:ebookingdoc/Route/app_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ebookingdoc/Models/doctor_model.dart';
@@ -166,7 +167,7 @@ class ExcellentDoctorController extends GetxController {
         {
           'id': '3',
           'name': 'Phòng khám Gia đình Victoria Healthcare',
-          'imageUrl':'assets/images/bs3.jpg',
+          'imageUrl': 'assets/images/bs3.jpg',
           'address':
               '79 Trần Hưng Đạo, Phường Cầu Ông Lãnh, Quận 1, Hồ Chí Minh',
           'rating': 4.6,
@@ -321,8 +322,7 @@ class ExcellentDoctorController extends GetxController {
   }
 
   void viewAllDoctors() {
-    // Chuyển đến trang danh sách bác sĩ
-    Get.snackbar('Thông báo', 'Xem tất cả bác sĩ');
+    Get.toNamed(Routes.appointmentScreen);
   }
 
   void viewAllHospitals() {
@@ -337,7 +337,7 @@ class ExcellentDoctorController extends GetxController {
 
   void viewDoctorDetails(String id) {
     // Chuyển đến trang thông tin bác sĩ
-    Get.snackbar('Thông báo', 'Xem chi tiết bác sĩ $id');
+    Get.toNamed(Routes.detaildoctor, arguments: '$id');
   }
 
   void viewHospitalDetails(String id) {
@@ -350,7 +350,7 @@ class ExcellentDoctorController extends GetxController {
     Get.snackbar('Thông báo', 'Xem chi tiết phòng khám $id');
   }
 
-    void viewVaccinaDetails(String id) {
+  void viewVaccinaDetails(String id) {
     // Chuyển đến trang thông tin phòng khám
     Get.snackbar('Thông báo', 'Xem chi tiết trung tâm $id');
   }

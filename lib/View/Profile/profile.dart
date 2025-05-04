@@ -1,7 +1,8 @@
 import 'package:ebookingdoc/Controller/Profile/profile_controller.dart';
 import 'package:ebookingdoc/Global/app_color.dart';
-import 'package:ebookingdoc/Service/api_caller.dart';
+// import 'package:ebookingdoc/Service/api_caller.dart';
 import 'package:ebookingdoc/Utils/custom_dialog.dart';
+import 'package:ebookingdoc/Utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -15,12 +16,14 @@ class Profile extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColor.subMain,
       appBar: AppBar(
-        backgroundColor: AppColor.main,
-        title: const Center(
-          child: Text(
-            'EbookingDoc',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+        backgroundColor: AppColor.primaryDark,
+        title: const SafeArea(
+          child: Center(
+            child: Text(
+              'EbookingDoc',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+            ),
           ),
         ),
       ),
@@ -30,30 +33,42 @@ class Profile extends StatelessWidget {
           Container(
             width: double.infinity,
             padding: const EdgeInsets.only(top: 20, bottom: 30),
-            color: Colors.grey.shade100,
+            color: AppColor.fivethMain,
             child: Column(
               children: [
                 // User avatar
                 GestureDetector(
                   onTap: () {
                     // Đây là mẫu sau sửa lại thành chọn ảnh
-                    APICaller.getInstance().post("v1/permission/create-permission",
-                        body: {"uuid": 4, "name": "Sẽ bị xoá sau"}).then((value) {
-                      print(value);
+                    // APICaller.getInstance().post("v1/permission/create-permission",
+                    //     body: {"uuid": 4, "name": "Sẽ bị xoá sau"}).then((value) {
+                    //   print(value);
+                    // });
+                    Utils.getImagePicker(2).then((value) {
+                      if (value != null) {
+                        controller.image.value = value!;
+                      }
                     });
                   },
-                  child: Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColor.thirdMain,
-                      border: Border.all(color: AppColor.fourthMain, width: 2),
-                    ),
-                    child: Icon(
-                      Icons.person_outline,
-                      size: 50,
-                      color: AppColor.fourthMain,
+                  child: Obx(
+                    () => Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColor.fivethMain,
+                        border:
+                            Border.all(color: AppColor.fourthMain, width: 2),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(300),
+                        child: Image.file(controller.image.value,
+                            errorBuilder: (context, error, stackTrace) => Icon(
+                                  Icons.person_outline,
+                                  size: 50,
+                                  color: AppColor.fourthMain,
+                                )),
+                      ),
                     ),
                   ),
                 ),
@@ -74,7 +89,7 @@ class Profile extends StatelessWidget {
           // Remaining content section with background color
           Expanded(
             child: Container(
-              color: Colors.grey.shade100,
+              color: AppColor.fivethMain,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
