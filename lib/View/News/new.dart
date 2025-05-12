@@ -71,50 +71,57 @@ class _NewsState extends State<News> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: _isSearching
-            ? TextField(
-                controller: _searchController,
-                autofocus: true,
-                decoration: const InputDecoration(
-                  hintText: 'Tìm kiếm bài viết...',
-                  border: InputBorder.none,
-                  hintStyle: TextStyle(color: Colors.white70),
-                ),
-                style: const TextStyle(color: Colors.white),
-                onChanged: _searchArticles,
-              )
-            : const Text('Tin tức y tế'),
-        centerTitle: true,
-        backgroundColor: AppColor.main,
-        actions: [
-          IconButton(
-            icon: Icon(_isSearching ? Icons.close : Icons.search),
-            onPressed: _toggleSearch,
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: _filteredArticles.isEmpty
-            ? const Center(
-                child: Text(
-                  'Không tìm thấy bài viết phù hợp',
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
-                ),
-              )
-            : ListView.builder(
-                itemCount: _filteredArticles.length,
-                itemBuilder: (context, index) {
-                  final article = _filteredArticles[index];
-                  return _buildArticleCard(article, context);
-                },
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: _isSearching
+          ? TextField(
+              controller: _searchController,
+              autofocus: true,
+              decoration: InputDecoration(
+                hintText: 'Tìm kiếm bài viết...',
+                border: InputBorder.none,
+                hintStyle: TextStyle(color: AppColor.main),
               ),
-      ),
-    );
-  }
+              style: TextStyle(color: AppColor.main),
+              onChanged: _searchArticles,
+            )
+          : Text(
+              'Tin tức y tế',
+              style: TextStyle(color: AppColor.main),
+            ),
+      centerTitle: true,
+      backgroundColor: AppColor.fourthMain,
+      actions: [
+        IconButton(
+          icon: Icon(
+            _isSearching ? Icons.close : Icons.search,
+            color: AppColor.main, 
+          ),
+          onPressed: _toggleSearch,
+        ),
+      ],
+    ),
+    body: Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: _filteredArticles.isEmpty
+          ? Center(
+              child: Text(
+                'Không tìm thấy bài viết phù hợp',
+                style: TextStyle(fontSize: 16, color: AppColor.xmain),
+              ),
+            )
+          : ListView.builder(
+              itemCount: _filteredArticles.length,
+              itemBuilder: (context, index) {
+                final article = _filteredArticles[index];
+                return _buildArticleCard(article, context);
+              },
+            ),
+    ),
+  );
+}
+
 
   Widget _buildArticleCard(Map<String, dynamic> article, BuildContext context) {
     return Card(
@@ -135,9 +142,9 @@ class _NewsState extends State<News> {
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) => Container(
                 height: 180,
-                color: Colors.grey.shade200,
-                child: const Center(
-                  child: Icon(Icons.image_not_supported, color: Colors.grey, size: 40),
+                color: AppColor.main,
+                child: Center(
+                  child: Icon(Icons.image_not_supported, color: AppColor.xmain, size: 40),
                 ),
               ),
             ),
@@ -226,80 +233,86 @@ class ArticleDetail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          article['title'],
-          style: const TextStyle(fontSize: 16),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        backgroundColor: Colors.blue.shade700,
+  return Scaffold(
+    appBar: AppBar(
+      title: Text(
+        article['title'],
+        style: TextStyle(fontSize: 16, color: AppColor.main), 
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Ảnh bài viết
-            Image.asset(
-              article['image'],
+      backgroundColor: AppColor.fourthMain,
+      leading: IconButton(
+        icon: Icon(Icons.arrow_back_ios, color: AppColor.main), 
+        onPressed: () {
+          Navigator.pop(context); 
+        },
+      ),
+    ),
+    body: SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Ảnh bài viết
+          Image.asset(
+            article['image'],
+            height: 220,
+            width: double.infinity,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => Container(
               height: 220,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(
-                height: 220,
-                color: Colors.grey.shade200,
-                child: const Center(
-                  child: Icon(Icons.image_not_supported, color: Colors.grey, size: 40),
+              color: Colors.grey.shade200,
+              child: const Center(
+                child: Icon(Icons.image_not_supported, color: Colors.grey, size: 40),
+              ),
+            ),
+          ),
+          
+          // Nội dung bài viết
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Tiêu đề
+                Text(
+                  article['title'],
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
+                
+                // Ngày đăng
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Text(
+                    'Ngày đăng: ${article['date']}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey.shade600,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ),
+                
+                const Divider(),
+                
+                // Nội dung chính
+                const SizedBox(height: 8),
+                Text(
+                  article['content'] ?? article['description'],
+                  style: const TextStyle(
+                    fontSize: 16,
+                    height: 1.5,
+                  ),
+                ),
+              ],
             ),
-            
-            // Nội dung bài viết
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Tiêu đề
-                  Text(
-                    article['title'],
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  
-                  // Ngày đăng
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Text(
-                      'Ngày đăng: ${article['date']}',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade600,
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                  ),
-                  
-                  const Divider(),
-                  
-                  // Nội dung chính
-                  const SizedBox(height: 8),
-                  Text(
-                    article['content'] ?? article['description'],
-                    style: const TextStyle(
-                      fontSize: 16,
-                      height: 1.5,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 }

@@ -54,7 +54,7 @@ class Dashboard extends StatelessWidget {
             case 2:
               return Appointment();
             case 3:
-              return News();
+              return const News();
             case 4:
               return Profile();
             default:

@@ -9,6 +9,9 @@ import 'package:get/get_navigation/src/root/get_material_app.dart';
 
 Future<void> main() async {
   await dotenv.load(fileName: "assets/.env");
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.white,
+  ));
   runApp(const MyApp());
 }
 

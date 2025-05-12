@@ -22,7 +22,7 @@ class Profile extends StatelessWidget {
             child: Text(
               'EbookingDoc',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
           ),
         ),

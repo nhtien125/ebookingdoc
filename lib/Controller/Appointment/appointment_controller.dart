@@ -1,24 +1,22 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class AppointmentController extends GetxController {
-  // Observable variables
-  var isLoading = false.obs; // Trạng thái đang tải
-  var appointments = <Map<String, dynamic>>[].obs; // Danh sách lịch hẹn
+  var isLoading = false.obs;
+  var appointments = <int, Map<String, dynamic>>{}.obs;
 
   @override
   void onInit() {
     super.onInit();
-    fetchAppointments(); // Gọi để tải danh sách lịch hẹn ban đầu
+    fetchAppointments();
   }
 
-  // Hàm tải dữ liệu lịch hẹn
   void fetchAppointments() async {
     isLoading.value = true;
     try {
-      // Giả lập dữ liệu từ API hoặc database
-      await Future.delayed(const Duration(seconds: 2)); // Mô phỏng thời gian tải
-      appointments.value = [
-        {
+      await Future.delayed(const Duration(seconds: 2));
+      appointments.value = {
+        1: {
           'id': 1,
           'hospitalName': 'Phòng khám XYZ',
           'doctorName': 'Bác sĩ A',
@@ -27,7 +25,7 @@ class AppointmentController extends GetxController {
           'time': '10:00',
           'status': 'Đã xác nhận',
         },
-        {
+        2: {
           'id': 2,
           'hospitalName': 'Phòng khám ABC',
           'doctorName': 'Bác sĩ B',
@@ -36,35 +34,99 @@ class AppointmentController extends GetxController {
           'time': '14:30',
           'status': 'Đang chờ',
         },
-      ];
-    } catch (e) {
-      print('Error fetching appointments: $e');
+      };
     } finally {
       isLoading.value = false;
     }
   }
 
-  // Hàm hủy lịch hẹn
-  void cancelAppointment(int id) {
-    appointments.value = appointments.where((appointment) {
-      if (appointment['id'] == id) {
-        appointment['status'] = 'Đã hủy'; // Cập nhật trạng thái
-      }
-      return true;
-    }).toList();
+  void addAppointment(Map<String, dynamic> newAppointment) {
+    final newId = (appointments.keys.isEmpty ? 1 : appointments.keys.last + 1);
+    appointments[newId] = {'id': newId, ...newAppointment};
+    appointments.refresh();
+    Get.snackbar(
+      'Thành công',
+      'Lịch hẹn mới đã được tạo!',
+      backgroundColor: Colors.green,
+      colorText: Colors.white,
+    );
   }
 
-  // Hàm đổi lịch hẹn
-  void rescheduleAppointment(int id) {
-    // Logic đổi lịch hẹn (giả lập)
-    appointments.value = appointments.where((appointment) {
-      if (appointment['id'] == id) {
-        appointment['date'] = '10/04/2025'; // Cập nhật ngày mới
-        appointment['time'] = '09:00'; // Cập nhật giờ mới
-        appointment['status'] = 'Đã xác nhận';
-      }
-      return true;
-    }).toList();
+  void cancelAppointment(int id) {
+    if (appointments.containsKey(id)) {
+      appointments[id]!['status'] = 'Đã hủy';
+      appointments.refresh();
+      Get.snackbar(
+        'Hủy lịch',
+        'Lịch hẹn đã được hủy!',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  void rescheduleAppointment(int id, String newDate, String newTime) {
+    if (appointments.containsKey(id)) {
+      appointments[id]!['date'] = newDate;
+      appointments[id]!['time'] = newTime;
+      appointments[id]!['status'] = 'Đã xác nhận';
+      appointments.refresh();
+      Get.snackbar(
+        'Đổi lịch',
+        'Lịch hẹn đã được cập nhật!',
+        backgroundColor: Colors.blue,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  void showNewAppointmentDialog(BuildContext context) {
+    final doctorController = TextEditingController();
+    final dateController = TextEditingController();
+    final timeController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Đặt lịch hẹn mới'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: doctorController,
+              decoration: const InputDecoration(labelText: 'Tên bác sĩ'),
+            ),
+            TextField(
+              controller: dateController,
+              decoration: const InputDecoration(labelText: 'Ngày'),
+            ),
+            TextField(
+              controller: timeController,
+              decoration: const InputDecoration(labelText: 'Giờ'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Hủy'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              addAppointment({
+                'hospitalName': 'Phòng khám ABC',
+                'doctorName': doctorController.text,
+                'department': 'Đa khoa',
+                'date': dateController.text,
+                'time': timeController.text,
+                'status': 'Đang chờ',
+              });
+              Navigator.pop(context);
+            },
+            child: const Text('Xác nhận'),
+          ),
+        ],
+      ),
+    );
   }
 }
-

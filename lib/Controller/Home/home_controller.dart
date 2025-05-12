@@ -7,6 +7,7 @@ import 'package:ebookingdoc/Models/doctor_model.dart';
 import 'package:ebookingdoc/Models/hospital_model.dart';
 import 'package:ebookingdoc/Models/medical_service_model.dart';
 import 'package:ebookingdoc/Route/app_page.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
@@ -16,9 +17,21 @@ class HomeController extends GetxController {
   final RxInt currentCarouselIndex = 0.obs;
   final RxBool isLoading = true.obs;
   final RxBool hasUpcomingAppointment = false.obs;
-  final featuredDoctors = <Doctor>[].obs;
+  
 
-  // Mock data lists
+  final RxList<Doctor> featuredDoctors = <Doctor>[].obs;
+  final TextEditingController searchController = TextEditingController();
+  final RxList<Map<String, String>> filteredResults = <Map<String, String>>[].obs;
+
+
+  final List<Map<String, String>> allSearchableItems = [
+    {'name': 'Bác sĩ Nguyễn Văn Chiến', 'type': 'Bác sĩ'},
+    {'name': 'Bệnh viện Bạch Mai', 'type': 'Bệnh viện'},
+    {'name': 'Phòng khám Đa khoa Medlatec', 'type': 'Phòng khám'},
+    {'name': 'Trung tâm tiêm chủng Quốc gia', 'type': 'Trung tâm tiêm chủng'},
+    // Có thể mở rộng thêm các mục từ các model sẵn có như recommendedHospitals, nearestClinics, featuredDoctors...
+  ];
+
   final List<CarouselItem> carouselItems = [
     CarouselItem(
       id: '1',
@@ -36,52 +49,6 @@ class HomeController extends GetxController {
       title: 'Gói khám gia đình ưu đãi',
     ),
   ];
-
-  // void onInit() {
-  //   super.onInit();
-  //   featuredDoctors.value = [
-  //     Doctor(
-  //       id: '1',
-  //       title: "TS. BS",
-  //       name: 'Bác sĩ Nguyễn Văn Chiến',
-  //       specialty: 'Tim mạch',
-  //       imageUrl: 'https://via.placeholder.com/150',
-  //       rating: 4.8,
-  //       experience: '15 năm kinh nghiệm',
-  //       hospital: 'Bệnh viện Bạch Mai',
-  //     ),
-  //     Doctor(
-  //     id: '2',
-  //     title: "PGS. TS. BS",
-  //     name: 'Bác sĩ Phạm Ngọc Ánh',
-  //     specialty: 'Tim mạch',
-  //     imageUrl: 'https://via.placeholder.com/150',
-  //     rating: 4.8,
-  //     experience: '15 năm kinh nghiệm',
-  //     hospital: 'Bệnh viện Bạch Mai',
-  //   ),
-  //   Doctor(
-  //     id: '3',
-  //     title: "GS. PGS. BS",
-  //     name: 'Bác sĩ Ngô Diệu Linh',
-  //     specialty: 'Tim mạch',
-  //     imageUrl: 'https://via.placeholder.com/150',
-  //     rating: 4.8,
-  //     experience: '15 năm kinh nghiệm',
-  //     hospital: 'Bệnh viện Bạch Mai',
-  //   ),
-  //   Doctor(
-  //     id: '4',
-  //     title: "BS. CK2",
-  //     name: 'Bác sĩ Đào Khánh Toàn',
-  //     specialty: 'Tim mạch',
-  //     imageUrl: 'https://via.placeholder.com/150',
-  //     rating: 4.8,
-  //     experience: '15 năm kinh nghiệm',
-  //     hospital: 'Bệnh viện Bạch Mai',
-  //   ),
-  //   ];
-  // }
 
   final List<Hospital> recommendedHospitals = [
     Hospital(
@@ -294,6 +261,23 @@ class HomeController extends GetxController {
     ];
   }
 
+
+void onSearchPressed() {
+    final query = searchController.text.trim().toLowerCase();
+      if (query.isEmpty) {
+      filteredResults.clear();
+      return;
+    }
+    filteredResults.value = allSearchableItems
+        .where((item) => item['name']!.toLowerCase().contains(query))
+        .toList();
+  }
+
+  Future<void> refreshData() async {
+    isLoading.value = true;
+    await Future.delayed(const Duration(seconds: 1));
+    isLoading.value = false;
+  }
   // Navigation methods
   void changeTabIndex(int index) {
     selectedIndex.value = index;
@@ -317,28 +301,16 @@ class HomeController extends GetxController {
   }
 
   void onNotificationPressed() {
-    // Get.toNamed(Routes.NOTIFICATIONS);
+    Get.toNamed(Routes.notification);
   }
 
-  void onSearchPressed() {
-    // Get.toNamed(Routes.SEARCH);
-  }
 
-  // Data methods
-  Future<void> refreshData() async {
-    isLoading.value = true;
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 1));
-    isLoading.value = false;
-  }
 
   void updateCarouselIndex(int index) {
     currentCarouselIndex.value = index;
   }
 
-  void selectCategory() {
-    Get.toNamed(Routes.category);
-  }
+ 
 
   // Detail view methods
   void viewDoctorDetails(String doctorId) {

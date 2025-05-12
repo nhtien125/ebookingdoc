@@ -1,6 +1,5 @@
 import 'package:ebookingdoc/View/Appointment/AppointmentScreen/appointment_screen.dart';
 import 'package:ebookingdoc/View/Appointment/appointment.dart';
-import 'package:ebookingdoc/View/Home/Category/category.dart';
 import 'package:ebookingdoc/View/Home/DetailDoctor/detail_doctor.dart';
 import 'package:ebookingdoc/View/Home/Excellent_doctor/excellent_doctor.dart';
 import 'package:ebookingdoc/View/Home/home.dart';
@@ -11,7 +10,6 @@ import 'package:ebookingdoc/View/Profile/AppointmentHistory/appointmentHistory.d
 import 'package:ebookingdoc/View/Profile/Family/family.dart';
 import 'package:ebookingdoc/View/Profile/MedicalRecord/MedicalRecord.dart';
 import 'package:ebookingdoc/View/Profile/personal/personal.dart';
-
 import 'package:ebookingdoc/View/Profile/profile.dart';
 import 'package:ebookingdoc/View/dashboard.dart';
 import 'package:get/get.dart';
@@ -35,9 +33,11 @@ class AppPage {
     GetPage(name: Routes.notification, page: () => MyNotification()),
     GetPage(name: Routes.appointment, page: () => Appointment()),
     GetPage(name: Routes.news, page: () => const News()),
-    GetPage(name: Routes.category, page: () => Category()),
     GetPage(name: Routes.excellentDoctor, page: () => ExcellentDoctor()),
     GetPage(name: Routes.detaildoctor, page: () => DetailDoctor()),
     GetPage(name: Routes.appointmentScreen, page: () => AppointmentScreen()),
+
   ];
+  
+ 
 }

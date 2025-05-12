@@ -18,9 +18,10 @@ class Personal extends StatelessWidget {
 
   AppBar _buildAppBar() {
     return AppBar(
+      backgroundColor: AppColor.fourthMain, // Đặt màu nền thành màu xanh
       title: const Text(
         'Thông tin cá nhân',
-        style: TextStyle(fontWeight: FontWeight.bold),
+        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
       ),
       centerTitle: true,
       leading: IconButton(
