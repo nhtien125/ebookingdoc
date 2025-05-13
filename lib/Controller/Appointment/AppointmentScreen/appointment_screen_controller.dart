@@ -1,4 +1,8 @@
+/// Initialize data for the appointment booking process. This includes
 
+/// loading hospitals, doctors, and patients from the database. The
+
+/// selected patient is set to the first patient in the list.
 import 'package:ebookingdoc/Models/AppointmentScreen_model.dart';
 import 'package:get/get.dart';
 
@@ -6,12 +10,13 @@ class AppointmentScreenController extends GetxController {
   // Current step (1-4)
   final currentStep = 1.obs;
 
-  // Step 1: Hospital selection data
+  // Step 1: Hospital and doctor selection
   final hospitals = <Hospital>[].obs;
   final selectedHospital = Rxn<Hospital>();
+  final doctors = <Doctor>[].obs;
+  final selectedDoctor = Rxn<Doctor>();
   final selectedDepartment = Rxn<Department>();
   final selectedService = Rxn<MedicalService>();
-  final selectedRoom = Rxn<ClinicRoom>();
   final selectedDate = Rxn<DateTime>();
   final selectedTimeSlot = Rxn<String>();
 
@@ -42,14 +47,32 @@ class AppointmentScreenController extends GetxController {
   }
 
   void _initializeData() {
-    // Initialize sample hospitals data
+    // Initialize hospitals
     hospitals.addAll([
       Hospital(
         id: '1',
-        name: 'Bệnh viện Đa khoa Tỉnh Gia Lai',
-        address: '123 Đường Lê Lợi, Pleiku, Gia Lai',
-        phone: '02693 123 456',
-        rating: 4.5,
+        name: 'Bệnh viện Da Liễu TP.HCM',
+        address: '2 Nguyễn Thông, Phường Võ Thị Sáu, Quận 3, TP.HCM',
+      ),
+      Hospital(
+        id: '2',
+        name: 'BV Đại học Y Dược TP HCM',
+        address: '215 Hồng Bàng, Phường 11, Quận 5, TP.HCM',
+      ),
+    ]);
+
+    // ✅ Gán mặc định bệnh viện đầu tiên
+    selectedHospital.value = hospitals.first;
+
+    // Initialize doctors
+    doctors.addAll([
+      Doctor(
+        id: '1',
+        name: 'Trần Văn Nam',
+        address: 'BV Đại học Y Dược TP HCM',
+        hospitalId: '2',
+        phone: '0987654321',
+        rating: 4.8,
         departments: [
           Department(
             id: '1',
@@ -58,29 +81,31 @@ class AppointmentScreenController extends GetxController {
               MedicalService(id: '1', name: 'Khám tổng quát', price: 150000),
               MedicalService(id: '2', name: 'Khám theo yêu cầu', price: 300000),
             ],
-            rooms: [
-              ClinicRoom(id: '1', name: 'Phòng 101', floor: 'Tầng 1'),
-              ClinicRoom(id: '2', name: 'Phòng 102', floor: 'Tầng 1'),
-            ],
           ),
+        ],
+      ),
+      Doctor(
+        id: '2',
+        name: 'Nguyễn Thị Hà',
+        address: 'Bệnh viện Da Liễu TP.HCM',
+        hospitalId: '1',
+        phone: '0912345678',
+        rating: 4.7,
+        departments: [
           Department(
             id: '2',
             name: 'Khoa Nhi',
             services: [
-              MedicalService(id: '3', name: 'Khám nhi tổng quát', price: 180000),
+              MedicalService(
+                  id: '3', name: 'Khám nhi tổng quát', price: 180000),
               MedicalService(id: '4', name: 'Tư vấn dinh dưỡng', price: 200000),
-            ],
-            rooms: [
-              ClinicRoom(id: '3', name: 'Phòng 201', floor: 'Tầng 2'),
-              ClinicRoom(id: '4', name: 'Phòng 202', floor: 'Tầng 2'),
             ],
           ),
         ],
       ),
-      // Add more hospitals if needed
     ]);
 
-    // Initialize sample patients data
+    // Initialize patients
     patients.addAll([
       Patient(
         id: '1',
@@ -89,7 +114,7 @@ class AppointmentScreenController extends GetxController {
         gender: 'Nữ',
         phone: '0987654321',
         relationship: 'Bản thân',
-        address: 'Tỉnh Gia Lai',
+        address: 'TP HCM',
       ),
       Patient(
         id: '2',
@@ -98,58 +123,76 @@ class AppointmentScreenController extends GetxController {
         gender: 'Nam',
         phone: '0912345678',
         relationship: 'Bản thân',
-        address: 'Tỉnh Gia Lai',
-      ),
+        address: 'TP HCM',
+      )
     ]);
 
-    // Set default selections
-    selectedHospital.value = hospitals.first;
-    selectedPatient.value = patients.firstWhereOrNull((p) => p.name == 'LÔ THỊ NỘ');
+    // Set default selected patient
+    selectedPatient.value =
+        patients.firstWhereOrNull((p) => p.name == 'LÔ THỊ NỘ');
   }
+
+  // Get doctors by hospital
+  List<Doctor> getDoctorsByHospital(String? hospitalId) {
+    if (hospitalId == null) return [];
+    return doctors.where((doctor) => doctor.hospitalId == hospitalId).toList();
+  }
+
+  // Get available departments for selected doctor
+  List<Department> get availableDepartments =>
+      selectedDoctor.value?.departments ?? [];
+
+  // Get available services for selected department
+  List<MedicalService> get availableServices =>
+      selectedDepartment.value?.services ?? [];
 
   // Navigation methods
   void nextStep() {
-    if (currentStep.value < 4) {
-      currentStep.value++;
-    }
+    if (currentStep.value < 4) currentStep.value++;
   }
 
   void previousStep() {
-    if (currentStep.value > 1) {
-      currentStep.value--;
-    }
+    if (currentStep.value > 1) currentStep.value--;
   }
 
   void goToStep(int step) {
-    if (step >= 1 && step <= 4) {
-      currentStep.value = step;
-    }
+    if (step >= 1 && step <= 4) currentStep.value = step;
   }
 
   // Step 1 methods
   void selectHospital(Hospital hospital) {
     selectedHospital.value = hospital;
+
+    // ✅ Reset các mục liên quan khi thay đổi bệnh viện
+    selectedDoctor.value = null;
     selectedDepartment.value = null;
     selectedService.value = null;
-    selectedRoom.value = null;
+    selectedDate.value = null;
+    selectedTimeSlot.value = null;
+  }
+
+  void selectDoctor(Doctor doctor) {
+    selectedDoctor.value = doctor;
+    selectedDepartment.value = null;
+    selectedService.value = null;
+    selectedDate.value = null;
+    selectedTimeSlot.value = null;
   }
 
   void selectDepartment(Department department) {
     selectedDepartment.value = department;
     selectedService.value = null;
-    selectedRoom.value = null;
+    selectedTimeSlot.value = null;
   }
 
   void selectService(MedicalService service) {
     selectedService.value = service;
-  }
-
-  void selectRoom(ClinicRoom room) {
-    selectedRoom.value = room;
+    selectedTimeSlot.value = null;
   }
 
   void selectDate(DateTime date) {
     selectedDate.value = date;
+    selectedTimeSlot.value = null;
   }
 
   void selectTimeSlot(String time) {
@@ -184,15 +227,14 @@ class AppointmentScreenController extends GetxController {
   // Step 4 methods
   void completePayment() {
     paymentCompleted.value = true;
-    // Here you would typically send data to backend
   }
 
   // Validation methods
   bool isStep1Complete() {
     return selectedHospital.value != null &&
+        selectedDoctor.value != null &&
         selectedDepartment.value != null &&
         selectedService.value != null &&
-        selectedRoom.value != null &&
         selectedDate.value != null &&
         selectedTimeSlot.value != null;
   }
@@ -201,3 +243,4 @@ class AppointmentScreenController extends GetxController {
     return selectedPatient.value != null;
   }
 }
+

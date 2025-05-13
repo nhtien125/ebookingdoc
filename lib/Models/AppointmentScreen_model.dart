@@ -26,15 +26,29 @@ class Hospital {
   final String id;
   final String name;
   final String address;
-  final String? image;
-  final String? phone;
-  final double? rating;
-  final List<Department> departments;
 
   Hospital({
     required this.id,
     required this.name,
     required this.address,
+  });
+}
+
+class Doctor {
+  final String id;
+  final String name;
+  final String address;
+  final String hospitalId;
+  final String? image;
+  final String? phone;
+  final double? rating;
+  final List<Department> departments;
+
+  Doctor({
+    required this.id,
+    required this.name,
+    required this.address,
+    required this.hospitalId,
     this.image,
     this.phone,
     this.rating,
@@ -46,13 +60,11 @@ class Department {
   final String id;
   final String name;
   final List<MedicalService> services;
-  final List<ClinicRoom> rooms;
 
   Department({
     required this.id,
     required this.name,
     required this.services,
-    required this.rooms,
   });
 }
 
@@ -85,10 +97,9 @@ class ClinicRoom {
 class Appointment {
   final String id;
   final Patient patient;
-  final Hospital hospital;
+  final Doctor doctor;
   final Department department;
   final MedicalService service;
-  final ClinicRoom room;
   final DateTime date;
   final String timeSlot;
   final String status;
@@ -97,10 +108,9 @@ class Appointment {
   Appointment({
     required this.id,
     required this.patient,
-    required this.hospital,
+    required this.doctor,
     required this.department,
     required this.service,
-    required this.room,
     required this.date,
     required this.timeSlot,
     required this.status,

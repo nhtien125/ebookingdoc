@@ -273,18 +273,6 @@ class ExcellentDoctorController extends GetxController {
     } else {
       name = item['name'];
     }
-
-    // Hiển thị thông báo đặt lịch
-    Get.snackbar(
-      'Đặt lịch khám',
-      'Bạn đã chọn $type: $name',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: AppColor.main,
-      colorText: Colors.white,
-      borderRadius: 12,
-      margin: const EdgeInsets.all(16),
-    );
-
     // Chuyển hướng đến màn hình đặt lịch
     // Get.to(() => BookingScreen(item: item, type: type));
   }
@@ -310,12 +298,12 @@ class ExcellentDoctorController extends GetxController {
 
   void viewAllHospitals() {
     // Chuyển đến trang danh sách bệnh viện
-    Get.snackbar('Thông báo', 'Xem tất cả bệnh viện');
+   
   }
 
   void viewAllClinics() {
     // Chuyển đến trang danh sách phòng khám
-    Get.snackbar('Thông báo', 'Xem tất cả phòng khám');
+  
   }
 
   void viewDoctorDetails(String id) {
@@ -325,17 +313,17 @@ class ExcellentDoctorController extends GetxController {
 
   void viewHospitalDetails(String id) {
     // Chuyển đến trang thông tin bệnh viện
-    Get.snackbar('Thông báo', 'Xem chi tiết bệnh viện $id');
+   
   }
 
   void viewClinicDetails(String id) {
     // Chuyển đến trang thông tin phòng khám
-    Get.snackbar('Thông báo', 'Xem chi tiết phòng khám $id');
+ 
   }
 
   void viewVaccinaDetails(String id) {
     // Chuyển đến trang thông tin phòng khám
-    Get.snackbar('Thông báo', 'Xem chi tiết trung tâm $id');
+    
   }
 
   void searchVaccinas(String query) {
