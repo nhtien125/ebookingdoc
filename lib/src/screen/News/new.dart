@@ -71,57 +71,56 @@ class _NewsState extends State<News> {
   }
 
   @override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      title: _isSearching
-          ? TextField(
-              controller: _searchController,
-              autofocus: true,
-              decoration: InputDecoration(
-                hintText: 'Tìm kiếm bài viết...',
-                border: InputBorder.none,
-                hintStyle: TextStyle(color: AppColor.main),
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: _isSearching
+            ? TextField(
+                controller: _searchController,
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: 'Tìm kiếm bài viết...',
+                  border: InputBorder.none,
+                  hintStyle: TextStyle(color: AppColor.main),
+                ),
+                style: TextStyle(color: AppColor.main),
+                onChanged: _searchArticles,
+              )
+            : Text(
+                'Tin tức y tế',
+                style: TextStyle(color: AppColor.main),
               ),
-              style: TextStyle(color: AppColor.main),
-              onChanged: _searchArticles,
-            )
-          : Text(
-              'Tin tức y tế',
-              style: TextStyle(color: AppColor.main),
+        centerTitle: true,
+        backgroundColor: AppColor.fourthMain,
+        actions: [
+          IconButton(
+            icon: Icon(
+              _isSearching ? Icons.close : Icons.search,
+              color: AppColor.main, 
             ),
-      centerTitle: true,
-      backgroundColor: AppColor.fourthMain,
-      actions: [
-        IconButton(
-          icon: Icon(
-            _isSearching ? Icons.close : Icons.search,
-            color: AppColor.main, 
+            onPressed: _toggleSearch,
           ),
-          onPressed: _toggleSearch,
-        ),
-      ],
-    ),
-    body: Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: _filteredArticles.isEmpty
-          ? Center(
-              child: Text(
-                'Không tìm thấy bài viết phù hợp',
-                style: TextStyle(fontSize: 16, color: AppColor.xmain),
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: _filteredArticles.isEmpty
+            ? Center(
+                child: Text(
+                  'Không tìm thấy bài viết phù hợp',
+                  style: TextStyle(fontSize: 16, color: AppColor.xmain),
+                ),
+              )
+            : ListView.builder(
+                itemCount: _filteredArticles.length,
+                itemBuilder: (context, index) {
+                  final article = _filteredArticles[index];
+                  return _buildArticleCard(article, context);
+                },
               ),
-            )
-          : ListView.builder(
-              itemCount: _filteredArticles.length,
-              itemBuilder: (context, index) {
-                final article = _filteredArticles[index];
-                return _buildArticleCard(article, context);
-              },
-            ),
-    ),
-  );
-}
-
+      ),
+    );
+  }
 
   Widget _buildArticleCard(Map<String, dynamic> article, BuildContext context) {
     return Card(
@@ -205,10 +204,7 @@ Widget build(BuildContext context) {
       },
       borderRadius: BorderRadius.circular(20),
       child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 6,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: Colors.blue.shade50,
           borderRadius: BorderRadius.circular(20),
@@ -232,7 +228,7 @@ class ArticleDetail extends StatelessWidget {
   const ArticleDetail({super.key, required this.article});
 
   @override
-  Widget build(BuildContext context) {
+ Widget build(BuildContext context) {
   return Scaffold(
     appBar: AppBar(
       title: Text(
@@ -262,8 +258,8 @@ class ArticleDetail extends StatelessWidget {
             errorBuilder: (context, error, stackTrace) => Container(
               height: 220,
               color: Colors.grey.shade200,
-              child: const Center(
-                child: Icon(Icons.image_not_supported, color: Colors.grey, size: 40),
+              child: Center(
+                child: Icon(Icons.image_not_supported, color:  AppColor.main, size: 40),
               ),
             ),
           ),

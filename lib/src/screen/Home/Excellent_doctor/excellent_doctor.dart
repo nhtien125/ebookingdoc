@@ -631,16 +631,6 @@ class ExcellentDoctor extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              Text(
-                                clinic['isOpen'] ? 'Đang mở' : 'Đã đóng',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: clinic['isOpen']
-                                      ? Colors.green
-                                      : Colors.red,
-                                ),
-                              ),
                             ],
                           ),
                         ],
