@@ -1,9 +1,7 @@
 import 'package:ebookingdoc/src/Global/app_color.dart';
+import 'package:ebookingdoc/src/constants/app_page.dart';
+import 'package:ebookingdoc/src/data/model/AppointmentScreen_model.dart';
 import 'package:ebookingdoc/src/widgets/Appointment/AppointmentScreen/appointment_screen_controller.dart';
-import 'package:ebookingdoc/Controller/Appointment/AppointmentScreen/appointment_screen_controller.dart';
-import 'package:ebookingdoc/Global/app_color.dart';
-import 'package:ebookingdoc/Models/AppointmentScreen_model.dart';
-import 'package:ebookingdoc/Route/app_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -1017,7 +1015,7 @@ class AppointmentScreen extends StatelessWidget {
                                       size: 20, color: Colors.grey),
                                   onPressed: () {
                                     _showPatientOptionsBottomSheet(
-                                        context, patient);
+                                        context, patient as Paint);
                                   },
                                 ),
                               ),
@@ -1068,7 +1066,7 @@ class AppointmentScreen extends StatelessWidget {
     );
   }
 
-  void _showPatientOptionsBottomSheet(BuildContext context, Patient patient) {
+  void _showPatientOptionsBottomSheet(BuildContext context, Paint patient) {
     Get.bottomSheet(
       Container(
         decoration: const BoxDecoration(
@@ -1092,7 +1090,7 @@ class AppointmentScreen extends StatelessWidget {
               title: const Text('Xóa hồ sơ'),
               onTap: () {
                 Get.back();
-                _showDeleteConfirmationDialog(patient);
+                _showDeleteConfirmationDialog(patient as Patient);
               },
             ),
             const SizedBox(height: 8),

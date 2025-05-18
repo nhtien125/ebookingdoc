@@ -1,6 +1,5 @@
+import 'package:ebookingdoc/src/constants/app_page.dart';
 import 'package:ebookingdoc/src/data/model/AppointmentScreen_model.dart';
-import 'package:ebookingdoc/Models/AppointmentScreen_model.dart';
-import 'package:ebookingdoc/Route/app_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

@@ -96,7 +96,7 @@ class Doctor extends MedicalEntity {
     required this.specialization,
     required this.hospital,
     required this.experience,
-    required this.patientCount,
+    required this.patientCount, required int consultationFee,
   }) : super(type: MedicalType.doctor);
 }
 

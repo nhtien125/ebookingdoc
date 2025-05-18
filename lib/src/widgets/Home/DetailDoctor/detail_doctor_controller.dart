@@ -1,7 +1,6 @@
+import 'package:ebookingdoc/src/constants/app_page.dart';
 import 'package:ebookingdoc/src/data/model/doctor_detail_model.dart';
 import 'package:flutter/material.dart';
-import 'package:ebookingdoc/Models/doctor_detail_model.dart';
-import 'package:ebookingdoc/Route/app_page.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
@@ -56,7 +55,7 @@ class DetailDoctorController extends GetxController {
               comment: "Bác sĩ chẩn đoán chính xác",
               date: DateTime.now().subtract(const Duration(days: 25)),
             ),
-          ],
+          ], consultationFee: 0,
         );
         break;
       case MedicalType.hospital:
