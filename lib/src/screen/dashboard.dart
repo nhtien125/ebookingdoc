@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:ebookingdoc/src/widgets/dashboard_controller.dart';
 import 'package:ebookingdoc/src/Global/app_color.dart';
 import 'package:ebookingdoc/src/constants/services/device_helper.dart';
@@ -19,244 +18,123 @@ class Dashboard extends StatelessWidget {
 
   final controller = Get.put(DashboardController());
 
+  final List<_NavItem> _navItems = const [
+    _NavItem(
+      iconPath: 'assets/icons/home.svg',
+      label: 'Trang chủ',
+    ),
+    _NavItem(
+      iconPath: 'assets/icons/thongbao.svg',
+      label: 'Thông báo',
+    ),
+    _NavItem(
+      iconPath: 'assets/icons/lichhen.svg',
+      label: 'Lịch hẹn',
+    ),
+    _NavItem(
+      iconPath: 'assets/icons/news.svg',
+      label: 'Tin tức',
+    ),
+    _NavItem(
+      iconPath: 'assets/icons/nguoi.svg',
+      label: 'Cá nhân',
+    ),
+  ];
+
+  final List<Widget> _pages = [
+    Home(),
+    MyNotification(),
+    Appointment(),
+    const News(),
+    Profile(),
+  ];
+
+  Future<void> _onBackPressed(BuildContext context) async {
+    CustomDialog.showCustomDialog(
+      context: context,
+      title: 'Đóng ứng dụng',
+      content: 'Ứng dụng sẽ được đóng lại ?',
+      onPressed: () {
+        Get.back();
+        if (Platform.isAndroid) {
+          SystemNavigator.pop();
+        } else if (Platform.isIOS) {
+          exit(0);
+        }
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
-        if (didPop) {
-          return;
-        }
-        CustomDialog.showCustomDialog(
-          context: context,
-          title: 'Đóng ứng dụng',
-          content: 'Ứng dụng sẽ được đóng lại ?',
-          onPressed: () {
-            Get.back();
-            if (Platform.isAndroid) {
-              SystemNavigator.pop();
-            } else if (Platform.isIOS) {
-              exit(0);
-            }
-          },
-        );
+        if (didPop) return;
+        _onBackPressed(context);
       },
       child: Scaffold(
         backgroundColor: AppColor.subMain,
         resizeToAvoidBottomInset: false,
         extendBody: true,
-        body: Obx(() {
-          switch (controller.currentIndex.value) {
-            case 0:
-              return Home();
-            case 1:
-              return MyNotification();
-            case 2:
-              return Appointment();
-            case 3:
-              return const News();
-            case 4:
-              return Profile();
-            default:
-              return Container();
-          }
-        }),
+        body: Obx(() => _pages[controller.currentIndex.value]),
         bottomNavigationBar: BottomAppBar(
           elevation: 10,
           shadowColor: AppColor.text1,
           color: AppColor.main,
           shape: const CircularNotchedRectangle(),
-          child: Obx(
-            () => Row(
-                mainAxisSize: MainAxisSize.max,
+          child: Obx(() => Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Trang Tổng quan
-                  Expanded(
+                children: List.generate(_navItems.length, (index) {
+                  final isSelected = controller.currentIndex.value == index;
+                  final navItem = _navItems[index];
+                  return Expanded(
                     child: GestureDetector(
-                      onTap: () => controller.changePage(0),
+                      onTap: () => controller.changePage(index),
                       child: Container(
                         color: Colors.transparent,
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             SvgPicture.asset(
-                              'assets/icons/home.svg',
+                              navItem.iconPath,
                               height: 20,
                               width: 20,
-                              colorFilter: controller.currentIndex.value == 0
+                              colorFilter: isSelected
                                   ? ColorFilter.mode(
                                       AppColor.fourthMain, BlendMode.srcIn)
                                   : null,
                             ),
                             Text(
-                              'Trang chủ',
+                              navItem.label,
                               textAlign: TextAlign.center,
-                              style: controller.currentIndex.value == 0
-                                  ? TextStyle(
-                                      fontSize: DeviceHelper.getFontSize(12),
-                                      color: AppColor.fourthMain,
-                                      fontWeight: FontWeight.w700)
-                                  : TextStyle(
-                                      fontSize: DeviceHelper.getFontSize(12),
-                                      color: AppColor.grey,
-                                    ),
+                              style: TextStyle(
+                                fontSize: DeviceHelper.getFontSize(12),
+                                color: isSelected
+                                    ? AppColor.fourthMain
+                                    : AppColor.grey,
+                                fontWeight: isSelected
+                                    ? FontWeight.w700
+                                    : FontWeight.normal,
+                              ),
                             ),
                           ],
                         ),
                       ),
                     ),
-                  ),
-                  // Trang thông báo
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => controller.changePage(1),
-                      child: Container(
-                        color: Colors.transparent,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            SvgPicture.asset(
-                              'assets/icons/thongbao.svg',
-                              height: 20,
-                              width: 20,
-                              colorFilter: controller.currentIndex.value == 1
-                                  ? ColorFilter.mode(
-                                      AppColor.fourthMain, BlendMode.srcIn)
-                                  : null,
-                            ),
-                            Text(
-                              'Thông báo',
-                              textAlign: TextAlign.center,
-                              style: controller.currentIndex.value == 1
-                                  ? TextStyle(
-                                      fontSize: DeviceHelper.getFontSize(12),
-                                      color: AppColor.fourthMain,
-                                      fontWeight: FontWeight.w700)
-                                  : TextStyle(
-                                      fontSize: DeviceHelper.getFontSize(12),
-                                      color: AppColor.grey,
-                                    ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  // Trang Lịch hẹn
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => controller.changePage(2),
-                      child: Container(
-                        color: Colors.transparent,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            SvgPicture.asset(
-                              'assets/icons/lichhen.svg',
-                              height: 20,
-                              width: 20,
-                              colorFilter: controller.currentIndex.value == 2
-                                  ? ColorFilter.mode(
-                                      AppColor.fourthMain, BlendMode.srcIn)
-                                  : null,
-                            ),
-                            Text(
-                              'Lịch hẹn',
-                              textAlign: TextAlign.center,
-                              style: controller.currentIndex.value == 2
-                                  ? TextStyle(
-                                      fontSize: DeviceHelper.getFontSize(12),
-                                      color: AppColor.fourthMain,
-                                      fontWeight: FontWeight.w700)
-                                  : TextStyle(
-                                      fontSize: DeviceHelper.getFontSize(12),
-                                      color: AppColor.grey,
-                                    ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  //Trang tin tức
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => controller.changePage(3),
-                      child: Container(
-                        color: Colors.transparent,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            SvgPicture.asset(
-                              'assets/icons/news.svg',
-                              height: 20,
-                              width: 20,
-                              colorFilter: controller.currentIndex.value == 3
-                                  ? ColorFilter.mode(
-                                      AppColor.fourthMain, BlendMode.srcIn)
-                                  : null,
-                            ),
-                            Text(
-                              'Tin tức',
-                              textAlign: TextAlign.center,
-                              style: controller.currentIndex.value == 3
-                                  ? TextStyle(
-                                      fontSize: DeviceHelper.getFontSize(12),
-                                      color: AppColor.fourthMain,
-                                      fontWeight: FontWeight.w700)
-                                  : TextStyle(
-                                      fontSize: DeviceHelper.getFontSize(12),
-                                      color: AppColor.grey,
-                                    ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Trang Cá nhân
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => controller.changePage(4),
-                      child: Container(
-                        color: Colors.transparent,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            SvgPicture.asset(
-                              'assets/icons/nguoi.svg',
-                              height: 20,
-                              width: 20,
-                              colorFilter: controller.currentIndex.value == 4
-                                  ? ColorFilter.mode(
-                                      AppColor.fourthMain, BlendMode.srcIn)
-                                  : null,
-                            ),
-                            Text(
-                              'Cá nhân',
-                              textAlign: TextAlign.center,
-                              style: controller.currentIndex.value == 4
-                                  ? TextStyle(
-                                      fontSize: DeviceHelper.getFontSize(12),
-                                      color: AppColor.fourthMain,
-                                      fontWeight: FontWeight.w700)
-                                  : TextStyle(
-                                      fontSize: DeviceHelper.getFontSize(12),
-                                      color: AppColor.grey,
-                                    ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ]),
-          ),
+                  );
+                }),
+              )),
         ),
       ),
     );
   }
+}
+
+class _NavItem {
+  final String iconPath;
+  final String label;
+
+  const _NavItem({required this.iconPath, required this.label});
 }
