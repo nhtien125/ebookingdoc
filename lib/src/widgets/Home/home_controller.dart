@@ -1,4 +1,5 @@
 import 'package:ebookingdoc/src/Global/app_color.dart';
+import 'package:ebookingdoc/src/constants/app_route.dart';
 import 'package:ebookingdoc/src/data/model/appointment_model.dart';
 import 'package:ebookingdoc/src/data/model/article_model.dart';
 import 'package:ebookingdoc/src/data/model/carousel_item_model.dart';
@@ -6,7 +7,6 @@ import 'package:ebookingdoc/src/data/model/clinic_model.dart';
 import 'package:ebookingdoc/src/data/model/doctor_model.dart';
 import 'package:ebookingdoc/src/data/model/hospital_model.dart';
 import 'package:ebookingdoc/src/data/model/medical_service_model.dart';
-import 'package:ebookingdoc/src/constants/app_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -309,7 +309,7 @@ class HomeController extends GetxController {
 
   // Detail view methods
   void viewDoctorDetails(String doctorId) {
-    Get.toNamed(Routes.detaildoctor, arguments: doctorId);
+    Get.toNamed(Routes.detailDoctor, arguments: doctorId);
   }
 
   void viewHospitalDetails(String hospitalId) {

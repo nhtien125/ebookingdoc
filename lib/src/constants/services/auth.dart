@@ -1,8 +1,7 @@
 import 'dart:convert';
-
+import 'package:ebookingdoc/src/constants/app_route.dart';
 import 'package:ebookingdoc/src/Global/constant.dart';
 import 'package:ebookingdoc/src/Global/global_value.dart';
-import 'package:ebookingdoc/src/constants/app_page.dart';
 import 'package:ebookingdoc/src/constants/services/api_caller.dart';
 import 'package:ebookingdoc/src/Utils/utils.dart';
 import 'package:get/get.dart';

@@ -1,37 +1,114 @@
-part of 'app_page.dart';
+import 'package:ebookingdoc/src/screen/Appointment/AppointmentScreen/appointment_screen.dart';
+import 'package:ebookingdoc/src/screen/Appointment/appointment.dart';
+import 'package:ebookingdoc/src/screen/Home/DetailDoctor/detail_doctor.dart';
+import 'package:ebookingdoc/src/screen/Home/Excellent_doctor/excellent_doctor.dart';
+import 'package:ebookingdoc/src/screen/Home/home.dart';
+import 'package:ebookingdoc/src/screen/Login/login.dart';
+import 'package:ebookingdoc/src/screen/News/new.dart';
+import 'package:ebookingdoc/src/screen/Notification/notification.dart';
+import 'package:ebookingdoc/src/screen/Profile/AppointmentHistory/appointmentHistory.dart';
+import 'package:ebookingdoc/src/screen/Profile/Family/family.dart';
+import 'package:ebookingdoc/src/screen/Profile/MedicalRecord/medicalRecord.dart';
+import 'package:ebookingdoc/src/screen/Profile/personal/personal.dart';
+import 'package:ebookingdoc/src/screen/Profile/profile.dart';
+import 'package:ebookingdoc/src/screen/dashboard.dart';
+import 'package:ebookingdoc/src/screen/error_404.dart';
+import 'package:go_router/go_router.dart';
 
-abstract class Routes {
-  Routes._();
-  static const dashboard = _Paths.dashboard;
-  static const home = _Paths.home;
-  static const profile = _Paths.profile;
-  static const login = _Paths.login;
-  static const personal = _Paths.personal;
-  static const family = _Paths.family;
-  static const appointmentHistory = _Paths.appointmentHistory;
-  static const medicalRecord = _Paths.medicalRecord;
-  static const notification = _Paths.mynotification;
-  static const appointment = _Paths.appointment;
-  static const news = _Paths.news;
-  static const excellentDoctor = _Paths.excellentDoctor;
-  static const detaildoctor = _Paths.detaildoctor;
-  static var appointmentScreen = _Paths.appointmentScreen;
+class MyAppRouter {
+  GoRouter router = GoRouter(
+    initialLocation: "/dashboard",
+    routes: [
+      GoRoute(
+        name: "Dashboard",
+        path: '/dashboard',
+        builder: (context, state) => Dashboard(),
+      ),
+      GoRoute(
+        name: "Home",
+        path: '/home',
+        builder: (context, state) => Home(),
+      ),
+      GoRoute(
+        name: "Profile",
+        path: '/profile',
+        builder: (context, state) => Profile(),
+      ),
+      GoRoute(
+        name: "Login",
+        path: '/login',
+        builder: (context, state) => Login(),
+      ),
+      GoRoute(
+        name: "Personal",
+        path: '/personal',
+        builder: (context, state) => Personal(),
+      ),
+      GoRoute(
+        name: "Family",
+        path: '/family',
+        builder: (context, state) => Family(),
+      ),
+      GoRoute(
+        name: "AppointmentHistory",
+        path: '/appointmentHistory',
+        builder: (context, state) => AppointmentHistory(),
+      ),
+      GoRoute(
+        name: "MedicalRecord",
+        path: '/medical-record',
+        builder: (context, state) => MedicalRecord(),
+      ),
+      GoRoute(
+        name: "Notification",
+        path: '/mynotification',
+        builder: (context, state) => MyNotification(),
+      ),
+      GoRoute(
+        name: "Appointment",
+        path: '/appointment',
+        builder: (context, state) => Appointment(),
+      ),
+      GoRoute(
+        name: "News",
+        path: '/news',
+        builder: (context, state) => const News(),
+      ),
+      GoRoute(
+        name: "ExcellentDoctor",
+        path: '/excellent-doctor',
+        builder: (context, state) => ExcellentDoctor(),
+      ),
+      GoRoute(
+        name: "DetailDoctor",
+        path: '/detail-doctor',
+        builder: (context, state) => DetailDoctor(),
+      ),
+      GoRoute(
+        name: "AppointmentScreen",
+        path: '/appointment-screen',
+        builder: (context, state) => AppointmentScreen(),
+      ),
+    ],
+    errorBuilder: (context, state) {
+      return const NotFoundScreen();
+    },
+  );
 }
 
-abstract class _Paths {
-  _Paths._();
-  static const String dashboard = '/dashboard';
-  static const String home = '/home';
-  static const String profile = '/profile';
-  static const String login = '/login';
-  static const String personal = '/personal';
-  static const String family = '/family';
-  static const String appointmentHistory = '/appointmentHistory';
-  static const String medicalRecord = '/medical-record';
-  static const String mynotification = '/mynotification';
-  static const String appointment = '/appointment';
-  static const String news = '/news';
-  static const String excellentDoctor = '/excellent-doctor';
-  static const String detaildoctor = '/detail-doctor';
-  static const String appointmentScreen = '/appointment-screen';
+class Routes {
+  static const dashboard = '/dashboard';
+  static const home = '/home';
+  static const profile = '/profile';
+  static const login = '/login';
+  static const personal = '/personal';
+  static const family = '/family';
+  static const appointmentHistory = '/appointmentHistory';
+  static const medicalRecord = '/medical-record';
+  static const notification = '/mynotification';
+  static const appointment = '/appointment';
+  static const news = '/news';
+  static const excellentDoctor = '/excellent-doctor';
+  static const detailDoctor = '/detail-doctor';
+  static const appointmentScreen = '/appointment-screen';
 }

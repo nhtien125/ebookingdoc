@@ -1,11 +1,10 @@
 import 'package:ebookingdoc/src/Global/app_color.dart';
-import 'package:ebookingdoc/src/constants/app_page.dart';
+import 'package:ebookingdoc/src/constants/app_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get_navigation/src/root/get_material_app.dart';
 
 Future<void> main() async {
   await dotenv.load(fileName: "assets/.env");
@@ -15,8 +14,14 @@ Future<void> main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  final _router = MyAppRouter().router;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +33,8 @@ class MyApp extends StatelessWidget {
       designSize: const Size(414, 896),
       minTextAdapt: true,
       splitScreenMode: true,
-      builder: (_, child) => GetMaterialApp(
+      builder: (_, child) => MaterialApp.router(
+        routerConfig: _router,
         localizationsDelegates: const [
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
@@ -55,8 +61,6 @@ class MyApp extends StatelessWidget {
           ),
         ),
         debugShowCheckedModeBanner: false,
-        initialRoute: AppPage.initialRoute,
-        getPages: AppPage.routes,
       ),
     );
   }

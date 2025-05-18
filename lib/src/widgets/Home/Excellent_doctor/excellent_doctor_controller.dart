@@ -1,5 +1,5 @@
 import 'package:ebookingdoc/src/Global/app_color.dart';
-import 'package:ebookingdoc/src/constants/app_page.dart';
+import 'package:ebookingdoc/src/constants/app_route.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ebookingdoc/src/data/model/doctor_model.dart';
@@ -308,7 +308,7 @@ class ExcellentDoctorController extends GetxController {
 
   void viewDoctorDetails(String id) {
     // Chuyển đến trang thông tin bác sĩ
-    Get.toNamed(Routes.detaildoctor, arguments: '$id');
+    Get.toNamed(Routes.detailDoctor, arguments: '$id');
   }
 
   void viewHospitalDetails(String id) {
