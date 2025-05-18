@@ -1,5 +1,7 @@
 import 'package:ebookingdoc/Controller/Appointment/AppointmentScreen/appointment_screen_controller.dart';
 import 'package:ebookingdoc/Global/app_color.dart';
+import 'package:ebookingdoc/Models/AppointmentScreen_model.dart';
+import 'package:ebookingdoc/Route/app_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -885,76 +887,301 @@ class AppointmentScreen extends StatelessWidget {
     });
   }
 
-  // ==================== Step 2: Select Patient Profile ====================
+  // ==================== Step 2: Select Patient Profile ====================Widget _buildStep2Content() {
   Widget _buildStep2Content() {
     return Column(
       children: [
-        Expanded(
-          child: Obx(() => ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: controller.patients.length,
-                itemBuilder: (context, index) {
-                  final patient = controller.patients[index];
-                  final isSelected =
-                      controller.selectedPatient.value?.id == patient.id;
-
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: BorderSide(
-                        color: isSelected ? Colors.blue : Colors.grey.shade300,
-                        width: 1,
-                      ),
-                    ),
-                    child: ListTile(
-                      leading: const CircleAvatar(
-                        backgroundColor: Colors.blue,
-                        child: Icon(Icons.person, color: Colors.white),
-                      ),
-                      title: Text(
-                        patient.name,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('SĐT: ${patient.phone ?? 'Chưa có'}'),
-                          Text('Ngày sinh: ${patient.dob}'),
-                          Text('Địa chỉ: ${patient.address ?? 'Chưa có'}'),
-                        ],
-                      ),
-                      trailing: isSelected
-                          ? const Icon(Icons.check_circle, color: Colors.blue)
-                          : null,
-                      onTap: () => controller.selectPatient(patient),
-                    ),
-                  );
-                },
-              )),
-        ),
-        // Add new profile button
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: OutlinedButton.icon(
-            icon: const Icon(Icons.add),
-            label: const Text('Thêm hồ sơ mới'),
-            onPressed: () {
-              // Navigate to add profile screen
-              // Get.to(() => AddProfileScreen());
-            },
-            style: OutlinedButton.styleFrom(
-              minimumSize: const Size(double.infinity, 50),
+        // Tiêu đề phần
+        Container(
+          padding: const EdgeInsets.all(16),
+          alignment: Alignment.centerLeft,
+          child: const Text(
+            'Chọn hồ sơ bệnh nhân cho lịch khám',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ),
-        // Continue button
-        Obx(() => _buildContinueButton(
-              'TIẾP TỤC',
-              () => controller.nextStep(),
-              enabled: controller.isStep2Complete(),
-            )),
+
+        // Danh sách patients
+        Expanded(
+          child: Obx(
+            () => controller.patients.isEmpty
+                ? _buildEmptyPatientList()
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: controller.patients.length,
+                    itemBuilder: (context, index) {
+                      final patient = controller.patients[index];
+                      final isSelected =
+                          controller.selectedPatient.value?.id == patient.id;
+
+                      return GestureDetector(
+                        onTap: () => controller.selectPatient(patient),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          margin: const EdgeInsets.only(bottom: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isSelected
+                                  ? AppColor.fourthMain
+                                  : Colors.grey.shade300,
+                              width: isSelected ? 2 : 1,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: isSelected
+                                    ? AppColor.fourthMain.withOpacity(0.2)
+                                    : Colors.grey.withOpacity(0.1),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Stack(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Avatar
+                                    Container(
+                                      width: 60,
+                                      height: 60,
+                                      decoration: BoxDecoration(
+                                        color: AppColor.fourthMain
+                                            .withOpacity(0.1),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Center(
+                                        child: Icon(
+                                          patient.gender == 'Nam'
+                                              ? Icons.man
+                                              : Icons.woman,
+                                          color: AppColor.fourthMain,
+                                          size: 32,
+                                        ),
+                                      ),
+                                    ),
+
+                                    const SizedBox(width: 16),
+
+                                    // Patient info
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            patient.name,
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          _buildInfoRow(Icons.cake,
+                                              'Ngày sinh: ${patient.dob}'),
+                                          const SizedBox(height: 4),
+                                          _buildInfoRow(
+                                              Icons.phone,
+                                              patient.phone != null
+                                                  ? 'SĐT: ${patient.phone}'
+                                                  : 'Chưa có SĐT'),
+                                          const SizedBox(height: 4),
+                                          _buildInfoRow(
+                                              Icons.home,
+                                              patient.address != null
+                                                  ? 'Địa chỉ: ${patient.address}'
+                                                  : 'Chưa có địa chỉ'),
+                                          const SizedBox(height: 4),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              // Settings button
+                              Positioned(
+                                top: 8,
+                                right: 8,
+                                child: IconButton(
+                                  icon: const Icon(Icons.settings,
+                                      size: 20, color: Colors.grey),
+                                  onPressed: () {
+                                    _showPatientOptionsBottomSheet(
+                                        context, patient);
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ),
+
+        // Add new patient button and continue button
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.2),
+                blurRadius: 5,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              OutlinedButton.icon(
+                onPressed: () => Get.toNamed(Routes.personal),
+                icon: const Icon(Icons.add),
+                label: const Text('THÊM HỒ SƠ BỆNH NHÂN MỚI'),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 48),
+                  side: BorderSide(color: AppColor.fourthMain),
+                  foregroundColor: AppColor.fourthMain,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Obx(() => _buildContinueButton(
+                    'TIẾP TỤC',
+                    controller.nextStep,
+                    enabled: controller.selectedPatient.value != null,
+                  )),
+            ],
+          ),
+        ),
       ],
+    );
+  }
+
+  void _showPatientOptionsBottomSheet(BuildContext context, Patient patient) {
+    Get.bottomSheet(
+      Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit, color: Colors.blue),
+              title: const Text('Chỉnh sửa hồ sơ'),
+              onTap: () {
+                Get.back();
+                Get.toNamed(Routes.personal, arguments: {'patient': patient});
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete, color: Colors.red),
+              title: const Text('Xóa hồ sơ'),
+              onTap: () {
+                Get.back();
+                _showDeleteConfirmationDialog(patient);
+              },
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton(
+              onPressed: () => Get.back(),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 48),
+              ),
+              child: const Text('HỦY'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showDeleteConfirmationDialog(Patient patient) {
+    Get.dialog(
+      AlertDialog(
+        title: const Text('Xóa hồ sơ'),
+        content:
+            Text('Bạn có chắc muốn xóa hồ sơ bệnh nhân "${patient.name}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('HỦY'),
+          ),
+          TextButton(
+            onPressed: () {
+              Get.back();
+              controller.deletePatient(patient);
+            },
+            child: const Text('XÓA', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String text) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Icon(icon, size: 16, color: Colors.grey[600]),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[800],
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyPatientList() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.person_off,
+            size: 64,
+            color: Colors.grey[400],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Chưa có hồ sơ bệnh nhân nào',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: () => Get.toNamed(Routes.personal),
+            icon: const Icon(Icons.add),
+            label: const Text('THÊM HỒ SƠ BỆNH NHÂN'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColor.fourthMain,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

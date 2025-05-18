@@ -3,7 +3,7 @@ class Clinic {
   final String name;
   final String address;
   final String imageUrl;
-  final bool isOpen;
+  final double rating;
   final double distance;
 
   Clinic({
@@ -11,7 +11,9 @@ class Clinic {
     required this.name,
     required this.address,
     required this.imageUrl,
-    required this.isOpen,
+    required this.rating,
     required this.distance,
   });
+
+ 
 }

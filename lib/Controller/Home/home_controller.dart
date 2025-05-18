@@ -17,12 +17,11 @@ class HomeController extends GetxController {
   final RxInt currentCarouselIndex = 0.obs;
   final RxBool isLoading = true.obs;
   final RxBool hasUpcomingAppointment = false.obs;
-  
 
   final RxList<Doctor> featuredDoctors = <Doctor>[].obs;
   final TextEditingController searchController = TextEditingController();
-  final RxList<Map<String, String>> filteredResults = <Map<String, String>>[].obs;
-
+  final RxList<Map<String, String>> filteredResults =
+      <Map<String, String>>[].obs;
 
   final List<Map<String, String>> allSearchableItems = [
     {'name': 'Bác sĩ Nguyễn Văn Chiến', 'type': 'Bác sĩ'},
@@ -83,7 +82,7 @@ class HomeController extends GetxController {
       name: 'Phòng khám Đa khoa Medlatec',
       address: '42-44 Nghĩa Dũng, Ba Đình, Hà Nội',
       imageUrl: 'assets/images/vitaminD.jpg',
-      isOpen: true,
+      rating: 4.7,
       distance: 1.2,
     ),
     Clinic(
@@ -91,7 +90,7 @@ class HomeController extends GetxController {
       name: 'Phòng khám Chuyên khoa Nội Hồng Ngọc',
       address: '55 Yên Ninh, Ba Đình, Hà Nội',
       imageUrl: 'assets/images/carosel1.jpg',
-      isOpen: false,
+      rating: 5.0,
       distance: 0.8,
     ),
     Clinic(
@@ -99,7 +98,7 @@ class HomeController extends GetxController {
       name: 'Phòng khám Đa khoa Quốc tế Thu Cúc',
       address: '286 Thụy Khuê, Tây Hồ, Hà Nội',
       imageUrl: 'assets/images/carosel2.jpg',
-      isOpen: true,
+      rating: 4.9,
       distance: 2.1,
     ),
   ];
@@ -261,10 +260,9 @@ class HomeController extends GetxController {
     ];
   }
 
-
-void onSearchPressed() {
+  void onSearchPressed() {
     final query = searchController.text.trim().toLowerCase();
-      if (query.isEmpty) {
+    if (query.isEmpty) {
       filteredResults.clear();
       return;
     }
@@ -278,6 +276,7 @@ void onSearchPressed() {
     await Future.delayed(const Duration(seconds: 1));
     isLoading.value = false;
   }
+
   // Navigation methods
   void changeTabIndex(int index) {
     selectedIndex.value = index;
@@ -304,13 +303,9 @@ void onSearchPressed() {
     Get.toNamed(Routes.notification);
   }
 
-
-
   void updateCarouselIndex(int index) {
     currentCarouselIndex.value = index;
   }
-
- 
 
   // Detail view methods
   void viewDoctorDetails(String doctorId) {
@@ -343,16 +338,15 @@ void onSearchPressed() {
   }
 
   void viewAllClinics() {
-        Get.toNamed(Routes.excellentDoctor, arguments: {'clinics': true});
-
+    Get.toNamed(Routes.excellentDoctor, arguments: {'clinics': true});
   }
 
   void viewAllVaccines() {
-        Get.toNamed(Routes.excellentDoctor, arguments: {'vaccines': true});
-
+    Get.toNamed(Routes.excellentDoctor, arguments: {'vaccines': true});
   }
+
   void viewAllArticles() {
-    // Get.toNamed(Routes.ARTICLES);
+    Get.toNamed(Routes.news);
   }
 
   void viewAllAppointments() {
@@ -360,5 +354,7 @@ void onSearchPressed() {
   }
 
   // Service selection
-  void selectService(String serviceId) {}
+  void selectService(String serviceId) {
+    Get.toNamed(Routes.excellentDoctor);
+  }
 }

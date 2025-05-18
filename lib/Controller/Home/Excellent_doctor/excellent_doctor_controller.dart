@@ -109,7 +109,7 @@ class ExcellentDoctorController extends GetxController {
           'imageUrl': 'assets/images/pkThaiha.jpg',
           'address': '11 Thái Hà, Đống Đa, Hà Nội',
           'rating': 4.5,
-          'isOpen': true,
+          
         },
         {
           'id': '2',
@@ -117,7 +117,7 @@ class ExcellentDoctorController extends GetxController {
           'imageUrl': 'assets/images/pkHN.jpg',
           'address': '152 P.Xã Đàn, Phương Liên, Đống Đa, Hà Nội',
           'rating': 4.3,
-          'isOpen': true,
+          
         },
         {
           'id': '3',
@@ -125,7 +125,7 @@ class ExcellentDoctorController extends GetxController {
           'imageUrl': 'assets/images/pk108.jpg',
           'address': '1 Trần Hưng Đạo, Hai Bà Trưng, Hà Nội',
           'rating': 4.6,
-          'isOpen': false,
+         
         },
       ];
 

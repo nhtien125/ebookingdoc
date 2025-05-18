@@ -207,7 +207,6 @@ class BuildFeaturedDoctors extends StatelessWidget {
     );
   }
 }
-
 class BuildRecommendedHospitals extends StatelessWidget {
   const BuildRecommendedHospitals({super.key});
 
@@ -239,7 +238,7 @@ class BuildRecommendedHospitals extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           SizedBox(
-            height: 130,
+            height: 265, // Điều chỉnh chiều cao để cân đối hình ảnh và nội dung
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -262,25 +261,25 @@ class BuildRecommendedHospitals extends StatelessWidget {
                         ),
                       ],
                     ),
-                    child: Row(
+                    child: Column(
                       children: [
                         ClipRRect(
                           borderRadius: const BorderRadius.only(
                             topLeft: Radius.circular(12),
-                            bottomLeft: Radius.circular(12),
+                            topRight: Radius.circular(12),
                           ),
                           child: Image.asset(
                             hospital.imageUrl,
-                            width: 80,
-                            height: 130,
+                            width: double.infinity, // Hình ảnh phủ toàn bộ chiều ngang
+                            height: 90, // Giảm chiều cao xuống 35% 
                             fit: BoxFit.cover,
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 14), // Tăng khoảng cách
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
                                 hospital.name,
@@ -291,7 +290,7 @@ class BuildRecommendedHospitals extends StatelessWidget {
                                   fontSize: 14,
                                 ),
                               ),
-                              const SizedBox(height: 6),
+                              const SizedBox(height: 8),
                               Row(
                                 children: [
                                   const Icon(Icons.location_on,
@@ -310,15 +309,14 @@ class BuildRecommendedHospitals extends StatelessWidget {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 14),
                               Row(
                                 children: [
                                   Container(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color:
-                                          AppColor.fourthMain.withOpacity(0.1),
+                                      color: AppColor.fourthMain.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(
@@ -330,13 +328,35 @@ class BuildRecommendedHospitals extends StatelessWidget {
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(width: 8),
                                 ],
+                              ),
+                              const SizedBox(height: 16),
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed: () =>
+                                      controller.viewHospitalDetails(hospital.id),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColor.fourthMain,
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 10), // Tăng padding
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Đặt khám ngay',
+                                    style: TextStyle(
+                                      fontSize: 14, // Tăng kích thước chữ
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(width: 8),
                       ],
                     ),
                   ),
@@ -465,108 +485,125 @@ class BuildNearestClinics extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           SizedBox(
-            height: 130,
+            height: 265, // Điều chỉnh chiều cao để cân đối nội dung
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: controller.nearestClinics.length,
               itemBuilder: (context, index) {
                 final clinic = controller.nearestClinics[index];
-                return GestureDetector(
-                  onTap: () => controller.viewClinicDetails(clinic.id),
-                  child: Container(
-                    width: 280,
-                    margin: const EdgeInsets.only(right: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          spreadRadius: 1,
-                          blurRadius: 5,
+                return Container(
+                  width: 280,
+                  margin: const EdgeInsets.only(right: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        spreadRadius: 1,
+                        blurRadius: 5,
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      ClipRRect(
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(12),
+                          topRight: Radius.circular(12),
                         ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        ClipRRect(
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(12),
-                            bottomLeft: Radius.circular(12),
-                          ),
-                          child: Image.asset(
-                            clinic.imageUrl,
-                            width: 80,
-                            height: 130,
-                            fit: BoxFit.cover,
-                          ),
+                        child: Image.asset(
+                          clinic.imageUrl,
+                          width: double.infinity, // Hình ảnh phủ toàn bộ chiều ngang
+                          height: 90, // Giảm chiều cao xuống 35%
+                          fit: BoxFit.cover,
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                clinic.name,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              clinic.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                const Icon(Icons.location_on,
+                                    size: 14, color: Colors.grey),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Text(
+                                    clinic.address,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            // Thêm phần đánh giá sao
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: AppColor.fourthMain.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    '${clinic.rating}★', // Hiển thị số sao
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: AppColor.fourthMain,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: () =>
+                                    controller.viewClinicDetails(clinic.id),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColor.fourthMain,
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 10), // Tăng padding
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Đặt khám',
+                                  style: TextStyle(
+                                    fontSize: 14, // Tăng kích thước chữ
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
-                              const SizedBox(height: 6),
-                              Row(
-                                children: [
-                                  const Icon(Icons.location_on,
-                                      size: 14, color: Colors.grey),
-                                  const SizedBox(width: 4),
-                                  Expanded(
-                                    child: Text(
-                                      clinic.address,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey.shade600,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 6, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      color:
-                                          AppColor.fourthMain.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Text(
-                                      clinic.isOpen ? 'Mở cửa' : 'Đóng cửa',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        color: clinic.isOpen
-                                            ? Colors.green
-                                            : Colors.red,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                ],
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 8),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 );
               },
@@ -577,6 +614,7 @@ class BuildNearestClinics extends StatelessWidget {
     );
   }
 }
+
 
 class BuildHealthArticles extends StatelessWidget {
   const BuildHealthArticles({super.key});
