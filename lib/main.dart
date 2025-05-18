@@ -1,5 +1,5 @@
-import 'package:ebookingdoc/Global/app_color.dart';
-import 'package:ebookingdoc/Route/app_page.dart';
+import 'package:ebookingdoc/src/Global/app_color.dart';
+import 'package:ebookingdoc/src/constants/app_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';

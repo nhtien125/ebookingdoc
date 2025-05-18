@@ -1,0 +1,2 @@
+D:/ProjectTien/ebookingdoc/android/app/.cxx/Debug/5w0g5e4n/arm64-v8a/CMakeFiles/edit_cache.dir
+D:/ProjectTien/ebookingdoc/android/app/.cxx/Debug/5w0g5e4n/arm64-v8a/CMakeFiles/rebuild_cache.dir
