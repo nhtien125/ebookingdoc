@@ -687,7 +687,7 @@ class DetailDoctor extends StatelessWidget {
         ),
       ),
     );
-  }
+  }//sửa
 
   void _showAllReviews(List<Review> reviews) {
     Get.bottomSheet(
@@ -717,6 +717,7 @@ class DetailDoctor extends StatelessWidget {
       ),
     );
   }
+  //////////// Phâmn cuối cùng ////////////
 
   // 3. Phần bottom action
   Widget _buildBottomActionBar() {
