@@ -1,8 +1,8 @@
 // lib/widgets/home/build_comprehensive_services.dart
+import 'package:ebookingdoc/src/widgets/controller/home_controller.dart';
 import 'package:ebookingdoc/src/widgets/custom_component/section_header.dart';
 import 'package:ebookingdoc/src/widgets/custom_component/service_card.dart';
 import 'package:flutter/material.dart';
-import 'package:ebookingdoc/src/widgets/home_widgets/home_controller.dart';
 import 'package:get/Get.dart';
 
 final controller = Get.put(HomeController());

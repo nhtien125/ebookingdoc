@@ -1,6 +1,6 @@
 // lib/widgets/home/article_card.dart
 import 'package:ebookingdoc/src/Global/app_color.dart';
-import 'package:ebookingdoc/src/widgets/home_widgets/home_controller.dart';
+import 'package:ebookingdoc/src/widgets/controller/home_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/Get.dart';
 

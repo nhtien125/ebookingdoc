@@ -1,7 +1,7 @@
 // lib/widgets/home/build_categories.dart
 import 'package:ebookingdoc/src/Global/app_text_style.dart';
+import 'package:ebookingdoc/src/widgets/controller/home_controller.dart';
 import 'package:ebookingdoc/src/widgets/custom_component/category_button.dart';
-import 'package:ebookingdoc/src/widgets/home_widgets/home_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

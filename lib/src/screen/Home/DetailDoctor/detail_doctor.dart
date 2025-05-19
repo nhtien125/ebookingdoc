@@ -1,6 +1,6 @@
 
 import 'package:ebookingdoc/src/data/model/doctor_detail_model.dart';
-import 'package:ebookingdoc/src/widgets/home_widgets/DetailDoctor/detail_doctor_controller.dart';
+import 'package:ebookingdoc/src/widgets/controller/detail_doctor_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
