@@ -1,4 +1,3 @@
-// lib/widgets/home/build_featured_doctors.dart
 import 'package:ebookingdoc/src/Global/app_color.dart';
 import 'package:ebookingdoc/src/widgets/controller/home_controller.dart';
 import 'package:ebookingdoc/src/widgets/custom_component/doctor_card.dart';

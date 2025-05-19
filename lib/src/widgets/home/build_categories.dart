@@ -1,4 +1,3 @@
-// lib/widgets/home/build_categories.dart
 import 'package:ebookingdoc/src/Global/app_text_style.dart';
 import 'package:ebookingdoc/src/widgets/controller/home_controller.dart';
 import 'package:ebookingdoc/src/widgets/custom_component/category_button.dart';
@@ -32,7 +31,7 @@ class BuildCategories extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
-                CategoryButton(title: 'Tất cả', isSelected: true),
+                const CategoryButton(title: 'Tất cả', isSelected: true),
                 CategoryButton(
                     title: 'Bác sĩ', onTap: () => controller.viewAllDoctors()),
                 CategoryButton(

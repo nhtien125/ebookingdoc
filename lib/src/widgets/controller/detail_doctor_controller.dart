@@ -18,14 +18,12 @@ class DetailDoctorController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // Retrieve id directly from Get.arguments (String)
     if (Get.arguments is String) {
       id = Get.arguments as String;
     } else {
       Get.snackbar('Error', 'Invalid doctor ID');
       return;
     }
-    // facilityType remains as default (MedicalType.doctor) or can be set differently
     fetchEntityDetails();
     generateAvailableDates();
   }

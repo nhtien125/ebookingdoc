@@ -1,4 +1,3 @@
-// lib/widgets/home/build_nearest_clinics.dart
 import 'package:ebookingdoc/src/widgets/controller/home_controller.dart';
 import 'package:ebookingdoc/src/widgets/custom_component/facility_card.dart';
 import 'package:ebookingdoc/src/widgets/custom_component/section_header.dart';

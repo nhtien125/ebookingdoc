@@ -2,7 +2,7 @@
 import 'package:ebookingdoc/src/screen/Appointment/AppointmentScreen/appointment_screen.dart';
 import 'package:ebookingdoc/src/screen/Appointment/appointment.dart';
 import 'package:ebookingdoc/src/screen/detail/detail_doctor.dart';
-import 'package:ebookingdoc/src/screen/Home/Excellent_doctor/excellent_doctor.dart';
+import 'package:ebookingdoc/src/screen/ExcellentDoctor/excellent_doctor.dart';
 import 'package:ebookingdoc/src/screen/Home/home.dart';
 import 'package:ebookingdoc/src/screen/Login/login.dart';
 import 'package:ebookingdoc/src/screen/News/new.dart';
