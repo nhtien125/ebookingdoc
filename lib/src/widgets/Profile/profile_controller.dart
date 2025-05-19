@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:ebookingdoc/src/constants/app_route.dart';
+import 'package:ebookingdoc/src/constants/app_page.dart';
 import 'package:get/get.dart';
 
 class ProfileController extends GetxController {

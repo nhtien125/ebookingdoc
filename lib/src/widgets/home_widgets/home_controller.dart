@@ -1,5 +1,5 @@
 import 'package:ebookingdoc/src/Global/app_color.dart';
-import 'package:ebookingdoc/src/constants/app_route.dart';
+import 'package:ebookingdoc/src/constants/app_page.dart';
 import 'package:ebookingdoc/src/data/model/appointment_model.dart';
 import 'package:ebookingdoc/src/data/model/article_model.dart';
 import 'package:ebookingdoc/src/data/model/carousel_item_model.dart';
@@ -309,7 +309,7 @@ class HomeController extends GetxController {
 
   // Detail view methods
   void viewDoctorDetails(String doctorId) {
-    Get.toNamed(Routes.detailDoctor, arguments: doctorId);
+    Get.toNamed(Routes.detaildoctor, arguments: doctorId);
   }
 
   void viewHospitalDetails(String hospitalId) {

@@ -1,5 +1,5 @@
 import 'package:ebookingdoc/src/Global/app_color.dart';
-import 'package:ebookingdoc/src/constants/app_route.dart';
+import 'package:ebookingdoc/src/constants/app_page.dart';
 import 'package:ebookingdoc/src/data/model/AppointmentScreen_model.dart';
 import 'package:ebookingdoc/src/widgets/Appointment/AppointmentScreen/appointment_screen_controller.dart';
 import 'package:flutter/material.dart';
