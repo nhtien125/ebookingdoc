@@ -1,4 +1,3 @@
-// lib/widgets/home/doctor_card.dart
 import 'package:ebookingdoc/src/widgets/controller/home_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -32,7 +31,9 @@ class DoctorCard extends StatelessWidget {
                   ),
                 ],
                 image: DecorationImage(
-                  image: AssetImage(doctor.imageUrl),
+                  image: AssetImage(
+                    doctor.imageUrl ?? 'assets/images/default_doctor.jpg',
+                  ),
                   fit: BoxFit.cover,
                 ),
               ),
