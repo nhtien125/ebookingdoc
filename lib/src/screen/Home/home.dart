@@ -1,6 +1,12 @@
 import 'package:ebookingdoc/src/Global/app_color.dart';
-import 'package:ebookingdoc/src/screen/Home/Widgets/home_widgets.dart';
-import 'package:ebookingdoc/src/widgets/Home/home_controller.dart';
+import 'package:ebookingdoc/src/widgets/home_widgets/build_categories.dart';
+import 'package:ebookingdoc/src/widgets/home_widgets/build_comprehensive_services.dart';
+import 'package:ebookingdoc/src/widgets/home_widgets/build_featured_doctors.dart';
+import 'package:ebookingdoc/src/widgets/home_widgets/build_health_articles.dart';
+import 'package:ebookingdoc/src/widgets/home_widgets/build_nearest_clinics.dart';
+import 'package:ebookingdoc/src/widgets/home_widgets/build_recommended_hospitals.dart';
+import 'package:ebookingdoc/src/widgets/home_widgets/build_upcoming_appointments.dart';
+import 'package:ebookingdoc/src/widgets/home_widgets/home_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

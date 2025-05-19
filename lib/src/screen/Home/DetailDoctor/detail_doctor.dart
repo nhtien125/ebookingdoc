@@ -1,6 +1,6 @@
 
 import 'package:ebookingdoc/src/data/model/doctor_detail_model.dart';
-import 'package:ebookingdoc/src/widgets/Home/DetailDoctor/detail_doctor_controller.dart';
+import 'package:ebookingdoc/src/widgets/home_widgets/DetailDoctor/detail_doctor_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -687,7 +687,7 @@ class DetailDoctor extends StatelessWidget {
         ),
       ),
     );
-  }//sửa
+  }//s
 
   void _showAllReviews(List<Review> reviews) {
     Get.bottomSheet(
@@ -717,7 +717,6 @@ class DetailDoctor extends StatelessWidget {
       ),
     );
   }
-  //////////// Phâmn cuối cùng ////////////
 
   // 3. Phần bottom action
   Widget _buildBottomActionBar() {
