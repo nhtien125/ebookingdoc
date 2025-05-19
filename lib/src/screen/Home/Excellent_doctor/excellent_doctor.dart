@@ -1,5 +1,5 @@
 import 'package:ebookingdoc/src/Global/app_color.dart';
-import 'package:ebookingdoc/src/widgets/home/Excellent_doctor/excellent_doctor_controller.dart';
+import 'package:ebookingdoc/src/widgets/controller/excellent_doctor_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
