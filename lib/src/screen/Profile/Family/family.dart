@@ -12,12 +12,12 @@ class Family extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Thành viên gia đình',
-            style: TextStyle(color: Colors.black)),
+        title: Text('Thành viên gia đình',
+            style: TextStyle(color: AppColor.main)),
         centerTitle: true,
-        backgroundColor: Colors.white,
+        backgroundColor: AppColor.fourthMain,
         elevation: 1,
-        iconTheme: const IconThemeData(color: Colors.black),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Column(
         children: [

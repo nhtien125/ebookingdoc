@@ -16,21 +16,21 @@ class Personal extends StatelessWidget {
     );
   }
 
-  AppBar _buildAppBar() {
-    return AppBar(
-      backgroundColor: AppColor.fourthMain, // Đặt màu nền thành màu xanh
-      title: const Text(
-        'Thông tin cá nhân',
-        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-      ),
-      centerTitle: true,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back),
-        onPressed: () => Get.back(),
-      ),
-      elevation: 0,
-    );
-  }
+ AppBar _buildAppBar() {
+  return AppBar(
+    backgroundColor: AppColor.fourthMain, // Đặt màu nền thành màu xanh
+    title: const Text(
+      'Thông tin cá nhân',
+      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+    ),
+    centerTitle: true,
+    leading: IconButton(
+      icon: const Icon(Icons.arrow_back, color: Colors.white), // Màu trắng cho nút lùi lại
+      onPressed: () => Get.back(),
+    ),
+    elevation: 0,
+  );
+}
 
   Widget _buildBody(BuildContext context) {
     return Form(

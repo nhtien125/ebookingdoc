@@ -111,54 +111,7 @@ class LoginController extends GetxController {
       password: password.text.trim(),
     );
 
-    // try {
-    //   isLoading.value = true;
 
-    //   // Mô phỏng gọi API đăng nhập
-    //   await Future.delayed(Duration(seconds: 1));
-
-    //   // TODO: Thay thế bằng logic gọi API thực tế
-    //   // Đây chỉ là logic đăng nhập giả để kiểm tra giao diện
-    //   bool loginSuccess = false;
-
-    //   // Demo tài khoản (số điện thoại: 0123456789, mật khẩu: 123456)
-    //   if (username.text == '0123456789' && password.text == '123456') {
-    //     loginSuccess = true;
-    //   }
-
-    //   if (loginSuccess) {
-    //     // Lưu thông tin đăng nhập nếu chọn "Ghi nhớ đăng nhập"
-    //     saveCredentials();
-
-    //     // Chuyển hướng đến trang chủ (dashboard)
-    //     Get.offAllNamed(Routes.dashboard);
-    //   } else {
-    //     // Hiển thị thông báo lỗi đăng nhập
-    //     Get.snackbar(
-    //       'Đăng nhập thất bại',
-    //       'Số điện thoại hoặc mật khẩu không chính xác',
-    //       snackPosition: SnackPosition.TOP,
-    //       backgroundColor: Colors.red[100],
-    //       colorText: Colors.red[800],
-    //       margin: EdgeInsets.all(16),
-    //       duration: Duration(seconds: 3),
-    //       icon: Icon(Icons.error_outline, color: Colors.red[800]),
-    //     );
-    //   }
-    // } catch (e) {
-    //   Get.snackbar(
-    //     'Lỗi',
-    //     'Có lỗi xảy ra. Vui lòng thử lại sau.',
-    //     snackPosition: SnackPosition.TOP,
-    //     backgroundColor: Colors.red[100],
-    //     colorText: Colors.red[800],
-    //     margin: EdgeInsets.all(16),
-    //     icon: Icon(Icons.error_outline, color: Colors.red[800]),
-    //   );
-    //   print('Login error: $e');
-    // } finally {
-    //   isLoading.value = false;
-    // }
   }
 
   // Logic đăng ký

@@ -1,4 +1,3 @@
-// lib/widgets/home/category_button.dart
 import 'package:ebookingdoc/src/Global/app_color.dart';
 import 'package:flutter/material.dart';
 
@@ -21,13 +20,17 @@ class CategoryButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
-          backgroundColor: isSelected ? AppColor.fourthMain : Colors.white,
-          foregroundColor: isSelected ? Colors.white : AppColor.fourthMain,
+          backgroundColor: isSelected
+              ? AppColor.fourthMain
+              : AppColor.main, // Nền xanh khi được chọn
+          foregroundColor: isSelected
+              ? AppColor.main
+              : AppColor.fourthMain, // Chữ trắng khi được chọn
           elevation: isSelected ? 2 : 0,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            side: BorderSide(color: AppColor.fourthMain),
+            side: BorderSide(color: AppColor.fourthMain), // Viền xanh
           ),
         ),
         child: Text(title),

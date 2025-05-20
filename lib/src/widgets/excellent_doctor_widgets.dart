@@ -3,17 +3,14 @@ import 'package:ebookingdoc/src/widgets/controller/excellent_doctor_controller.d
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-
 final controller = Get.put(ExcellentDoctorController());
-
 
 // ignore: camel_case_types
 class buildDoctorCard extends StatelessWidget {
   const buildDoctorCard({super.key});
 
-  
- @override
-  Widget build(dynamic doctor)  {
+  @override
+  Widget build(dynamic doctor) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
       elevation: 2,
@@ -170,15 +167,6 @@ class buildDoctorCard extends StatelessWidget {
                   const SizedBox(width: 8),
                   ElevatedButton(
                       onPressed: () {
-                        Get.snackbar(
-                          'Đặt lịch hẹn',
-                          'Bạn đã chọn bác sĩ ${doctor.name}',
-                          snackPosition: SnackPosition.BOTTOM,
-                          backgroundColor: Color(0xFF3366FF),
-                          colorText: Colors.white,
-                          borderRadius: 12,
-                          margin: const EdgeInsets.all(16),
-                        );
                         controller.bookAppointment(doctor, 'doctor');
                       },
                       style: ElevatedButton.styleFrom(
@@ -208,4 +196,3 @@ class buildDoctorCard extends StatelessWidget {
     );
   }
 }
-

@@ -31,23 +31,6 @@ class HomeController extends GetxController {
     // Có thể mở rộng thêm các mục từ các model sẵn có như recommendedHospitals, nearestClinics, featuredDoctors...
   ];
 
-  final List<CarouselItem> carouselItems = [
-    CarouselItem(
-      id: '1',
-      imageUrl: 'assets/images/carousel7.jpg',
-      title: 'Ưu đãi khám tổng quát 50%',
-    ),
-    CarouselItem(
-      id: '2',
-      imageUrl: 'assets/images/carousel8.jpg',
-      title: 'Tư vấn sức khỏe miễn phí',
-    ),
-    CarouselItem(
-      id: '3',
-      imageUrl: 'assets/images/carousel6.jpg',
-      title: 'Gói khám gia đình ưu đãi',
-    ),
-  ];
 
   final List<Hospital> recommendedHospitals = [
     Hospital(
@@ -172,21 +155,21 @@ class HomeController extends GetxController {
       title: '10 cách tăng cường hệ miễn dịch mùa dịch',
       imageUrl: 'assets/images/carosel4.jpg',
       category: 'Sức khỏe',
-      publishDate: '20/04/2023',
+      publishDate: '20/04/2025',
     ),
     Article(
       id: '2',
       title: 'Dấu hiệu nhận biết sớm bệnh tim mạch',
       imageUrl: 'assets/images/carosel5.jpg',
       category: 'Tim mạch',
-      publishDate: '18/04/2023',
+      publishDate: '18/04/2025',
     ),
     Article(
       id: '3',
       title: 'Chế độ dinh dưỡng cho người tiểu đường',
       imageUrl: 'assets/images/10cpntm.jpg',
       category: 'Dinh dưỡng',
-      publishDate: '15/04/2023',
+      publishDate: '15/04/2025',
     ),
   ];
 

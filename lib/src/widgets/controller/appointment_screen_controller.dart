@@ -28,6 +28,7 @@ class AppointmentScreenController extends GetxController {
 
   // Step 4: Payment data
   final paymentCompleted = false.obs;
+  final selectedPaymentMethod = 'online'.obs;
 
   // Available time slots
   final timeSlots = [
@@ -97,7 +98,8 @@ class AppointmentScreenController extends GetxController {
             id: '2',
             name: 'Khoa Nhi',
             services: [
-              MedicalService(id: '3', name: 'Khám nhi tổng quát', price: 180000),
+              MedicalService(
+                  id: '3', name: 'Khám nhi tổng quát', price: 180000),
               MedicalService(id: '4', name: 'Tư vấn dinh dưỡng', price: 200000),
             ],
           ),
@@ -109,10 +111,10 @@ class AppointmentScreenController extends GetxController {
   Future<void> _loadPatients() async {
     try {
       isLoadingPatients.value = true;
-      
+
       // Simulate loading from database/API
       await Future.delayed(Duration(milliseconds: 500));
-      
+
       patients.assignAll([
         Patient(
           id: '1',
@@ -135,7 +137,8 @@ class AppointmentScreenController extends GetxController {
       ]);
 
       // Set default selected patient
-      selectedPatient.value = patients.firstWhereOrNull((p) => p.name == 'LÔ THỊ NỘ');
+      selectedPatient.value =
+          patients.firstWhereOrNull((p) => p.name == 'LÔ THỊ NỘ');
     } catch (e) {
       Get.snackbar('Lỗi', 'Không thể tải danh sách bệnh nhân');
     } finally {
@@ -211,16 +214,9 @@ class AppointmentScreenController extends GetxController {
     try {
       // Add to database/API first if needed
       // final newPatient = await patientRepository.addPatient(patient);
-      
+
       patients.add(patient);
       selectedPatient.value = patient;
-      
-      Get.snackbar(
-        'Thành công', 
-        'Đã thêm hồ sơ ${patient.name}',
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
     } catch (e) {
       Get.snackbar('Lỗi', 'Không thể thêm bệnh nhân');
     }
@@ -230,15 +226,15 @@ class AppointmentScreenController extends GetxController {
     try {
       final index = patients.indexWhere((p) => p.id == updatedPatient.id);
       if (index == -1) return;
-      
+
       patients[index] = updatedPatient;
-      
+
       if (selectedPatient.value?.id == updatedPatient.id) {
         selectedPatient.value = updatedPatient;
       }
-      
+
       Get.snackbar(
-        'Thành công', 
+        'Thành công',
         'Đã cập nhật hồ sơ ${updatedPatient.name}',
         backgroundColor: Colors.green,
         colorText: Colors.white,
@@ -278,7 +274,8 @@ class AppointmentScreenController extends GetxController {
       Get.snackbar('Lỗi', 'Không thể xoá bệnh nhân');
     }
   }
-  void AddPatientScreen(){
+
+  void AddPatientScreen() {
     Get.toNamed(Routes.personal);
   }
 
@@ -290,7 +287,11 @@ class AppointmentScreenController extends GetxController {
 
   // Step 4 methods
   void completePayment() {
-    paymentCompleted.value = true;
+      if (selectedPaymentMethod.value == 'online') {
+    // Xử lý thanh toán online
+  } else {
+    // Xử lý thanh toán tại bệnh viện
+  }
   }
 
   // Validation methods

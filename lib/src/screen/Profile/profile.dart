@@ -16,7 +16,7 @@ class Profile extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColor.subMain,
       appBar: AppBar(
-        backgroundColor: AppColor.primaryDark,
+        backgroundColor: AppColor.fourthMain,
         title: const SafeArea(
           child: Center(
             child: Text(

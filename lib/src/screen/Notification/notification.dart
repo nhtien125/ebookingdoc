@@ -67,7 +67,7 @@ class MyNotification extends StatelessWidget {
           automaticallyImplyLeading: false,
           centerTitle: true,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios_new, color: AppColor.main),
+            icon: Icon(Icons.arrow_back, color: AppColor.main),
             onPressed: () {
               Get.back();
             },

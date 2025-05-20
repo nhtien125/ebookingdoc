@@ -1,6 +1,7 @@
-
 import 'package:ebookingdoc/src/screen/Appointment/AppointmentScreen/appointment_screen.dart';
 import 'package:ebookingdoc/src/screen/Appointment/appointment.dart';
+import 'package:ebookingdoc/src/screen/Profile/MedicalRecord/edit_medical_record.dart';
+import 'package:ebookingdoc/src/screen/Profile/MedicalRecord/medicalRecord.dart';
 import 'package:ebookingdoc/src/screen/detail/detail_doctor.dart';
 import 'package:ebookingdoc/src/screen/ExcellentDoctor/excellent_doctor.dart';
 import 'package:ebookingdoc/src/screen/Home/home.dart';
@@ -9,7 +10,6 @@ import 'package:ebookingdoc/src/screen/News/new.dart';
 import 'package:ebookingdoc/src/screen/Notification/notification.dart';
 import 'package:ebookingdoc/src/screen/Profile/AppointmentHistory/appointmentHistory.dart';
 import 'package:ebookingdoc/src/screen/Profile/Family/family.dart';
-import 'package:ebookingdoc/src/screen/Profile/MedicalRecord/medicalRecord.dart';
 import 'package:ebookingdoc/src/screen/Profile/personal/personal.dart';
 import 'package:ebookingdoc/src/screen/Profile/profile.dart';
 import 'package:ebookingdoc/src/screen/dashboard.dart';
@@ -37,8 +37,6 @@ class AppPage {
     GetPage(name: Routes.excellentDoctor, page: () => ExcellentDoctor()),
     GetPage(name: Routes.detaildoctor, page: () => DetailDoctor()),
     GetPage(name: Routes.appointmentScreen, page: () => AppointmentScreen()),
-
+    GetPage(name: Routes.editMedicalRecord, page: () => EditMedicalRecord()),
   ];
-  
- 
 }

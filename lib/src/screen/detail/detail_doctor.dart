@@ -1,811 +1,559 @@
-
 import 'package:ebookingdoc/src/data/model/doctor_detail_model.dart';
 import 'package:ebookingdoc/src/widgets/controller/detail_doctor_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 class DetailDoctor extends StatelessWidget {
   DetailDoctor({super.key});
-  final DetailDoctorController controller = Get.put(DetailDoctorController());
+
+  final controller = Get.put(DetailDoctorController());
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
-      extendBodyBehindAppBar: true,
-      body: CustomScrollView(
-        slivers: [
-          _buildFlexibleAppBar(),
-          _buildContentSection(),
-        ],
-      ),
-      bottomNavigationBar: _buildBottomActionBar(),
-    );
-  }
+      backgroundColor: Colors.grey[100],
+      body: SafeArea(
+        child: Obx(() {
+          if (controller.doctor.value == null) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-  // 1. Phần AppBar động
-  SliverAppBar _buildFlexibleAppBar() {
-    return SliverAppBar(
-      expandedHeight: 280,
-      collapsedHeight: 80,
-      pinned: true,
-      flexibleSpace: Obx(() {
-        final entity = controller.entity.value;
-        if (entity == null) return Container();
-
-        return FlexibleSpaceBar(
-          background: Stack(
-            fit: StackFit.expand,
-            children: [
-              _buildHeroImage(entity),
-              _buildGradientOverlay(),
+          return CustomScrollView(
+            slivers: [
+              _buildAppBar(),
+              SliverToBoxAdapter(
+                child: Column(
+                  children: [
+                    _buildDoctorInfo(),
+                    _buildStatistics(),
+                    _buildAboutDoctor(),
+                    _buildAvailableDates(),
+                    _buildAvailableSlots(),
+                    _buildReviewsSection(),
+                  ],
+                ),
+              ),
             ],
-          ),
-          titlePadding: const EdgeInsets.only(left: 60, bottom: 16),
-          title: _buildAppBarTitle(entity),
-        );
-      }),
-      leading: _buildBackButton(),
+          );
+        }),
+      ),
+      persistentFooterButtons: [
+        _buildBookAppointmentButton()
+      ], // Giữ nút luôn ở đáy
     );
   }
 
-  Widget _buildHeroImage(MedicalEntity entity) {
-    return Hero(
-      tag: 'medical-${entity.id}',
-      child: Image.asset(
-        entity.imageUrl,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => Container(color: Colors.grey[200]),
+  // AppBar với ảnh bác sĩ
+  Widget _buildAppBar() {
+    return SliverAppBar(
+      expandedHeight: 250,
+      pinned: true,
+      backgroundColor: Colors.blue[700],
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: Colors.white),
+        onPressed: Get.back,
+      ),
+      flexibleSpace: FlexibleSpaceBar(
+        background: Obx(
+          () => controller.doctor.value!.imageUrl.isNotEmpty
+              ? Image.asset(
+                  controller.doctor.value!.imageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => _buildPlaceholderAvatar(),
+                )
+              : _buildPlaceholderAvatar(),
+        ),
       ),
     );
   }
 
-  Widget _buildGradientOverlay() {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.bottomCenter,
-          end: Alignment.topCenter,
-          colors: [Colors.black.withOpacity(0.6), Colors.transparent],
-        ),
-      ),
+  Widget _buildPlaceholderAvatar() {
+    return Container(
+      color: Colors.blue[900],
+      child: const Center(
+          child: Icon(Icons.person, size: 120, color: Colors.white)),
     );
   }
 
-  Widget _buildAppBarTitle(MedicalEntity entity) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: entity.type.color.withOpacity(0.9),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Text(
-            entity.type.displayName.toUpperCase(),
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          entity.name,
-          style: const TextStyle(
-            fontSize: 18,
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBackButton() {
-    return IconButton(
-      icon: Container(
-        padding: const EdgeInsets.all(6),
-        decoration: const BoxDecoration(
-          color: Colors.black54,
-          shape: BoxShape.circle,
-        ),
-        child: const Icon(Icons.arrow_back, color: Colors.white),
-      ),
-      onPressed: Get.back,
-    );
-  }
-
-  // 2. Phần nội dung chính
-  SliverToBoxAdapter _buildContentSection() {
-    return SliverToBoxAdapter(
+  // Thông tin cơ bản bác sĩ
+  Widget _buildDoctorInfo() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      color: Colors.white,
       child: Obx(() {
-        if (controller.entity.value == null) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        final entity = controller.entity.value!;
+        final doctor = controller.doctor.value!;
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 16),
-            _buildMainInfoCard(entity),
-            _buildDetailSections(entity),
-            const SizedBox(height: 100), // Space for bottom button
+            Text(
+              doctor.name,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              doctor.specialization,
+              style: TextStyle(fontSize: 18, color: Colors.blue[700]),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              doctor.hospital,
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                RatingBarIndicator(
+                  rating: doctor.rating,
+                  itemBuilder: (_, __) =>
+                      const Icon(Icons.star, color: Colors.amber),
+                  itemCount: 5,
+                  itemSize: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  "${doctor.rating} (${doctor.reviewCount} đánh giá)",
+                  style: const TextStyle(fontSize: 14),
+                ),
+              ],
+            ),
           ],
         );
       }),
     );
   }
 
-  Widget _buildMainInfoCard(MedicalEntity entity) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
+  // Thống kê kinh nghiệm
+  Widget _buildStatistics() {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      color: Colors.white,
+      child: Obx(() {
+        final doctor = controller.doctor.value!;
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildStatItem(
+                Icons.work, "${doctor.experience} năm", "Kinh nghiệm"),
+            _buildStatItem(
+                Icons.people, "${doctor.patientCount}+", "Bệnh nhân"),
+            _buildStatItem(Icons.star, "${(doctor.rating / 5 * 100).toInt()}%",
+                "Hài lòng"),
+          ],
+        );
+      }),
+    );
+  }
+
+  Widget _buildStatItem(IconData icon, String value, String label) {
+    return Column(
+      children: [
+        Icon(icon, color: Colors.blue[700], size: 28),
+        const SizedBox(height: 4),
+        Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+        Text(label, style: const TextStyle(fontSize: 12)),
+      ],
+    );
+  }
+
+  // Giới thiệu bác sĩ
+  Widget _buildAboutDoctor() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 8),
+      color: Colors.white,
+      child: Obx(() {
+        return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildRatingRow(entity),
-            const SizedBox(height: 12),
-            _buildDivider(),
-            const SizedBox(height: 12),
-            _buildStatsGrid(entity),
+            const Text("Giới thiệu",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Text(
+              controller.doctor.value!.about,
+              style: const TextStyle(fontSize: 14, height: 1.5),
+            ),
           ],
-        ),
-      ),
+        );
+      }),
     );
   }
 
-  Widget _buildRatingRow(MedicalEntity entity) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: BoxDecoration(
-            color: entity.type.color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.star, color: entity.type.color, size: 18),
-              const SizedBox(width: 4),
-              Text(
-                '${entity.rating}',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: entity.type.color,
-                ),
-              ),
-              const SizedBox(width: 4),
-              Text(
-                '(${entity.reviewCount})',
-                style: const TextStyle(color: Colors.grey),
-              ),
-            ],
-          ),
-        ),
-        const Spacer(),
-        if (entity is Doctor) ...[
-          _buildInfoChip(Icons.work, '${entity.experience}+ năm'),
-          const SizedBox(width: 8),
-          _buildInfoChip(Icons.people, '${entity.patientCount}+ BN'),
-        ],
-        if (entity is Hospital) ...[
-          _buildInfoChip(Icons.business, '${entity.departmentCount} khoa'),
-          const SizedBox(width: 8),
-          _buildInfoChip(Icons.people, '${entity.doctorCount} bác sĩ'),
-        ],
-        if (entity is Clinic) ...[
-          _buildInfoChip(Icons.phone, entity.phoneNumber),
-        ],
-        if (entity is VaccinationCenter) ...[
-          _buildInfoChip(Icons.vaccines,
-              '${entity.availableVaccines.length} loại vắc xin'),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildInfoChip(IconData icon, String text) {
-    return Chip(
-      visualDensity: VisualDensity.compact,
-      backgroundColor: Colors.grey[100],
-      labelPadding: const EdgeInsets.symmetric(horizontal: 4),
-      label: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: Colors.grey[600]),
-          const SizedBox(width: 4),
-          Text(text, style: TextStyle(fontSize: 12, color: Colors.grey[800])),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDivider() {
-    return Divider(height: 1, color: Colors.grey[200]);
-  }
-
-  Widget _buildStatsGrid(MedicalEntity entity) {
-    if (entity is Doctor) {
-      return GridView.count(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        crossAxisCount: 3,
-        childAspectRatio: 1.5,
-        children: [
-          _buildStatItem('Kinh nghiệm', '${entity.experience} năm'),
-          _buildStatItem('Bệnh nhân', '${entity.patientCount}+'),
-          _buildStatItem('Đánh giá', '${entity.rating}/5'),
-        ],
-      );
-    } else if (entity is Hospital) {
-      return GridView.count(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        crossAxisCount: 3,
-        childAspectRatio: 1.5,
-        children: [
-          _buildStatItem('Khoa phòng', '${entity.departmentCount}'),
-          _buildStatItem('Bác sĩ', '${entity.doctorCount}'),
-          _buildStatItem('Đánh giá', '${entity.rating}/5'),
-        ],
-      );
-    } else if (entity is Clinic) {
-      return GridView.count(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        crossAxisCount: 2,
-        childAspectRatio: 2,
-        children: [
-          _buildStatItem('Giám đốc', entity.director),
-          _buildStatItem('Điện thoại', entity.phoneNumber),
-        ],
-      );
-    } else if (entity is VaccinationCenter) {
-      return GridView.count(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        crossAxisCount: 2,
-        childAspectRatio: 2,
-        children: [
-          _buildStatItem('Vắc xin', '${entity.availableVaccines.length} loại'),
-          _buildStatItem('Giờ mở cửa', entity.is24h ? '24/7' : '7:30 - 17:00'),
-        ],
-      );
-    } else {
-      return const SizedBox();
-    }
-  }
-
-  Widget _buildStatItem(String title, String value) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          value,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          title,
-          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDetailSections(MedicalEntity entity) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+  // Lịch khám
+  Widget _buildAvailableDates() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: _buildCardDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          _buildSectionHeader(Icons.calendar_today, "Lịch khám"),
           const SizedBox(height: 16),
-          _buildSectionTitle('Giới thiệu'),
-          _buildAboutSection(entity),
-          if (entity is Doctor) ...[
-            const SizedBox(height: 24),
-            _buildSectionTitle('Chuyên khoa'),
-            _buildSpecializationSection(entity),
-          ],
-          if (entity is Hospital) ...[
-            const SizedBox(height: 24),
-            _buildSectionTitle('Địa chỉ'),
-            _buildAddressSection(entity),
-          ],
-          if (entity is Clinic) ...[
-            const SizedBox(height: 24),
-            _buildSectionTitle('Thông tin liên hệ'),
-            _buildContactSection(entity),
-          ],
-          if (entity is VaccinationCenter) ...[
-            const SizedBox(height: 24),
-            _buildSectionTitle('Loại vắc xin'),
-            _buildVaccinesSection(entity),
-          ],
-          const SizedBox(height: 24),
-          _buildSectionTitle('Lịch làm việc'),
-          _buildScheduleSection(entity),
-          const SizedBox(height: 24),
-          _buildSectionTitle('Đánh giá'),
-          _buildReviewsSection(entity),
+          SizedBox(
+            height: 100,
+            child: Obx(() {
+              // Kiểm tra danh sách ngày khám có hợp lệ không
+              if (controller.availableDates.isEmpty) {
+                return const Center(
+                  child: Text(
+                    "Không có ngày khám hợp lệ",
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                );
+              }
+
+              return ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: controller.availableDates.length,
+                itemBuilder: (_, index) =>
+                    _buildDateItem(controller.availableDates[index], index),
+              );
+            }),
+          ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-    );
-  }
-
-  Widget _buildAboutSection(MedicalEntity entity) {
-    return Card(
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Text(
-          entity.about,
-          style: const TextStyle(height: 1.6),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSpecializationSection(Doctor doctor) {
-    return Card(
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Chuyên khoa: ${doctor.specialization}',
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Bệnh viện: ${doctor.hospital}',
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAddressSection(Hospital hospital) {
-    return Card(
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Icon(Icons.location_on, color: Colors.red[400]),
-            const SizedBox(width: 8),
-            Expanded(child: Text(hospital.address)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildContactSection(Clinic clinic) {
-    return Card(
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Icon(Icons.location_on, color: Colors.red[400]),
-                const SizedBox(width: 8),
-                Expanded(child: Text(clinic.address)),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Icon(Icons.phone, color: Colors.blue[400]),
-                const SizedBox(width: 8),
-                Text(clinic.phoneNumber),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildVaccinesSection(VaccinationCenter center) {
-    return Card(
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Các loại vắc xin có sẵn:',
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: center.availableVaccines
-                  .map((vaccine) => Chip(
-                        label: Text(vaccine),
-                        backgroundColor: Colors.orange[50],
-                      ))
-                  .toList(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildScheduleSection(MedicalEntity entity) {
-    return Column(
-      children: [
-        _buildDateSelector(),
-        const SizedBox(height: 16),
-        _buildTimeSlotsGrid(),
-      ],
-    );
-  }
-
-  Widget _buildDateSelector() {
-    return SizedBox(
-      height: 100,
-      child: Obx(
-        () => ListView.builder(
-          scrollDirection: Axis.horizontal,
-          itemCount: controller.availableDates.length,
-          itemBuilder: (context, index) {
-            final date = controller.availableDates[index];
-            return _buildDateItem(date, index);
-          },
-        ),
       ),
     );
   }
 
   Widget _buildDateItem(DateTime date, int index) {
-    final isSelected = index == controller.selectedDateIndex.value;
-    final dayName = DateFormat('E', 'vi_VN').format(date);
-    final isToday = date.day == DateTime.now().day;
+    return Obx(() {
+      final isSelected = index == controller.selectedDateIndex.value;
+      final isAvailable = controller.isDoctorAvailableOnDate(date);
+      final dayName = DateFormat('E', 'vi_VN').format(date);
+      final isToday = date.day == DateTime.now().day &&
+          date.month == DateTime.now().month &&
+          date.year == DateTime.now().year;
 
-    return GestureDetector(
-      onTap: () => controller.selectDate(index),
-      child: Container(
-        width: 70,
-        margin: const EdgeInsets.only(right: 12),
-        decoration: BoxDecoration(
-          color:
-              isSelected ? controller.entity.value!.type.color : Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected
-                ? controller.entity.value!.type.color
-                : Colors.grey[300]!,
+      return GestureDetector(
+        onTap: isAvailable ? () => controller.selectDate(index) : null,
+        child: Container(
+          width: 70,
+          margin: const EdgeInsets.only(right: 12),
+          decoration: BoxDecoration(
+            color: isSelected ? Colors.blue[700] : Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected
+                  ? Colors.blue[700]!
+                  : isAvailable
+                      ? Colors.grey[300]!
+                      : Colors.grey[200]!,
+            ),
+            boxShadow: isSelected ? [_buildBoxShadow()] : null,
           ),
-          boxShadow: [
-            if (isToday && !isSelected)
-              BoxShadow(
-                color: controller.entity.value!.type.color.withOpacity(0.2),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              dayName,
-              style: TextStyle(
-                color: isSelected ? Colors.white : Colors.grey[800],
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              date.day.toString(),
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: isSelected ? Colors.white : Colors.black,
-              ),
-            ),
-            const SizedBox(height: 4),
-            if (isToday)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                dayName,
+                style: TextStyle(
                   color: isSelected
                       ? Colors.white
-                      : controller.entity.value!.type.color,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  'Hôm nay',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: isSelected
-                        ? controller.entity.value!.type.color
-                        : Colors.white,
-                  ),
+                      : isAvailable
+                          ? Colors.grey[800]
+                          : Colors.grey[400],
                 ),
               ),
-          ],
+              const SizedBox(height: 4),
+              Text(
+                date.day.toString(),
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: isSelected
+                      ? Colors.white
+                      : isAvailable
+                          ? Colors.black
+                          : Colors.grey[400],
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                isToday ? "Hôm nay" : DateFormat('MMM', 'vi_VN').format(date),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: isSelected
+                      ? Colors.white
+                      : isAvailable
+                          ? Colors.grey[600]
+                          : Colors.grey[400],
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildTimeSlotsGrid() {
-    return Obx(() {
-      if (controller.selectedDateIndex.value == -1) {
-        return const Center(child: Text('Vui lòng chọn ngày'));
-      }
-
-      if (controller.entity.value == null || 
-          controller.entity.value!.availableSlots.isEmpty) {
-        return const Center(child: Text('Không có khung giờ trống'));
-      }
-
-      return GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          childAspectRatio: 2.2,
-          crossAxisSpacing: 8,
-          mainAxisSpacing: 8,
-        ),
-        itemCount: controller.entity.value!.availableSlots.length,
-        itemBuilder: (context, index) {
-          return _buildTimeSlotItem(index);
-        },
       );
     });
   }
 
-  Widget _buildTimeSlotItem(int index) {
-    final isSelected = index == controller.selectedTimeIndex.value;
-    final slot = controller.entity.value!.availableSlots[index];
+  // Khung giờ khám
+  Widget _buildAvailableSlots() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: _buildCardDecoration(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              _buildSectionHeader(Icons.access_time, "Giờ khám"),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Obx(() {
+            final selectedDate =
+                controller.availableDates[controller.selectedDateIndex.value];
 
-    return GestureDetector(
-      onTap: () => controller.selectTime(index),  
-      child: Container(
-        decoration: BoxDecoration(
-          color:
-              isSelected ? controller.entity.value!.type.color : Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isSelected
-                ? controller.entity.value!.type.color
-                : Colors.grey[300]!,
-          ),
-        ),
-        child: Center(
-          child: Text(
-            slot,
-            style: TextStyle(
-              color: isSelected ? Colors.white : Colors.black,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
+            if (!controller.isDoctorAvailableOnDate(selectedDate)) {
+              return const Center(
+                child: Text("Bác sĩ không làm việc vào ngày này",
+                    style: TextStyle(color: Colors.grey)),
+              );
+            }
+
+            return GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                childAspectRatio: 2.5,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+              ),
+              itemCount: controller.doctor.value!.availableSlots.length,
+              itemBuilder: (_, index) => _buildTimeSlotItem(index),
+            );
+          }),
+        ],
       ),
     );
   }
 
-  Widget _buildReviewsSection(MedicalEntity entity) {
-    return Column(
-      children: [
-        const SizedBox(height: 8),
-        if (entity.reviews.isEmpty)
-          const Center(child: Text('Chưa có đánh giá nào'))
-        else
-          ...entity.reviews.take(2).map((review) => _buildReviewItem(review)),
-        if (entity.reviews.length > 2)
-          TextButton(
-            onPressed: () => _showAllReviews(entity.reviews),
+  Widget _buildTimeSlotItem(int index) {
+    return Obx(() {
+      final isSelected = index == controller.selectedTimeIndex.value;
+      final slot = controller.doctor.value!.availableSlots[index];
+
+      return GestureDetector(
+        onTap: () => controller.selectTime(index),
+        child: Container(
+          decoration: BoxDecoration(
+            color: isSelected ? Colors.blue[700] : Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isSelected ? Colors.blue[700]! : Colors.grey[300]!,
+            ),
+            boxShadow: isSelected ? [_buildBoxShadow()] : null,
+          ),
+          child: Center(
             child: Text(
-              'Xem thêm ${entity.reviews.length - 2} đánh giá',
-              style: TextStyle(color: entity.type.color),
+              slot,
+              style: TextStyle(
+                color: isSelected ? Colors.white : Colors.black,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
-      ],
-    );
+        ),
+      );
+    });
   }
 
-  Widget _buildReviewItem(Review review) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
+  // Đánh giá bệnh nhân
+  Widget _buildReviewsSection() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: _buildCardDecoration(),
+      child: Obx(() {
+        final doctor = controller.doctor.value!;
+        return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                CircleAvatar(
-                  radius: 20,
-                  backgroundImage: AssetImage(review.patientAvatar),
-                ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(review.patientName,
-                        style: const TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: List.generate(
-                        5,
-                        (index) => Icon(
-                          Icons.star,
-                          size: 16,
-                          color: index < review.rating.floor()
-                              ? Colors.amber
-                              : Colors.grey,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                _buildSectionHeader(Icons.reviews, "Đánh giá"),
                 const Spacer(),
-                Text(
-                  DateFormat('dd/MM/yyyy').format(review.date),
-                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                TextButton(
+                  onPressed: _showAllReviews,
+                  child: const Text(
+                    "Xem thêm",
+                    style: TextStyle(
+                      color: Colors.blue,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            Text(review.comment, style: const TextStyle(height: 1.5)),
-          ],
-        ),
-      ),
-    );
-  }//s
-
-  void _showAllReviews(List<Review> reviews) {
-    Get.bottomSheet(
-      Container(
-        height: Get.height * 0.7,
-        padding: const EdgeInsets.all(16),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          children: [
-            const Text(
-              'Tất cả đánh giá',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
             const SizedBox(height: 16),
-            Expanded(
-              child: ListView.builder(
-                itemCount: reviews.length,
-                itemBuilder: (context, index) =>
-                    _buildReviewItem(reviews[index]),
+            if (doctor.reviews.isEmpty)
+              const Center(
+                child: Text("Chưa có đánh giá nào",
+                    style: TextStyle(color: Colors.grey)),
+              )
+            else
+              Column(
+                children: [
+                  ...doctor.reviews.take(3).map(_buildReviewItem),
+                ],
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // 3. Phần bottom action
-  Widget _buildBottomActionBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
-          ),
-        ],
-      ),
-      child: Obx(() {
-        final isEnabled = controller.selectedTimeIndex.value != -1;
-        final entity = controller.entity.value;
-
-        return Row(
-          children: [
-            if (entity != null && entity.type == MedicalType.doctor) ...[
-              _buildIconActionButton(
-                icon: Icons.message,
-                color: Colors.blue[100]!,
-                iconColor: Colors.blue,
-                onPressed: () {},
-              ),
-              const SizedBox(width: 12),
-              _buildIconActionButton(
-                icon: Icons.call,
-                color: Colors.green[100]!,
-                iconColor: Colors.green,
-                onPressed: () {},
-              ),
-              const SizedBox(width: 12),
-            ],
-            Expanded(
-              child: ElevatedButton(
-                onPressed: isEnabled ? controller.bookAppointment : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: isEnabled
-                      ? controller.entity.value?.type.color ?? Colors.blue
-                      : Colors.grey[300],
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 2,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(entity?.type.icon ?? Icons.calendar_today, size: 20),
-                    const SizedBox(width: 8),
-                    Text(
-                      entity?.type == MedicalType.doctor
-                          ? 'ĐẶT LỊCH KHÁM'
-                          : 'ĐẶT HẸN NGAY',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-              ),
-            ),
           ],
         );
       }),
     );
   }
 
-  Widget _buildIconActionButton({
-    required IconData icon,
-    required Color color,
-    required Color iconColor,
-    required VoidCallback onPressed,
-  }) {
+  Widget _buildReviewItem(Review review) {
     return Container(
-      width: 50,
-      height: 50,
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color,
+        color: Colors.grey[50],
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!),
       ),
-      child: IconButton(
-        icon: Icon(icon, color: iconColor),
-        onPressed: onPressed,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 20,
+                backgroundImage: AssetImage(review.patientAvatar),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(review.patientName,
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  RatingBarIndicator(
+                    rating: review.rating,
+                    itemBuilder: (_, __) =>
+                        const Icon(Icons.star, color: Colors.amber, size: 16),
+                    itemCount: 5,
+                    itemSize: 16,
+                  ),
+                ],
+              ),
+              const Spacer(),
+              Text(
+                DateFormat('dd/MM/yyyy').format(review.date),
+                style: TextStyle(color: Colors.grey[600], fontSize: 12),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(review.comment, style: const TextStyle(height: 1.5)),
+        ],
       ),
+    );
+  }
+
+  void _showAllReviews() {
+    Get.bottomSheet(
+      Container(
+        height: Get.height * 0.8,
+        padding: const EdgeInsets.all(16),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Obx(() {
+          final reviews = controller.doctor.value!.reviews;
+          return Column(
+            children: [
+              const Text(
+                "Tất cả đánh giá",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: reviews.length,
+                  itemBuilder: (_, index) => _buildReviewItem(reviews[index]),
+                ),
+              ),
+            ],
+          );
+        }),
+      ),
+    );
+  }
+
+  // Nút đặt lịch
+  Widget _buildBookAppointmentButton() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Obx(() {
+        final isEnabled = controller.selectedTimeIndex.value != -1;
+
+        return ElevatedButton(
+          onPressed: isEnabled ? () => controller.bookAppointment() : null,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: isEnabled ? Colors.blue[700] : Colors.transparent,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(
+                  color: isEnabled ? Colors.blue[700]! : Colors.grey[400]!),
+            ),
+            elevation: isEnabled ? 3 : 0,
+          ),
+          child: const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.calendar_today),
+              SizedBox(width: 12),
+              Text(
+                "ĐẶT LỊCH KHÁM",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+        );
+      }),
+    );
+  }
+
+  // Các helper methods
+  Widget _buildSectionHeader(IconData icon, String title) {
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: Colors.blue),
+        const SizedBox(width: 8),
+        Text(title,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+      ],
+    );
+  }
+
+  BoxDecoration _buildCardDecoration() {
+    return BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey.withOpacity(0.1),
+          spreadRadius: 1,
+          blurRadius: 5,
+          offset: const Offset(0, 2),
+        ),
+      ],
+    );
+  }
+
+  BoxShadow _buildBoxShadow() {
+    return BoxShadow(
+      color: Colors.blue.withOpacity(0.2),
+      spreadRadius: 1,
+      blurRadius: 5,
     );
   }
 }

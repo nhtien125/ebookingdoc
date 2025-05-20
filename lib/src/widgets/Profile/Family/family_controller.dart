@@ -1,4 +1,5 @@
 import 'package:ebookingdoc/src/Global/app_color.dart';
+import 'package:ebookingdoc/src/constants/app_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -8,11 +9,11 @@ class FamilyController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    familyMembers.add('Lò Thị Tươi'); // member mẫu
+    familyMembers.add('Lò Thị Tươi'); 
   }
 
   void addMember() {
-    familyMembers.add('Thành viên mới ${familyMembers.length + 1}');
+    Get.toNamed(Routes.personal);
   }
 
   void confirmDeleteMember(BuildContext context, int index) {

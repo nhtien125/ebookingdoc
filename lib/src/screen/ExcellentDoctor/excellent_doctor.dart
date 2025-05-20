@@ -81,14 +81,19 @@ class ExcellentDoctor extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
-                      color: isSelected ? AppColor.grey : AppColor.main,
+                      color: isSelected
+                          ? AppColor.fourthMain
+                          : AppColor.main, // Nền màu xanh khi chọn
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: AppColor.fourthMain),
+                      border: Border.all(
+                          color: AppColor.fourthMain), // Viền màu xanh
                     ),
                     child: Text(
                       tabs[index],
                       style: TextStyle(
-                        color: AppColor.fourthMain,
+                        color: isSelected
+                            ? Colors.white
+                            : AppColor.fourthMain, // Chữ trắng khi chọn
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -337,15 +342,6 @@ class ExcellentDoctor extends StatelessWidget {
                   const SizedBox(width: 8),
                   ElevatedButton(
                       onPressed: () {
-                        Get.snackbar(
-                          'Đặt lịch hẹn',
-                          'Bạn đã chọn bác sĩ ${doctor.name}',
-                          snackPosition: SnackPosition.BOTTOM,
-                          backgroundColor: Color(0xFF3366FF),
-                          colorText: Colors.white,
-                          borderRadius: 12,
-                          margin: const EdgeInsets.all(16),
-                        );
                         controller.bookAppointment(doctor, 'doctor');
                       },
                       style: ElevatedButton.styleFrom(

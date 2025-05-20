@@ -914,115 +914,117 @@ class AppointmentScreen extends StatelessWidget {
                     itemCount: controller.patients.length,
                     itemBuilder: (context, index) {
                       final patient = controller.patients[index];
-                      final isSelected =
-                          controller.selectedPatient.value?.id == patient.id;
-
-                      return GestureDetector(
-                        onTap: () => controller.selectPatient(patient),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          margin: const EdgeInsets.only(bottom: 16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: isSelected
-                                  ? AppColor.fourthMain
-                                  : Colors.grey.shade300,
-                              width: isSelected ? 2 : 1,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
+                      return Obx(() {
+                        final isSelected =
+                            controller.selectedPatient.value?.id == patient.id;
+                        return GestureDetector(
+                          onTap: () => controller.selectPatient(patient),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            margin: const EdgeInsets.only(bottom: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
                                 color: isSelected
-                                    ? AppColor.fourthMain.withOpacity(0.2)
-                                    : Colors.grey.withOpacity(0.1),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
+                                    ? AppColor.fourthMain
+                                    : Colors.grey.shade300,
+                                width: isSelected ? 2 : 1,
                               ),
-                            ],
-                          ),
-                          child: Stack(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // Avatar
-                                    Container(
-                                      width: 60,
-                                      height: 60,
-                                      decoration: BoxDecoration(
-                                        color: AppColor.fourthMain
-                                            .withOpacity(0.1),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Center(
-                                        child: Icon(
-                                          patient.gender == 'Nam'
-                                              ? Icons.man
-                                              : Icons.woman,
-                                          color: AppColor.fourthMain,
-                                          size: 32,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: isSelected
+                                      ? AppColor.fourthMain.withOpacity(0.2)
+                                      : Colors.grey.withOpacity(0.1),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Stack(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      // Avatar
+                                      Container(
+                                        width: 60,
+                                        height: 60,
+                                        decoration: BoxDecoration(
+                                          color: AppColor.fourthMain
+                                              .withOpacity(0.1),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Center(
+                                          child: Icon(
+                                            patient.gender == 'Nam'
+                                                ? Icons.man
+                                                : Icons.woman,
+                                            color: AppColor.fourthMain,
+                                            size: 32,
+                                          ),
                                         ),
                                       ),
-                                    ),
 
-                                    const SizedBox(width: 16),
+                                      const SizedBox(width: 16),
 
-                                    // Patient info
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            patient.name,
-                                            style: const TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
+                                      // Patient info
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              patient.name,
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                             ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          _buildInfoRow(Icons.cake,
-                                              'Ngày sinh: ${patient.dob}'),
-                                          const SizedBox(height: 4),
-                                          _buildInfoRow(
-                                              Icons.phone,
-                                              patient.phone != null
-                                                  ? 'SĐT: ${patient.phone}'
-                                                  : 'Chưa có SĐT'),
-                                          const SizedBox(height: 4),
-                                          _buildInfoRow(
-                                              Icons.home,
-                                              patient.address != null
-                                                  ? 'Địa chỉ: ${patient.address}'
-                                                  : 'Chưa có địa chỉ'),
-                                          const SizedBox(height: 4),
-                                        ],
+                                            const SizedBox(height: 4),
+                                            _buildInfoRow(Icons.cake,
+                                                'Ngày sinh: ${patient.dob}'),
+                                            const SizedBox(height: 4),
+                                            _buildInfoRow(
+                                                Icons.phone,
+                                                patient.phone != null
+                                                    ? 'SĐT: ${patient.phone}'
+                                                    : 'Chưa có SĐT'),
+                                            const SizedBox(height: 4),
+                                            _buildInfoRow(
+                                                Icons.home,
+                                                patient.address != null
+                                                    ? 'Địa chỉ: ${patient.address}'
+                                                    : 'Chưa có địa chỉ'),
+                                            const SizedBox(height: 4),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
 
-                              // Settings button
-                              Positioned(
-                                top: 8,
-                                right: 8,
-                                child: IconButton(
-                                  icon: const Icon(Icons.settings,
-                                      size: 20, color: Colors.grey),
-                                  onPressed: () {
-                                    _showPatientOptionsBottomSheet(
-                                        context, patient as Paint);
-                                  },
+                                // Settings button
+                                Positioned(
+                                  top: 8,
+                                  right: 8,
+                                  child: IconButton(
+                                    icon: const Icon(Icons.settings,
+                                        size: 20, color: Colors.grey),
+                                    onPressed: () {
+                                      _showPatientOptionsBottomSheet(
+                                          context, patient);
+                                    },
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      );
+                        );
+                      });
                     },
                   ),
           ),
@@ -1043,14 +1045,17 @@ class AppointmentScreen extends StatelessWidget {
           ),
           child: Column(
             children: [
-              OutlinedButton.icon(
-                onPressed: () => Get.toNamed(Routes.personal),
-                icon: const Icon(Icons.add),
-                label: const Text('THÊM HỒ SƠ BỆNH NHÂN MỚI'),
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 48),
-                  side: BorderSide(color: AppColor.fourthMain),
-                  foregroundColor: AppColor.fourthMain,
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => Get.toNamed(Routes.personal),
+                  icon: const Icon(Icons.add),
+                  label: const Text('THÊM HỒ SƠ BỆNH NHÂN'),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 48),
+                    side: BorderSide(color: AppColor.fourthMain),
+                    foregroundColor: AppColor.fourthMain,
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -1066,12 +1071,15 @@ class AppointmentScreen extends StatelessWidget {
     );
   }
 
-  void _showPatientOptionsBottomSheet(BuildContext context, Paint patient) {
+  void _showPatientOptionsBottomSheet(BuildContext context, Patient patient) {
     Get.bottomSheet(
       Container(
         decoration: const BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(16),
+          ),
         ),
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -1082,24 +1090,37 @@ class AppointmentScreen extends StatelessWidget {
               title: const Text('Chỉnh sửa hồ sơ'),
               onTap: () {
                 Get.back();
-                Get.toNamed(Routes.personal, arguments: {'patient': patient});
+                // Navigate to edit screen
+                Get.toNamed(Routes.personal, arguments: patient);
               },
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
+            const Divider(height: 1),
             ListTile(
               leading: const Icon(Icons.delete, color: Colors.red),
-              title: const Text('Xóa hồ sơ'),
+              title: const Text('Xoá hồ sơ'),
               onTap: () {
                 Get.back();
-                _showDeleteConfirmationDialog(patient as Patient);
+                _showDeleteConfirmationDialog(patient);
               },
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
             const SizedBox(height: 8),
-            OutlinedButton(
-              onPressed: () => Get.back(),
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 48),
+            SizedBox(
+              width: double.infinity,
+              child: TextButton(
+                onPressed: () => Get.back(),
+                child: const Text('HỦY'),
+                style: TextButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
               ),
-              child: const Text('HỦY'),
             ),
           ],
         ),
@@ -1110,20 +1131,32 @@ class AppointmentScreen extends StatelessWidget {
   void _showDeleteConfirmationDialog(Patient patient) {
     Get.dialog(
       AlertDialog(
-        title: const Text('Xóa hồ sơ'),
-        content:
-            Text('Bạn có chắc muốn xóa hồ sơ bệnh nhân "${patient.name}"?'),
+        title: const Text('Xác nhận xoá'),
+        content: Text('Bạn có chắc chắn muốn xoá hồ sơ ${patient.name}?'),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
         actions: [
           TextButton(
             onPressed: () => Get.back(),
             child: const Text('HỦY'),
+            style: TextButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
           ),
           TextButton(
             onPressed: () {
               Get.back();
               controller.deletePatient(patient);
             },
-            child: const Text('XÓA', style: TextStyle(color: Colors.red)),
+            child: const Text('XOÁ', style: TextStyle(color: Colors.red)),
+            style: TextButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
           ),
         ],
       ),
@@ -1278,7 +1311,7 @@ class AppointmentScreen extends StatelessWidget {
 
           // Confirm button
           _buildContinueButton(
-            'XÁC NHẬN ĐẶT LỊCH',
+            'Tiếp Tục',
             () => controller.confirmAppointment(),
           ),
         ],
@@ -1363,118 +1396,172 @@ class AppointmentScreen extends StatelessWidget {
   }
 
   // ==================== Step 4: Payment ====================
-  Widget _buildStep4Content() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          const Icon(Icons.check_circle, size: 80, color: Colors.green),
-          const SizedBox(height: 16),
-          const Text(
-            'ĐẶT LỊCH THÀNH CÔNG',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.green,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Mã đặt lịch: ${DateTime.now().millisecondsSinceEpoch}',
-            style: const TextStyle(
-              fontSize: 16,
-              color: Colors.grey,
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // Appointment summary
-          _buildConfirmCard(
-            title: 'Thông tin đặt lịch',
-            icon: Icons.info,
-            child: Obx(() {
-              final patient = controller.selectedPatient.value;
-              final hospital = controller.selectedDoctor.value;
-              final service = controller.selectedService.value;
-
-              return Column(
-                children: [
-                  if (patient != null)
-                    _buildConfirmItem('Bệnh nhân', patient.name),
-                  if (hospital != null)
-                    _buildConfirmItem('Bệnh viện', hospital.name),
-                  if (service != null)
-                    _buildConfirmItem('Dịch vụ', service.name),
-                  if (controller.selectedDate.value != null)
-                    _buildConfirmItem(
-                        'Ngày khám',
-                        DateFormat('dd/MM/yyyy')
-                            .format(controller.selectedDate.value!)),
-                  if (controller.selectedTimeSlot.value != null)
-                    _buildConfirmItem(
-                        'Giờ khám', controller.selectedTimeSlot.value!),
-                  const SizedBox(height: 12),
-                  _buildPriceItem('Tổng thanh toán', service?.price ?? 0,
-                      isTotal: true),
-                ],
-              );
-            }),
-          ),
-
-          // Payment methods
-          _buildConfirmCard(
-            title: 'Hình thức thanh toán',
-            icon: Icons.payment,
+Widget _buildStep4Content() {
+  return Scaffold(
+    body: Column(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                _buildPaymentMethod(
-                  icon: Icons.credit_card,
-                  title: 'Thanh toán online',
-                  subtitle: 'Thẻ ATM/VISA/Mastercard',
-                  isSelected: true,
+                // Appointment summary
+                _buildConfirmCard(
+                  title: 'Thông tin đặt lịch',
+                  icon: Icons.info,
+                  child: Obx(() {
+                    final patient = controller.selectedPatient.value;
+                    final hospital = controller.selectedDoctor.value;
+                    final service = controller.selectedService.value;
+
+                    return Column(
+                      children: [
+                        if (patient != null)
+                          _buildConfirmItem('Bệnh nhân', patient.name),
+                        if (hospital != null)
+                          _buildConfirmItem('Bệnh viện', hospital.name),
+                        if (service != null)
+                          _buildConfirmItem('Dịch vụ', service.name),
+                        if (controller.selectedDate.value != null)
+                          _buildConfirmItem(
+                              'Ngày khám',
+                              DateFormat('dd/MM/yyyy')
+                                  .format(controller.selectedDate.value!)),
+                        if (controller.selectedTimeSlot.value != null)
+                          _buildConfirmItem(
+                              'Giờ khám', controller.selectedTimeSlot.value!),
+                        const SizedBox(height: 12),
+                        _buildPriceItem('Tổng thanh toán', service?.price ?? 0,
+                            isTotal: true),
+                      ],
+                    );
+                  }),
                 ),
-                const Divider(height: 24),
-                _buildPaymentMethod(
-                  icon: Icons.money,
-                  title: 'Thanh toán tại bệnh viện',
-                  subtitle: 'Khi đến khám',
+
+                // Payment method selector
+                _buildConfirmCard(
+                  title: 'Hình thức thanh toán',
+                  icon: Icons.payment,
+                  child: Obx(() => ListTile(
+                        leading: Icon(
+                          controller.selectedPaymentMethod.value == 'online'
+                              ? Icons.credit_card
+                              : Icons.money,
+                          color: Colors.blue,
+                        ),
+                        title: Text(
+                          controller.selectedPaymentMethod.value == 'online'
+                              ? 'Thanh toán online'
+                              : 'Thanh toán tại bệnh viện',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text(
+                          controller.selectedPaymentMethod.value == 'online'
+                              ? 'Thẻ ATM/VISA/Mastercard'
+                              : 'Khi đến khám',
+                        ),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                        onTap: () => _showPaymentMethodBottomSheet(),
+                      )),
                 ),
+
+                // Thêm khoảng trống phía dưới
+                const SizedBox(height: 80),
               ],
             ),
           ),
-
-          // Complete button
-          _buildContinueButton(
-            'HOÀN TẤT',
-            () {
-              controller.completePayment();
-              Get.until((route) => route.isFirst);
-            },
+        ),
+      ],
+    ),
+    bottomNavigationBar: Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, -2),
           ),
         ],
+      ),
+      child: _buildContinueButton(
+        'THANH TOÁN',
+        () {
+          controller.completePayment();
+          Get.until((route) => route.isFirst);
+        },
+      ),
+    ),
+  );
+}
+  void _showPaymentMethodBottomSheet() {
+    Get.bottomSheet(
+      Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(16),
+          ),
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Chọn hình thức thanh toán',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            Obx(() => _buildPaymentMethodOption(
+                  icon: Icons.credit_card,
+                  title: 'Thanh toán online',
+                  subtitle: 'Thẻ ATM/VISA/Mastercard',
+                  isSelected:
+                      controller.selectedPaymentMethod.value == 'online',
+                  onTap: () {
+                    controller.selectedPaymentMethod.value = 'online';
+                    Get.back();
+                  },
+                )),
+            const Divider(height: 1),
+            Obx(() => _buildPaymentMethodOption(
+                  icon: Icons.money,
+                  title: 'Thanh toán tại bệnh viện',
+                  subtitle: 'Khi đến khám',
+                  isSelected: controller.selectedPaymentMethod.value == 'cash',
+                  onTap: () {
+                    controller.selectedPaymentMethod.value = 'cash';
+                    Get.back();
+                  },
+                )),
+          
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildPaymentMethod({
+  Widget _buildPaymentMethodOption({
     required IconData icon,
     required String title,
     required String subtitle,
-    bool isSelected = false,
+    required bool isSelected,
+    required VoidCallback onTap,
   }) {
     return ListTile(
+      onTap: onTap,
       leading: Icon(icon, color: isSelected ? Colors.blue : Colors.grey),
       title: Text(title,
           style: TextStyle(
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            color: isSelected ? Colors.blue : Colors.black,
           )),
       subtitle: Text(subtitle),
       trailing: isSelected
           ? const Icon(Icons.check_circle, color: Colors.blue)
           : null,
-      onTap: () {
-        // Handle payment method selection
-      },
     );
   }
 }
