@@ -1,7 +1,7 @@
 import 'package:ebookingdoc/src/constants/services/auth.dart';
 import 'package:ebookingdoc/src/widgets/controller/login_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // Import để sử dụng InputFormatter
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 class Login extends StatelessWidget {
@@ -11,7 +11,6 @@ class Login extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Lấy kích thước màn hình để responsive
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
@@ -26,32 +25,24 @@ class Login extends StatelessWidget {
                 // Background gradient
                 Container(
                   height: size.height * 0.4,
-                  width: size.width,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
+                      colors: [Colors.blue[700]!, Colors.blue[500]!, Colors.blue[300]!],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [
-                        Colors.blue[700]!,
-                        Colors.blue[500]!,
-                        Colors.blue[300]!,
-                      ],
                     ),
-                    borderRadius: const BorderRadius.only(
-                      bottomLeft: Radius.circular(40),
-                      bottomRight: Radius.circular(40),
-                    ),
+                    borderRadius: const BorderRadius.vertical(bottom: Radius.circular(40)),
                   ),
                 ),
 
-                // Hình ảnh bệnh viện hoặc doctor
+                // Doctor image
                 Positioned(
                   top: size.height * 0.08,
                   right: 0,
                   child: Opacity(
                     opacity: 0.8,
                     child: Image.asset(
-                      'assets/images/doctor.png', // Thay thế bằng hình ảnh của bạn
+                      'assets/images/doctor.png',
                       height: size.height * 0.2,
                       fit: BoxFit.contain,
                       errorBuilder: (context, error, stackTrace) => const Icon(
@@ -63,19 +54,16 @@ class Login extends StatelessWidget {
                   ),
                 ),
 
-                // Login Card
+                // Login card
                 Positioned(
                   top: size.height * 0.25,
                   left: 20,
                   right: 20,
                   child: Card(
                     elevation: 8,
-                    shadowColor: Colors.black26,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    child: Container(
-                      padding: const EdgeInsets.all(32),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -94,156 +82,60 @@ class Login extends StatelessWidget {
                                 const SizedBox(height: 8),
                                 Text(
                                   "Xin chào! Đăng nhập để tiếp tục",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.grey[600],
-                                  ),
+                                  style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                                 ),
                               ],
                             ),
                           ),
-                          const SizedBox(height: 32),
+                          const SizedBox(height: 24),
 
-                          // Text Fields
-                          Text(
-                            "Số điện thoại",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey[700],
-                              fontSize: 15,
-                            ),
+                
+                          _buildTextField(
+                            label: "Số điện thoại",
+                            controller: controller.username,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(10),
+                            ],
+                            hintText: "Nhập số điện thoại của bạn",
+                            icon: Icons.phone_android,
+                            errorText: controller.usernameError,
                           ),
-                          const SizedBox(height: 8),
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: Colors.grey[300]!,
-                                width: 1,
+                          const SizedBox(height: 16),
+
+                          // Password field
+                          _buildTextField(
+                            label: "Mật khẩu",
+                            controller: controller.password,
+                            keyboardType: controller.numericPassword.value
+                                ? TextInputType.number
+                                : TextInputType.text,
+                            inputFormatters: controller.numericPassword.value
+                                ? [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(20)]
+                                : [LengthLimitingTextInputFormatter(20)],
+                            hintText: "Nhập mật khẩu của bạn",
+                            icon: Icons.lock_rounded,
+                            errorText: controller.passwordError,
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                controller.hidePassword.value ? Icons.visibility_off : Icons.visibility,
+                                color: Colors.grey[600],
+                                size: 22,
                               ),
+                              onPressed: () => controller.hidePassword.toggle(),
                             ),
-                            child: Obx(() => TextField(
-                                  controller: controller.username,
-                                  keyboardType: TextInputType.number,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.digitsOnly,
-                                    LengthLimitingTextInputFormatter(10),
-                                  ],
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.blue[800],
-                                  ),
-                                  decoration: InputDecoration(
-                                    hintText: "Nhập số điện thoại của bạn",
-                                    hintStyle:
-                                        TextStyle(color: Colors.grey[400]),
-                                    border: InputBorder.none,
-                                    errorText:
-                                        controller.usernameError.value.isEmpty
-                                            ? null
-                                            : controller.usernameError.value,
-                                    prefixIcon: Icon(
-                                      Icons.phone_android,
-                                      color: Colors.blue[800],
-                                    ),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        vertical: 16, horizontal: 16),
-                                    counterText: "",
-                                  ),
-                                )),
-                          ),
-                          const SizedBox(height: 20),
-
-                          Text(
-                            "Mật khẩu",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey[700],
-                              fontSize: 15,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: Colors.grey[300]!,
-                                width: 1,
-                              ),
-                            ),
-                            child: Obx(() => TextField(
-                                  controller: controller.password,
-                                  obscureText: controller.hidePassword.value,
-                                  keyboardType: controller.numericPassword.value
-                                      ? TextInputType.number
-                                      : TextInputType.text,
-                                  inputFormatters: controller
-                                          .numericPassword.value
-                                      ? [
-                                          FilteringTextInputFormatter
-                                              .digitsOnly,
-                                          LengthLimitingTextInputFormatter(20),
-                                        ]
-                                      : [
-                                          LengthLimitingTextInputFormatter(20),
-                                        ],
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.blue[800],
-                                  ),
-                                  decoration: InputDecoration(
-                                    hintText: "Nhập mật khẩu của bạn",
-                                    hintStyle:
-                                        TextStyle(color: Colors.grey[400]),
-                                    border: InputBorder.none,
-                                    errorText:
-                                        controller.passwordError.value.isEmpty
-                                            ? null
-                                            : controller.passwordError.value,
-                                    prefixIcon: Icon(
-                                      Icons.lock_rounded,
-                                      color: Colors.blue[800],
-                                    ),
-                                    suffixIcon: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        IconButton(
-                                          icon: Icon(
-                                            controller.hidePassword.value
-                                                ? Icons.visibility_off
-                                                : Icons.visibility,
-                                            color: Colors.grey[600],
-                                            size: 22,
-                                          ),
-                                          onPressed: () => controller
-                                                  .hidePassword.value =
-                                              !controller.hidePassword.value,
-                                        ),
-                                      ],
-                                    ),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        vertical: 16, horizontal: 16),
-                                    counterText: "",
-                                  ),
-                                )),
                           ),
 
-                          // Remember Me and Forgot Password
+                          // Remember me and forgot password
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Row(
-                                children: [
-                                  Obx(() => Checkbox(
-                                        value: controller.rememberMe.value,
-                                        onChanged: (value) => controller
-                                            .rememberMe.value = value!,
-                                        activeColor: Colors.blue[800],
-                                      )),
-                                ],
-                              ),
+                              Obx(() => Checkbox(
+                                    value: controller.rememberMe.value,
+                                    onChanged: (value) => controller.rememberMe.value = value!,
+                                    activeColor: Colors.blue[800],
+                                  )),
                               TextButton(
                                 onPressed: controller.forgotPassword,
                                 child: Text(
@@ -257,12 +149,12 @@ class Login extends StatelessWidget {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 30),
+                          const SizedBox(height: 24),
 
-                          // Login Button
+                          // Login button
                           SizedBox(
                             width: double.infinity,
-                            height: 56,
+                            height: 48,
                             child: ElevatedButton(
                               onPressed: () async {
                                 FocusScope.of(context).unfocus();
@@ -274,44 +166,29 @@ class Login extends StatelessWidget {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.blue[800],
                                 foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                                 elevation: 2,
                               ),
                               child: Obx(() => controller.isLoading.value
                                   ? const SizedBox(
                                       height: 24,
                                       width: 24,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 3,
-                                      ),
+                                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
                                     )
                                   : const Text(
                                       "ĐĂNG NHẬP",
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        letterSpacing: 1.5,
-                                      ),
+                                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1.5),
                                     )),
                             ),
                           ),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 16),
 
-                          // Register Option
+                          // Register option
                           Center(
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text(
-                                  "Chưa có tài khoản? ",
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 15,
-                                  ),
-                                ),
+                                Text("Chưa có tài khoản? ", style: TextStyle(color: Colors.grey[600], fontSize: 15)),
                                 TextButton(
                                   onPressed: controller.register,
                                   child: Text(
@@ -336,6 +213,50 @@ class Login extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField({
+    required String label,
+    required TextEditingController controller,
+    required String hintText,
+    required IconData icon,
+    RxString? errorText,
+    bool obscureText = false,
+    TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
+    Widget? suffixIcon,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: TextStyle(fontWeight: FontWeight.w600, color: Colors.grey[700], fontSize: 15)),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.grey[100],
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey[300]!, width: 1),
+          ),
+          child: Obx(() => TextField(
+                controller: controller,
+                obscureText: obscureText,
+                keyboardType: keyboardType,
+                inputFormatters: inputFormatters,
+                style: TextStyle(fontSize: 16, color: Colors.blue[800]),
+                decoration: InputDecoration(
+                  hintText: hintText,
+                  hintStyle: TextStyle(color: Colors.grey[400]),
+                  border: InputBorder.none,
+                  errorText: errorText?.value.isEmpty ?? true ? null : errorText?.value,
+                  prefixIcon: Icon(icon, color: Colors.blue[800]),
+                  suffixIcon: suffixIcon,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                  counterText: "",
+                ),
+              )),
+        ),
+      ],
     );
   }
 }
