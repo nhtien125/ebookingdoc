@@ -184,23 +184,6 @@ class AppointmentScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStepCircle(int step, IconData icon) {
-    final isActive = controller.currentStep.value >= step;
-    return Container(
-      width: 36,
-      height: 36,
-      decoration: BoxDecoration(
-        color: isActive ? AppColor.main : AppColor.fourthMain,
-        shape: BoxShape.circle,
-        border: Border.all(color: AppColor.main, width: 2),
-      ),
-      child: Icon(
-        icon,
-        color: isActive ? AppColor.fourthMain : AppColor.main,
-        size: 18,
-      ),
-    );
-  }
 
   Widget _buildStepLine(int step) {
     final isActive = controller.currentStep.value > step;

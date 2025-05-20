@@ -1,6 +1,5 @@
 import 'package:ebookingdoc/src/constants/app_page.dart';
 import 'package:ebookingdoc/src/data/model/doctor_detail_model.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
@@ -182,6 +181,7 @@ void selectDate(int index) {
     selectedTimeIndex.value = -1;
 
     // Nếu bạn cần dùng selectedDate ngay sau khi chọn
+    // ignore: unused_local_variable
     final selectedDate = availableDates[index];
     // Có thể dùng selectedDate ở đây nếu cần
   }
