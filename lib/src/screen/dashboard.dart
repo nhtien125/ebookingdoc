@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:ebookingdoc/src/widgets/dashboard_controller.dart';
+import 'package:ebookingdoc/src/widgets/controller/dashboard_controller.dart';
 import 'package:ebookingdoc/src/Global/app_color.dart';
 import 'package:ebookingdoc/src/constants/services/device_helper.dart';
 import 'package:ebookingdoc/src/Utils/custom_dialog.dart';

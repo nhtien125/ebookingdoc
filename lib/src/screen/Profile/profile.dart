@@ -2,7 +2,7 @@ import 'package:ebookingdoc/src/Global/app_color.dart';
 // import 'package:ebookingdoc/Service/api_caller.dart';
 import 'package:ebookingdoc/src/Utils/custom_dialog.dart';
 import 'package:ebookingdoc/src/Utils/utils.dart';
-import 'package:ebookingdoc/src/widgets/Profile/profile_controller.dart';
+import 'package:ebookingdoc/src/widgets/controller/profile_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

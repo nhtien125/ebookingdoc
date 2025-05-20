@@ -1,4 +1,4 @@
-import 'package:ebookingdoc/src/widgets/Profile/MedicalRecord/medical_record_controller.dart';
+import 'package:ebookingdoc/src/widgets/controller/medical_record_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

@@ -1,5 +1,5 @@
 import 'package:ebookingdoc/src/constants/services/auth.dart';
-import 'package:ebookingdoc/src/widgets/Login/login_controller.dart';
+import 'package:ebookingdoc/src/widgets/controller/login_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Import để sử dụng InputFormatter
 import 'package:get/get.dart';

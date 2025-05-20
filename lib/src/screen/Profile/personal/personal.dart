@@ -1,5 +1,5 @@
 import 'package:ebookingdoc/src/Global/app_color.dart';
-import 'package:ebookingdoc/src/widgets/Profile/personal/personal_controller.dart';
+import 'package:ebookingdoc/src/widgets/controller/personal_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

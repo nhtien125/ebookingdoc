@@ -1,4 +1,4 @@
-import 'package:ebookingdoc/src/widgets/Appointment/appointment_controller.dart';
+import 'package:ebookingdoc/src/widgets/controller/appointment_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ebookingdoc/src/Global/app_color.dart';

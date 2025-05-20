@@ -1,4 +1,4 @@
-import 'package:ebookingdoc/src/widgets/Profile/AppointmentHistory/appointmentHistory.dart';
+import 'package:ebookingdoc/src/widgets/controller/appointmentHistory.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

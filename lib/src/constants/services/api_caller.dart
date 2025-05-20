@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:ebookingdoc/src/Utils/utils.dart';
-import 'package:ebookingdoc/src/Global/constant.dart';
+import 'package:ebookingdoc/src/constants/constant.dart';
 import 'package:ebookingdoc/src/Global/global_value.dart';
 import 'package:ebookingdoc/src/constants/services/auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
