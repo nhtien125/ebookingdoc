@@ -8,7 +8,6 @@ import 'package:ebookingdoc/src/screen/Home/home.dart';
 import 'package:ebookingdoc/src/screen/Login/login.dart';
 import 'package:ebookingdoc/src/screen/News/new.dart';
 import 'package:ebookingdoc/src/screen/Notification/notification.dart';
-import 'package:ebookingdoc/src/screen/Profile/AppointmentHistory/appointmentHistory.dart';
 import 'package:ebookingdoc/src/screen/Profile/Family/family.dart';
 import 'package:ebookingdoc/src/screen/Profile/personal/personal.dart';
 import 'package:ebookingdoc/src/screen/Profile/profile.dart';
@@ -29,7 +28,6 @@ class AppPage {
     GetPage(name: Routes.login, page: () => Login()),
     GetPage(name: Routes.personal, page: () => Personal()),
     GetPage(name: Routes.family, page: () => Family()),
-    GetPage(name: Routes.appointmentHistory, page: () => AppointmentHistory()),
     GetPage(name: Routes.medicalRecord, page: () => MedicalRecord()),
     GetPage(name: Routes.notification, page: () => MyNotification()),
     GetPage(name: Routes.appointment, page: () => Appointment()),

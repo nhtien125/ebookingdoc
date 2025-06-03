@@ -15,7 +15,7 @@ class ProfileController extends GetxController {
   }
 
   appointmentHistory() {
-    Get.toNamed(Routes.appointmentHistory);
+    Get.toNamed(Routes.appointment);
   }
 
    medicalRecord() {

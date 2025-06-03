@@ -1,8 +1,8 @@
+import 'package:ebookingdoc/src/Global/app_color.dart';
 import 'package:ebookingdoc/src/data/model/medica_record_model.dart';
 import 'package:ebookingdoc/src/widgets/Profile/MedicalRecord/medical_record_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 
 class MedicalRecord extends StatelessWidget {
   MedicalRecord({super.key});
@@ -13,11 +13,16 @@ class MedicalRecord extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Hồ Sơ Bệnh Án'),
+        title: Text(
+          'Hồ Sơ Bệnh Án',
+          style: TextStyle(color: AppColor.main),
+        ),
         centerTitle: true,
+        backgroundColor: AppColor.fourthMain,
+        iconTheme: IconThemeData(color: AppColor.main),
         actions: [
           IconButton(
-            icon: const Icon(Icons.edit),
+            icon: Icon(Icons.edit, color: AppColor.main),
             onPressed: controller.editRecord,
           ),
         ],
@@ -54,9 +59,9 @@ class MedicalRecord extends StatelessWidget {
               radius: 40,
               backgroundColor: Colors.blue.shade100,
               child: Icon(
-                controller.record.value.gender == 'Nam' 
-                  ? Icons.male 
-                  : Icons.female,
+                controller.record.value.gender == 'Nam'
+                    ? Icons.male
+                    : Icons.female,
                 size: 40,
                 color: Colors.blue,
               ),
@@ -114,8 +119,10 @@ class MedicalRecord extends StatelessWidget {
             const Divider(height: 24),
             _buildInfoRow('Chiều cao', '${controller.record.value.height} cm'),
             _buildInfoRow('Cân nặng', '${controller.record.value.weight} kg'),
-            _buildInfoRow('BMI', controller.record.value.bmi.toStringAsFixed(1)),
-            _buildInfoRow('Dị ứng', controller.record.value.allergies ?? 'Không có'),
+            _buildInfoRow(
+                'BMI', controller.record.value.bmi.toStringAsFixed(1)),
+            _buildInfoRow(
+                'Dị ứng', controller.record.value.allergies ?? 'Không có'),
           ],
         ),
       ),
@@ -142,11 +149,11 @@ class MedicalRecord extends StatelessWidget {
               ),
             ),
             const Divider(height: 24),
-            _buildInfoRow('Bệnh mãn tính', 
+            _buildInfoRow('Bệnh mãn tính',
                 controller.record.value.chronicDiseases ?? 'Không có'),
-            _buildInfoRow('Phẫu thuật', 
-                controller.record.value.surgeries ?? 'Không có'),
-            _buildInfoRow('Thuốc đang dùng', 
+            _buildInfoRow(
+                'Phẫu thuật', controller.record.value.surgeries ?? 'Không có'),
+            _buildInfoRow('Thuốc đang dùng',
                 controller.record.value.currentMedications ?? 'Không có'),
           ],
         ),
@@ -176,8 +183,9 @@ class MedicalRecord extends StatelessWidget {
             const Divider(height: 24),
             if (controller.appointments.isEmpty)
               const Center(child: Text('Chưa có lịch sử khám bệnh')),
-            ...controller.appointments.map((appointment) => 
-              _buildAppointmentItem(appointment)).toList(),
+            ...controller.appointments
+                .map((appointment) => _buildAppointmentItem(appointment))
+                .toList(),
           ],
         ),
       ),

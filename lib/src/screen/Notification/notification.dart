@@ -30,12 +30,14 @@ class MyNotification extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: AppColor.main),
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColor.main),
                     onPressed: () => Navigator.pop(context),
                     child: const Text("Hủy"),
                   ),
                   ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: AppColor.fourthMain),
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColor.fourthMain),
                     onPressed: () {
                       controller.markAllAsRead();
                       Navigator.pop(context);
@@ -66,12 +68,6 @@ class MyNotification extends StatelessWidget {
           backgroundColor: AppColor.fourthMain,
           automaticallyImplyLeading: false,
           centerTitle: true,
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: AppColor.main),
-            onPressed: () {
-              Get.back();
-            },
-          ),
           title: Text(
             'Thông báo',
             style: TextStyle(
@@ -112,13 +108,18 @@ class MyNotification extends StatelessWidget {
                         padding: const EdgeInsets.only(right: 20),
                         alignment: Alignment.centerRight,
                         color: Colors.red.shade400,
-                        child: const Icon(Icons.delete, color: Colors.white, size: 24),
+                        child: const Icon(Icons.delete,
+                            color: Colors.white, size: 24),
                       ),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
-                          color: item['isRead'] ? Colors.white : Colors.blue.shade200,
+                          color: item['isRead']
+                              ? Colors.white
+                              : Colors.blue.shade200,
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: const [
                             BoxShadow(

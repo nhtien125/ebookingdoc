@@ -1,6 +1,4 @@
-import 'package:ebookingdoc/src/Global/app_color.dart';
 import 'package:ebookingdoc/src/constants/app_page.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ebookingdoc/src/data/model/doctor_model.dart';
 

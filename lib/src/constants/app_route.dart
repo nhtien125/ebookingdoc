@@ -8,7 +8,6 @@ abstract class Routes {
   static const login = _Paths.login;
   static const personal = _Paths.personal;
   static const family = _Paths.family;
-  static const appointmentHistory = _Paths.appointmentHistory;
   static const medicalRecord = _Paths.medicalRecord;
   static const notification = _Paths.mynotification;
   static const appointment = _Paths.appointment;
@@ -27,7 +26,6 @@ abstract class _Paths {
   static const String login = '/login';
   static const String personal = '/personal';
   static const String family = '/family';
-  static const String appointmentHistory = '/appointmentHistory';
   static const String medicalRecord = '/medical-record';
   static const String mynotification = '/mynotification';
   static const String appointment = '/appointment';

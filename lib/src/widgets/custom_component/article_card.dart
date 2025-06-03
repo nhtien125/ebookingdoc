@@ -61,22 +61,6 @@ class ArticleCard extends StatelessWidget {
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: AppColor.fourthMain.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          article.category,
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: AppColor.fourthMain,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
                       Text(
                         article.publishDate,
                         style: TextStyle(

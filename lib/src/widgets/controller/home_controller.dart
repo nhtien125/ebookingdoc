@@ -2,7 +2,6 @@ import 'package:ebookingdoc/src/Global/app_color.dart';
 import 'package:ebookingdoc/src/constants/app_page.dart';
 import 'package:ebookingdoc/src/data/model/appointment_model.dart';
 import 'package:ebookingdoc/src/data/model/article_model.dart';
-import 'package:ebookingdoc/src/data/model/carousel_item_model.dart';
 import 'package:ebookingdoc/src/data/model/clinic_model.dart';
 import 'package:ebookingdoc/src/data/model/doctor_model.dart';
 import 'package:ebookingdoc/src/data/model/hospital_model.dart';
@@ -30,7 +29,6 @@ class HomeController extends GetxController {
     {'name': 'Trung tâm tiêm chủng Quốc gia', 'type': 'Trung tâm tiêm chủng'},
     // Có thể mở rộng thêm các mục từ các model sẵn có như recommendedHospitals, nearestClinics, featuredDoctors...
   ];
-
 
   final List<Hospital> recommendedHospitals = [
     Hospital(
@@ -154,21 +152,18 @@ class HomeController extends GetxController {
       id: '1',
       title: '10 cách tăng cường hệ miễn dịch mùa dịch',
       imageUrl: 'assets/images/carosel4.jpg',
-      category: 'Sức khỏe',
       publishDate: '20/04/2025',
     ),
     Article(
       id: '2',
       title: 'Dấu hiệu nhận biết sớm bệnh tim mạch',
       imageUrl: 'assets/images/carosel5.jpg',
-      category: 'Tim mạch',
       publishDate: '18/04/2025',
     ),
     Article(
       id: '3',
       title: 'Chế độ dinh dưỡng cho người tiểu đường',
       imageUrl: 'assets/images/10cpntm.jpg',
-      category: 'Dinh dưỡng',
       publishDate: '15/04/2025',
     ),
   ];
@@ -333,7 +328,7 @@ class HomeController extends GetxController {
   }
 
   void viewAllAppointments() {
-    // Get.toNamed(Routes.APPOINTMENTS);
+    Get.toNamed(Routes.appointment);
   }
 
   // Service selection

@@ -57,7 +57,6 @@ class buildDoctorCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Hàng đầu: chức danh và tên bác sĩ
                         Row(
                           children: [
                             Container(
