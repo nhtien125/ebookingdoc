@@ -66,7 +66,7 @@ class MyNotification extends StatelessWidget {
         appBar: AppBar(
           elevation: 4,
           backgroundColor: AppColor.fourthMain,
-          automaticallyImplyLeading: false,
+          automaticallyImplyLeading: true, // Cho phép hiển thị nút quay lại
           centerTitle: true,
           title: Text(
             'Thông báo',
@@ -75,6 +75,13 @@ class MyNotification extends StatelessWidget {
               fontSize: 20,
               fontWeight: FontWeight.w600,
             ),
+          ),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back,
+                color: Colors.white), // Mũi tên màu trắng
+            onPressed: () {
+              Navigator.pop(context);
+            },
           ),
           actions: [
             IconButton(

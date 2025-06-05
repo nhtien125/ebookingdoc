@@ -173,14 +173,14 @@ class HomeController extends GetxController {
       id: '1',
       doctorName: 'BS. Nguyễn Thị Nguyệt',
       specialtyName: 'Tim mạch',
-      doctorImageUrl: 'assets/images/doctor1.jpg',
+      doctorImageUrl: 'assets/images/bs4.jpg',
       dateTime: '10:00, 25/04/2025',
     ),
     Appointment(
       id: '2',
       doctorName: 'BS. Trần Thanh Long',
       specialtyName: 'Nhi khoa',
-      doctorImageUrl: 'assets/images/doctor2.jpg',
+      doctorImageUrl: 'assets/images/bs5.jpg',
       dateTime: '14:30, 25/04/2025',
     ),
   ];
@@ -198,8 +198,8 @@ class HomeController extends GetxController {
       Doctor(
         id: '1',
         title: "TS. BS",
-        name: 'Bác sĩ Nguyễn Văn Chiến',
-        specialty: 'Tim mạch',
+        name: 'BS. Nguyễn Văn Chiến',
+        specialty: 'Tổng quát',
         imageUrl: 'assets/images/bs4.jpg',
         rating: 4.8,
         experience: '15 năm kinh nghiệm',
@@ -208,7 +208,7 @@ class HomeController extends GetxController {
       Doctor(
         id: '2',
         title: "PGS. TS. BS",
-        name: 'Bác sĩ Phạm Ngọc Ánh',
+        name: 'BS. Phạm Ngọc Ánh',
         specialty: 'Tim mạch',
         imageUrl: 'assets/images/bs5.jpg',
         rating: 4.8,
@@ -218,8 +218,8 @@ class HomeController extends GetxController {
       Doctor(
         id: '3',
         title: "GS. PGS. BS",
-        name: 'Bác sĩ Ngô Diệu Linh',
-        specialty: 'Tim mạch',
+        name: 'BS. Ngô Diệu Linh',
+        specialty: 'Nhi khoa',
         imageUrl: 'assets/images/bs6.jpg',
         rating: 4.8,
         experience: '15 năm kinh nghiệm',
@@ -228,8 +228,8 @@ class HomeController extends GetxController {
       Doctor(
         id: '4',
         title: "BS. CK2",
-        name: 'Bác sĩ Đào Khánh Toàn',
-        specialty: 'Tim mạch',
+        name: 'BS. Đào Khánh Toàn',
+        specialty: 'Nội tiết',
         imageUrl: 'assets/images/bs7.jpg',
         rating: 4.8,
         experience: '15 năm kinh nghiệm',
@@ -291,16 +291,15 @@ class HomeController extends GetxController {
   }
 
   void viewHospitalDetails(String hospitalId) {
-    // Get.toNamed(Routes.HOSPITAL_DETAIL, arguments: hospitalId);
+    Get.toNamed(Routes.appointmentScreen);
   }
 
   void viewClinicDetails(String clinicId) {
-    // Get.toNamed(Routes.CLINIC_DETAIL, arguments: clinicId);
+    Get.toNamed(Routes.appointmentScreen);
   }
 
   void viewArticleDetails(String articleId) {
-    // Get.toNamed(Routes.ARTICLE_DETAIL, arguments: articleId);
-  }
+    Get.toNamed(Routes.news);}
 
   void viewAppointmentDetails(String appointmentId) {
     // Get.toNamed(Routes.APPOINTMENT_DETAIL, arguments: appointmentId);

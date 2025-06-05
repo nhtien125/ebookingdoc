@@ -859,207 +859,248 @@ class ExcellentDoctor extends StatelessWidget {
   }
 
   void _showFilterModal(BuildContext context) {
-    final List<String> cities = [
+    final selectedCity = ''.obs;
+    final selectedService = ''.obs;
+    final selectedSort = ''.obs;
+
+    final searchController = TextEditingController();
+    final filteredCities = [].obs;
+
+    final cities = [
       'Hồ Chí Minh',
       'Hà Nội',
       'Đà Nẵng',
       'Cần Thơ',
-      'Hải Phòng'
-    ];
-    final List<String> serviceTypes = [
-      'Bác sĩ',
-      'Bệnh viện',
-      'Phòng khám',
-      'Trung tâm tiêm chủng'
+      'Hải Phòng',
+      'Bình Dương',
+      'Huế',
     ];
 
-    RxList<String> selectedCities = <String>[].obs;
-    RxList<String> selectedServiceTypes = <String>[].obs;
-    RxString selectedSortOption = 'Phổ biến'.obs;
+    filteredCities.assignAll(cities);
 
-    showModalBottomSheet(
+    showGeneralDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (BuildContext context) {
-        return Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 10,
-                spreadRadius: 0,
-                offset: const Offset(0, -2),
-              ),
-            ],
-          ),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Bộ lọc',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-              const Divider(),
+      barrierDismissible: true,
+      barrierLabel: '',
+      transitionDuration: const Duration(milliseconds: 350),
+      pageBuilder: (context, anim1, anim2) {
+        return Scaffold(
+          backgroundColor: Colors.black.withOpacity(0.4),
+          body: Align(
+            alignment: Alignment.centerRight,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(1.0, 0.0),
+                end: Offset.zero,
+              ).animate(
+                  CurvedAnimation(parent: anim1, curve: Curves.easeInOut)),
+              child: Container(
+                width: MediaQuery.of(context).size.width * 0.75,
+                height: MediaQuery.of(context).size.height,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius:
+                      const BorderRadius.horizontal(left: Radius.circular(20)),
+                ),
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHeader(context),
+                    const Divider(thickness: 1.2),
+                    const SizedBox(height: 8),
 
-              // Lọc theo thành phố
-              ExpansionTile(
-                title: const Text('Thành phố',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-                children: [
-                  Obx(() => Wrap(
-                        spacing: 8,
-                        children: cities.map((city) {
-                          final isSelected = selectedCities.contains(city);
-                          return FilterChip(
-                            label: Text(city),
-                            selected: isSelected,
-                            onSelected: (selected) {
-                              if (selected) {
-                                selectedCities.add(city);
-                              } else {
-                                selectedCities.remove(city);
-                              }
-                            },
-                            selectedColor: AppColor.main.withOpacity(0.2),
-                            backgroundColor: Colors.grey[200],
-                            labelStyle: TextStyle(
-                              color: isSelected ? AppColor.main : Colors.black,
-                            ),
-                          );
-                        }).toList(),
-                      )),
-                ],
-              ),
-
-              // Lọc theo loại dịch vụ
-              ExpansionTile(
-                title: const Text('Loại dịch vụ',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-                children: [
-                  Obx(() => Wrap(
-                        spacing: 8,
-                        children: serviceTypes.map((type) {
-                          final isSelected =
-                              selectedServiceTypes.contains(type);
-                          return FilterChip(
-                            label: Text(type),
-                            selected: isSelected,
-                            onSelected: (selected) {
-                              if (selected) {
-                                selectedServiceTypes.add(type);
-                              } else {
-                                selectedServiceTypes.remove(type);
-                              }
-                            },
-                            selectedColor: AppColor.main.withOpacity(0.2),
-                            backgroundColor: Colors.grey[200],
-                            labelStyle: TextStyle(
-                              color: isSelected ? AppColor.main : Colors.black,
-                            ),
-                          );
-                        }).toList(),
-                      )),
-                ],
-              ),
-
-              // Sắp xếp
-              ExpansionTile(
-                title: const Text('Sắp xếp theo',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-                children: [
-                  Obx(() => Column(
-                        children: [
-                          RadioListTile(
-                            title: const Text('Phổ biến'),
-                            value: 'Phổ biến',
-                            groupValue: selectedSortOption.value,
-                            onChanged: (value) =>
-                                selectedSortOption.value = value.toString(),
-                          ),
-                          RadioListTile(
-                            title: const Text('Đánh giá cao'),
-                            value: 'Đánh giá cao',
-                            groupValue: selectedSortOption.value,
-                            onChanged: (value) =>
-                                selectedSortOption.value = value.toString(),
-                          ),
-                          RadioListTile(
-                            title: const Text('Gần tôi'),
-                            value: 'Gần tôi',
-                            groupValue: selectedSortOption.value,
-                            onChanged: (value) =>
-                                selectedSortOption.value = value.toString(),
-                          ),
-                        ],
-                      )),
-                ],
-              ),
-
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () {
-                        selectedCities.clear();
-                        selectedServiceTypes.clear();
-                        selectedSortOption.value = 'Phổ biến';
-                      },
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        side: BorderSide(color: AppColor.main),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                    // Thành phố
+                    const Text('Thành phố',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: searchController,
+                      decoration: InputDecoration(
+                        hintText: 'Tìm thành phố...',
+                        prefixIcon: const Icon(Icons.search),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
+                        contentPadding:
+                            const EdgeInsets.symmetric(horizontal: 12),
                       ),
-                      child: Text(
-                        'Đặt lại',
-                        style: TextStyle(color: AppColor.main),
+                      onChanged: (value) {
+                        filteredCities.value = cities
+                            .where((city) => city
+                                .toLowerCase()
+                                .contains(value.toLowerCase()))
+                            .toList();
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    Obx(() => Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: filteredCities.map((city) {
+                            final isSelected = selectedCity.value == city;
+                            return ChoiceChip(
+                              label: Text(
+                                city,
+                                style: TextStyle(
+                                  color: Colors.black87, // Không đổi màu chữ
+                                  fontWeight: FontWeight.normal,
+                                ),
+                              ),
+                              selected: isSelected,
+                              onSelected: (_) => selectedCity.value = city,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                side: BorderSide(
+                                  color: isSelected
+                                      ? Colors.blue
+                                      : Colors.grey.shade300,
+                                  width: 1.5,
+                                ),
+                              ),
+                              backgroundColor:
+                                  Colors.white, // Luôn giữ nền trắng
+                              selectedColor:
+                                  Colors.white, // Khi chọn vẫn giữ nền trắng
+                            );
+                          }).toList(),
+                        )),
+                    const SizedBox(height: 20),
+
+                    // Loại dịch vụ
+                    const Text('Loại dịch vụ',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 12),
+                    Obx(() => Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            'Bác sĩ',
+                            'Bệnh viện',
+                            'Phòng khám',
+                            'Trung tâm tiêm chủng'
+                          ].map((option) {
+                            final isSelected = selectedService.value == option;
+                            return ChoiceChip(
+                              label: Text(
+                                option,
+                                style: TextStyle(
+                                  color: Colors.black87, // Không đổi màu chữ
+                                  fontWeight: FontWeight.normal,
+                                ),
+                              ),
+                              selected: isSelected,
+                              onSelected: (_) => selectedService.value = option,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                side: BorderSide(
+                                  color: isSelected
+                                      ? Colors.blue
+                                      : Colors.grey.shade300,
+                                  width: 1.5,
+                                ),
+                              ),
+                              backgroundColor:
+                                  Colors.white, // Luôn giữ nền trắng
+                              selectedColor:
+                                  Colors.white, // Khi chọn vẫn giữ nền trắng
+                            );
+                          }).toList(),
+                        )),
+                    const SizedBox(height: 20),
+
+                    // Sắp xếp
+                    const Text('Sắp xếp theo',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 12),
+                    Obx(() => Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: ['Phổ biến', 'Đánh giá cao', 'Gần tôi']
+                              .map((option) {
+                            final isSelected = selectedSort.value == option;
+                            return ChoiceChip(
+                              label: Text(
+                                option,
+                                style: const TextStyle(
+                                  color: Colors.black87,
+                                  fontWeight: FontWeight.normal,
+                                ),
+                              ),
+                              selected: isSelected,
+                              onSelected: (_) => selectedSort.value = option,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                side: BorderSide(
+                                  color: isSelected
+                                      ? Colors.blue
+                                      : Colors.grey.shade300,
+                                  width: 1.5,
+                                ),
+                              ),
+                              backgroundColor: Colors.white,
+                              selectedColor: Colors.white,
+                            );
+                          }).toList(),
+                        )),
+
+                    const Spacer(),
+
+                    // Nút Áp dụng
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // TODO: Trả kết quả lọc ra ngoài nếu cần
+                          print('Thành phố: ${selectedCity.value}');
+                          print('Loại dịch vụ: ${selectedService.value}');
+                          print('Sắp xếp: ${selectedSort.value}');
+                          Navigator.pop(context);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColor.fourthMain,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: Text('Áp dụng',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: AppColor.main)),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // Áp dụng bộ lọc
-                        controller.filterOption.value =
-                            selectedServiceTypes.join(', ');
-                        controller.applyFilter();
-                        Navigator.pop(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColor.main,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: const Text(
-                        'Áp dụng',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ],
+            ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back, size: 26),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        const Center(
+          child: Text(
+            'Bộ lọc tìm kiếm',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+        ),
+      ],
     );
   }
 }

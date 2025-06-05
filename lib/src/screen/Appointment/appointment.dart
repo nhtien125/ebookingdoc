@@ -12,10 +12,10 @@ class Appointment extends StatelessWidget {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text(
+          title: Text(
             'Lịch hẹn khám bệnh',
             style: TextStyle(
-              color: Colors.white,
+              color: AppColor.main,
               fontSize: 20,
               fontWeight: FontWeight.w600,
             ),
@@ -299,7 +299,7 @@ class Appointment extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: () => controller.cancelAppointment(appointment['id']),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
+                backgroundColor: AppColor.fourthMain,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -322,7 +322,7 @@ class Appointment extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: () => controller.viewMedicalRecord(appointment['id']),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
+                backgroundColor: AppColor.fourthMain,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),

@@ -239,7 +239,7 @@ class ArticleDetail extends StatelessWidget {
       ),
       backgroundColor: AppColor.fourthMain,
       leading: IconButton(
-        icon: Icon(Icons.arrow_back, color: AppColor.main), 
+        icon: Icon(Icons.arrow_back, color: Colors.white), 
         onPressed: () {
           Navigator.pop(context); 
         },
