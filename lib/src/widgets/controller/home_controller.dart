@@ -99,7 +99,7 @@ class HomeController extends GetxController {
       id: '2',
       name: 'Đặt khám tại nhà',
       icon: SvgPicture.asset(
-        'assets/icons/chuyenkhoa.svg',
+        'assets/icons/nn.svg',
         height: 20,
         width: 20,
       ),
@@ -119,7 +119,7 @@ class HomeController extends GetxController {
       id: '4',
       name: 'Đặt bác sĩ',
       icon: SvgPicture.asset(
-        'assets/icons/nhakhoa.svg',
+        'assets/icons/bs111.svg',
         height: 20,
         width: 20,
       ),

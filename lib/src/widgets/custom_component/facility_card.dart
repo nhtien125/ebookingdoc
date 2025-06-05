@@ -52,7 +52,7 @@ class FacilityCard extends StatelessWidget {
                 children: [
                   Text(
                     facility.name,
-                    maxLines: 2,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
