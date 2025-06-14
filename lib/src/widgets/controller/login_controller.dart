@@ -1,22 +1,19 @@
 import 'package:ebookingdoc/src/constants/services/auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-// import 'package:ebookingdoc/Route/app_page.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // Thêm package này nếu chưa có
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginController extends GetxController {
-  // Text controllers
-  TextEditingController username = TextEditingController();
-  TextEditingController password = TextEditingController();
+  // Controllers cho input
+  final account = TextEditingController(); // Đổi tên biến cho rõ ràng!
+  final password = TextEditingController();
 
-  // Biến observable
-  RxBool hidePassword = true.obs;
-  RxBool isLoading = false.obs;
-  RxString usernameError = ''.obs;
-  RxString passwordError = ''.obs;
-  RxBool rememberMe = false.obs;
-  RxBool numericPassword =
-      true.obs; // Mặc định sử dụng bàn phím số cho mật khẩu
+  // State observable
+  final hidePassword = true.obs;
+  final isLoading = false.obs;
+  final accountError = ''.obs;  // Đổi tên luôn!
+  final passwordError = ''.obs;
+  final rememberMe = false.obs;
 
   @override
   void onInit() {
@@ -24,119 +21,122 @@ class LoginController extends GetxController {
     loadSavedCredentials();
   }
 
-  // Hàm chuyển đổi giữa bàn phím số và bàn phím chữ cho mật khẩu
-  void togglePasswordKeyboardType() {
-    numericPassword.value = !numericPassword.value;
-  }
-
-  // Tải thông tin đăng nhập đã lưu
+  // Load thông tin đã lưu (ghi nhớ)
   void loadSavedCredentials() async {
     final prefs = await SharedPreferences.getInstance();
-    final savedUsername = prefs.getString('username') ?? '';
+    final savedAccount = prefs.getString('account') ?? '';
     final savedPassword = prefs.getString('password') ?? '';
     final savedRememberMe = prefs.getBool('rememberMe') ?? false;
 
-    if (savedRememberMe && savedUsername.isNotEmpty) {
-      username.text = savedUsername;
-      if (savedPassword.isNotEmpty) {
-        password.text = savedPassword;
-      }
+    if (savedRememberMe && savedAccount.isNotEmpty) {
+      account.text = savedAccount;
+      password.text = savedPassword;
       rememberMe.value = true;
     }
   }
 
-  // Lưu thông tin đăng nhập
+  // Lưu thông tin đăng nhập (ghi nhớ)
   void saveCredentials() async {
+    final prefs = await SharedPreferences.getInstance();
     if (rememberMe.value) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('username', username.text);
+      await prefs.setString('account', account.text.trim());
       await prefs.setString('password', password.text);
       await prefs.setBool('rememberMe', true);
     } else {
-      // Xóa thông tin đã lưu nếu không chọn ghi nhớ
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('username');
+      await prefs.remove('account');
       await prefs.remove('password');
       await prefs.setBool('rememberMe', false);
     }
   }
 
-  // Kiểm tra số điện thoại hợp lệ
-  bool isValidPhoneNumber(String phone) {
-    // Kiểm tra xem SĐT có đúng định dạng không
-    return phone.length == 10 && phone.startsWith('0');
-  }
+  // Validate email cơ bản
+  bool isValidEmail(String text) => RegExp(
+      r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$"
+    ).hasMatch(text);
 
-  // Kiểm tra mật khẩu hợp lệ
-  bool isValidPassword(String pwd) {
-    return pwd.length >= 6 && pwd.length <= 20;
-  }
+  // Validate username: chỉ cần không rỗng hoặc tối thiểu 4 ký tự, bạn tự custom thêm nếu muốn
+  bool isValidUsername(String text) => text.length >= 4;
 
-  // Validate form
+  // Validate mật khẩu
+  bool isValidPassword(String pwd) => pwd.length >= 6 && pwd.length <= 20;
+
+  // Kiểm tra form trước khi login
   bool validateForm() {
-    bool isValid = true;
+    bool valid = true;
+    final acc = account.text.trim();
 
-    // Kiểm tra username (SĐT)
-    if (username.text.isEmpty) {
-      usernameError.value = 'Vui lòng nhập số điện thoại';
-      isValid = false;
-    } else if (!isValidPhoneNumber(username.text)) {
-      usernameError.value = 'Số điện thoại không hợp lệ';
-      isValid = false;
+    if (acc.isEmpty) {
+      accountError.value = 'Vui lòng nhập email hoặc tên đăng nhập';
+      valid = false;
+    } else if (acc.contains('@')) {
+      if (!isValidEmail(acc)) {
+        accountError.value = 'Email không hợp lệ';
+        valid = false;
+      } else {
+        accountError.value = '';
+      }
     } else {
-      usernameError.value = '';
+      if (!isValidUsername(acc)) {
+        accountError.value = 'Tên đăng nhập phải từ 4 ký tự';
+        valid = false;
+      } else {
+        accountError.value = '';
+      }
     }
 
-    // Kiểm tra password
     if (password.text.isEmpty) {
       passwordError.value = 'Vui lòng nhập mật khẩu';
-      isValid = false;
+      valid = false;
     } else if (!isValidPassword(password.text)) {
       passwordError.value = 'Mật khẩu phải từ 6-20 ký tự';
-      isValid = false;
+      valid = false;
     } else {
       passwordError.value = '';
     }
-
-    return isValid;
+    return valid;
   }
 
-  // Logic đăng nhập
-  void login() async {
-    // Kiểm tra form trước
-    // if (!validateForm()) return;
+  // Hàm đăng nhập
+  Future<void> login() async {
+    if (!validateForm()) return;
 
-    await Auth.login(
-      userName: username.text.trim(),
-      password: password.text.trim(),
-    );
-
-
+    isLoading.value = true;
+    try {
+      final result = await Auth.login(
+        account: account.text.trim(), // truyền email hoặc username
+        password: password.text.trim(),
+      );
+      if (result == true) {
+        saveCredentials();
+        // Đã tự chuyển màn ở Auth.login
+      } else {
+        Get.snackbar("Lỗi", result.toString(),
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.red[300],
+            colorText: Colors.white);
+      }
+    } finally {
+      isLoading.value = false;
+    }
   }
 
-  // Logic đăng ký
+  // Điều hướng sang đăng ký
   void register() {
-    // Xóa các thông báo lỗi khi chuyển trang
-    usernameError.value = '';
+    accountError.value = '';
     passwordError.value = '';
-
-    // Điều hướng tới trang đăng ký
-    // Get.toNamed(Routes.register);
+    Get.toNamed('/register');
   }
 
-  // Logic quên mật khẩu
+  // Điều hướng sang quên mật khẩu
   void forgotPassword() {
-    // Xóa các thông báo lỗi khi chuyển trang
-    usernameError.value = '';
+    accountError.value = '';
     passwordError.value = '';
-
-    // Get.toNamed(Routes.forgotPassword);
+    // Get.toNamed('/forgotPassword');
   }
 
   @override
   void onClose() {
-    // Giải phóng bộ nhớ controllers khi không sử dụng
-    username.dispose();
+    account.dispose();
     password.dispose();
     super.onClose();
   }

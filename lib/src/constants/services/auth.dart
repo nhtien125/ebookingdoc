@@ -11,7 +11,6 @@ class Auth {
     if (!isRun) {
       return null;
     }
-
     await Utils.saveStringWithKey(Constant.ACCESS_TOKEN, '');
     await Utils.saveStringWithKey(Constant.REFRESH_TOKEN, '');
     await Utils.saveStringWithKey(Constant.USERNAME, '');
@@ -21,43 +20,88 @@ class Auth {
     }
   }
 
-  static login({String? userName, String? password}) async {
-    String userNamePreferences =
-        await Utils.getStringValueWithKey(Constant.USERNAME);
-    String passwordPreferences =
-        await Utils.getStringValueWithKey(Constant.PASSWORD);
+static Future<dynamic> login({
+  required String account,
+  required String password,
+}) async {
+  // Xác định nên gửi key username hay email
+  Map<String, String> param;
+  if (account.contains('@')) {
+    param = {"email": account, "password": password};
+  } else {
+    param = {"username": account, "password": password};
+  }
 
-    Map<String, String> param = {
-      "phone": userName ?? userNamePreferences,
-      // "password":
-      //     password != null ? Utils.generateMd5(password) : passwordPreferences,
-      "password":
-          password ?? passwordPreferences,
-      // "fcmToken": await Utils.getStringValueWithKey(Constant.FCMTOKEN)
+  try {
+    var response = await APICaller.getInstance().post('api/auth/login', body: param);
+
+    print('Raw response: $response');
+    if (response is String) {
+      if (response.trim().startsWith('<!DOCTYPE html>')) {
+        Utils.showSnackBar(
+            title: 'Thông báo',
+            message: 'Lỗi server: API trả về HTML, hãy kiểm tra lại backend, URL hoặc mạng!');
+        return "Lỗi server: API trả về HTML";
+      } else {
+        Utils.showSnackBar(
+            title: 'Thông báo', message: 'Lỗi không xác định: $response');
+        return "Lỗi không xác định: $response";
+      }
+    }
+
+    if (response != null &&
+        response is Map &&
+        response['code'] == 200 &&
+        response['data'] != null) {
+      GlobalValue.getInstance()
+          .setToken('Bearer ${response['data']['access_token']}');
+      Utils.saveStringWithKey(
+          Constant.ACCESS_TOKEN, response['data']['access_token']);
+      Utils.saveStringWithKey(
+          Constant.REFRESH_TOKEN, response['data']['refresh_token']);
+      Utils.saveStringWithKey(Constant.NAME, response['data']['name'] ?? '');
+      Utils.saveStringWithKey(
+          Constant.AVATAR, response['data']['avatar'] ?? '');
+      Utils.saveStringWithKey(Constant.USERNAME, account);
+      Utils.saveStringWithKey(Constant.PASSWORD, password);
+      Get.offAllNamed(Routes.dashboard);
+      return true;
+    } else {
+      final msg = (response is Map)
+          ? (response['message'] ?? "Đăng nhập thất bại")
+          : "Đăng nhập thất bại";
+      Utils.showSnackBar(title: 'Thông báo', message: msg);
+      return msg;
+    }
+  } catch (e) {
+    Utils.showSnackBar(title: 'Thông báo', message: '$e');
+    return e.toString();
+  }
+}
+
+
+  static Future<dynamic> register({
+    required String username,
+    required String email,
+    required String password,
+    required int premissionId,
+  }) async {
+    Map<String, dynamic> param = {
+      "username": username,
+      "email": email,
+      "password": password,
+      "premission_id": premissionId,
     };
 
     try {
       var response =
-          await APICaller.getInstance().post('v1/user/login', body: param);
-      print(jsonEncode(response));
-      if (response != null) {
-        GlobalValue.getInstance()
-            .setToken('Bearer ${response['data']['access_token']}');
-        Utils.saveStringWithKey(
-            Constant.ACCESS_TOKEN, response['data']['access_token']);
-        Utils.saveStringWithKey(
-            Constant.REFRESH_TOKEN, response['data']['refresh_token']);
-        Utils.saveStringWithKey(Constant.NAME, response['data']['name'] ?? '');
-        Utils.saveStringWithKey(Constant.AVATAR, response['data']['avatar'] ?? '');
-        Utils.saveStringWithKey(
-            Constant.USERNAME, userName ?? userNamePreferences);
-        Utils.saveStringWithKey(Constant.PASSWORD, param['password']!);
-        Get.offAllNamed(Routes.dashboard);
-      } else {
-        backLogin(true);
+          await APICaller.getInstance().post('api/auth/register', body: param);
+      if (response != null && response['code'] == 200) {
+        return true;
       }
+      return response?['message'] ?? "Đăng ký thất bại";
     } catch (e) {
-      Utils.showSnackBar(title: 'Thông báo', message: '$e');
+      return e.toString();
     }
   }
 }

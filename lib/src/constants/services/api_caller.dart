@@ -11,8 +11,8 @@ import 'package:http/http.dart' as http;
 
 class APICaller {
   static APICaller? _apiCaller = APICaller();
-  final String BASE_URL = dotenv.env['API_URL'] ?? '';
-  // final String BASE_URL = "http://192.168.1.4:3210/";
+  // final String BASE_URL = dotenv.env['API_URL'] ?? '';
+  final String BASE_URL = "http://192.168.1.20:3210/";
   static Map<String, String> requestHeaders = {
     'Content-type': 'application/json',
     'Accept': 'application/json'

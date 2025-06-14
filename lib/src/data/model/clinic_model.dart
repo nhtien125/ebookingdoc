@@ -1,19 +1,19 @@
 class Clinic {
-  final String id;
-  final String name;
-  final String address;
-  final String imageUrl;
-  final double rating;
-  final double distance;
+  final String uuid;
+  final String? name;
+  final String? address;
+  final String? phone;
+  final String? email;
+  final String? image;
+  final String? hospital_id;
 
   Clinic({
-    required this.id,
-    required this.name,
-    required this.address,
-    required this.imageUrl,
-    required this.rating,
-    required this.distance,
+    required this.uuid,
+    this.name,
+    this.address,
+    this.phone,
+    this.email,
+    this.image,
+    this.hospital_id,
   });
-
- 
 }
