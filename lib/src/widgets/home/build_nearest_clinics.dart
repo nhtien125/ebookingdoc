@@ -4,7 +4,6 @@ import 'package:ebookingdoc/src/widgets/custom_component/section_header.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-
 final controller = Get.put(HomeController());
 
 class BuildNearestClinics extends StatelessWidget {
@@ -24,22 +23,24 @@ class BuildNearestClinics extends StatelessWidget {
             onViewMore: () => controller.viewAllClinics(),
           ),
           const SizedBox(height: 12),
-          SizedBox(
+          Obx(() => SizedBox(
             height: 265,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: controller.nearestClinics.length,
-              itemBuilder: (context, index) {
-                final clinic = controller.nearestClinics[index];
-                return FacilityCard(
-                  facility: clinic,
-                  onTap: () => controller.viewClinicDetails(clinic.id),
-                  buttonText: 'Đặt khám',
-                );
-              },
-            ),
-          ),
+            child: controller.clinics.isEmpty
+                ? const Center(child: Text('Không có dữ liệu'))
+                : ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: controller.clinics.length,
+                    itemBuilder: (context, index) {
+                      final clinic = controller.clinics[index];
+                      return FacilityCard(
+                        facility: clinic,
+                        onTap: () => controller.viewClinicDetails(clinic.uuid),
+                        buttonText: 'Đặt khám',
+                      );
+                    },
+                  ),
+          )),
         ],
       ),
     );

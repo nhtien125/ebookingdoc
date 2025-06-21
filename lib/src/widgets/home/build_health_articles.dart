@@ -2,7 +2,7 @@ import 'package:ebookingdoc/src/widgets/controller/home_controller.dart';
 import 'package:ebookingdoc/src/widgets/custom_component/article_card.dart';
 import 'package:ebookingdoc/src/widgets/custom_component/section_header.dart';
 import 'package:flutter/material.dart';
-import 'package:get/Get.dart';
+import 'package:get/get.dart'; // Đúng import
 
 final controller = Get.put(HomeController());
 
@@ -23,17 +23,23 @@ class BuildHealthArticles extends StatelessWidget {
             onViewMore: () => controller.viewAllArticles(),
           ),
           const SizedBox(height: 12),
-          SizedBox(
-            height: 210,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: controller.healthArticles.length,
-              itemBuilder: (context, index) {
-                return ArticleCard(article: controller.healthArticles[index]);
-              },
-            ),
-          ),
+          Obx(() => SizedBox(
+                height: 265,
+                child: controller.article.isEmpty
+                    ? const Center(child: Text('Không có dữ liệu'))
+                    : ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: controller.article.length,
+                        itemBuilder: (context, index) {
+                          final article = controller.article[index];
+                          return ArticleCard(
+                            article: article, // đổi facility => article
+                            onTap: () => controller.viewArticleDetails(article.uuid),
+                          );
+                        },
+                      ),
+              )),
         ],
       ),
     );

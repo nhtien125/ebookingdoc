@@ -4,6 +4,7 @@ import 'package:ebookingdoc/src/Global/global_value.dart';
 import 'package:ebookingdoc/src/constants/app_page.dart';
 import 'package:ebookingdoc/src/constants/services/api_caller.dart';
 import 'package:ebookingdoc/src/Utils/utils.dart';
+import 'package:ebookingdoc/src/data/model/userModel.dart';
 import 'package:get/get.dart';
 
 class Auth {
@@ -20,65 +21,67 @@ class Auth {
     }
   }
 
-static Future<dynamic> login({
-  required String account,
-  required String password,
-}) async {
-  // Xác định nên gửi key username hay email
-  Map<String, String> param;
-  if (account.contains('@')) {
-    param = {"email": account, "password": password};
-  } else {
-    param = {"username": account, "password": password};
-  }
-
-  try {
-    var response = await APICaller.getInstance().post('api/auth/login', body: param);
-
-    print('Raw response: $response');
-    if (response is String) {
-      if (response.trim().startsWith('<!DOCTYPE html>')) {
-        Utils.showSnackBar(
-            title: 'Thông báo',
-            message: 'Lỗi server: API trả về HTML, hãy kiểm tra lại backend, URL hoặc mạng!');
-        return "Lỗi server: API trả về HTML";
-      } else {
-        Utils.showSnackBar(
-            title: 'Thông báo', message: 'Lỗi không xác định: $response');
-        return "Lỗi không xác định: $response";
-      }
-    }
-
-    if (response != null &&
-        response is Map &&
-        response['code'] == 200 &&
-        response['data'] != null) {
-      GlobalValue.getInstance()
-          .setToken('Bearer ${response['data']['access_token']}');
-      Utils.saveStringWithKey(
-          Constant.ACCESS_TOKEN, response['data']['access_token']);
-      Utils.saveStringWithKey(
-          Constant.REFRESH_TOKEN, response['data']['refresh_token']);
-      Utils.saveStringWithKey(Constant.NAME, response['data']['name'] ?? '');
-      Utils.saveStringWithKey(
-          Constant.AVATAR, response['data']['avatar'] ?? '');
-      Utils.saveStringWithKey(Constant.USERNAME, account);
-      Utils.saveStringWithKey(Constant.PASSWORD, password);
-      Get.offAllNamed(Routes.dashboard);
-      return true;
+  static Future<User?> login({
+    required String account,
+    required String password,
+  }) async {
+    Map<String, String> param;
+    if (account.contains('@')) {
+      param = {"email": account, "password": password};
     } else {
-      final msg = (response is Map)
-          ? (response['message'] ?? "Đăng nhập thất bại")
-          : "Đăng nhập thất bại";
-      Utils.showSnackBar(title: 'Thông báo', message: msg);
-      return msg;
+      param = {"username": account, "password": password};
     }
-  } catch (e) {
-    Utils.showSnackBar(title: 'Thông báo', message: '$e');
-    return e.toString();
-  }
-}
 
+    try {
+      var response =
+          await APICaller.getInstance().post('api/auth/login', body: param);
+
+      print('Raw response: $response');
+      if (response is String) {
+        if (response.trim().startsWith('<!DOCTYPE html>')) {
+          Utils.showSnackBar(
+              title: 'Thông báo',
+              message:
+                  'Lỗi server: API trả về HTML, hãy kiểm tra lại backend, URL hoặc mạng!');
+          return null;
+        } else {
+          Utils.showSnackBar(
+              title: 'Thông báo', message: 'Lỗi không xác định: $response');
+          return null;
+        }
+      }
+
+      if (response != null &&
+          response is Map &&
+          response['code'] == 200 &&
+          response['data'] != null) {
+        // Nếu cần lưu token vào GlobalValue, giữ lại đoạn này
+        GlobalValue.getInstance()
+            .setToken('Bearer ${response['data']['access_token']}');
+        Utils.saveStringWithKey(
+            Constant.ACCESS_TOKEN, response['data']['access_token']);
+        Utils.saveStringWithKey(
+            Constant.REFRESH_TOKEN, response['data']['refresh_token']);
+        Utils.saveStringWithKey(Constant.NAME, response['data']['name'] ?? '');
+        Utils.saveStringWithKey(
+            Constant.AVATAR, response['data']['avatar'] ?? '');
+        Utils.saveStringWithKey(Constant.USERNAME, account);
+        Utils.saveStringWithKey(Constant.PASSWORD, password);
+
+        // **CHỈ SỬA DÒNG NÀY**: trả về object User thay vì true
+        return User.fromJson(response['data']);
+      } else {
+        final msg = (response is Map)
+            ? (response['message'] ?? "Đăng nhập thất bại")
+            : "Đăng nhập thất bại";
+        Utils.showSnackBar(title: 'Thông báo', message: msg);
+        return null;
+      }
+    } catch (e) {
+      Utils.showSnackBar(title: 'Thông báo', message: '$e');
+      return null;
+    }
+  }
 
   static Future<dynamic> register({
     required String username,
@@ -102,6 +105,51 @@ static Future<dynamic> login({
       return response?['message'] ?? "Đăng ký thất bại";
     } catch (e) {
       return e.toString();
+    }
+  }
+
+  static Future<Map<String, dynamic>?> updateUser({
+    required String uuid,
+    required String name,
+    required int gender,
+    required String birthDay, // yyyy-MM-dd
+    required String phone,
+    required String email,
+    required int premissionId,
+    String? accessToken,
+  }) async {
+    final param = {
+      'name': name,
+      'gender': gender,
+      'birth_day': birthDay,
+      'phone': phone,
+      'email': email,
+      'premission_id': premissionId,
+    };
+
+    try {
+      final response = await APICaller.getInstance().put(
+        'api/auth/update/$uuid',
+        body: param,
+        headers: accessToken != null
+            ? {'Authorization': 'Bearer $accessToken'}
+            : null,
+      );
+
+      print('Update user response: $response');
+
+      if (response != null && response is Map && response['code'] == 200) {
+        return response['data'];
+      } else {
+        final msg = (response is Map)
+            ? (response['message'] ?? "Cập nhật thất bại")
+            : "Cập nhật thất bại";
+        Utils.showSnackBar(title: 'Thông báo', message: msg);
+        return null;
+      }
+    } catch (e) {
+      Utils.showSnackBar(title: 'Thông báo', message: '$e');
+      return null;
     }
   }
 }

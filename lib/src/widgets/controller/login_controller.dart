@@ -1,17 +1,18 @@
 import 'package:ebookingdoc/src/constants/services/auth.dart';
+import 'package:ebookingdoc/src/data/model/userModel.dart';
+import 'package:ebookingdoc/src/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class LoginController extends GetxController {
-  // Controllers cho input
-  final account = TextEditingController(); // Đổi tên biến cho rõ ràng!
+  final account = TextEditingController();
   final password = TextEditingController();
 
-  // State observable
   final hidePassword = true.obs;
   final isLoading = false.obs;
-  final accountError = ''.obs;  // Đổi tên luôn!
+  final accountError = ''.obs;
   final passwordError = ''.obs;
   final rememberMe = false.obs;
 
@@ -21,7 +22,6 @@ class LoginController extends GetxController {
     loadSavedCredentials();
   }
 
-  // Load thông tin đã lưu (ghi nhớ)
   void loadSavedCredentials() async {
     final prefs = await SharedPreferences.getInstance();
     final savedAccount = prefs.getString('account') ?? '';
@@ -35,7 +35,6 @@ class LoginController extends GetxController {
     }
   }
 
-  // Lưu thông tin đăng nhập (ghi nhớ)
   void saveCredentials() async {
     final prefs = await SharedPreferences.getInstance();
     if (rememberMe.value) {
@@ -49,18 +48,30 @@ class LoginController extends GetxController {
     }
   }
 
-  // Validate email cơ bản
+
+  Future<void> saveUserToPrefs(User user) async {
+    final prefs = await SharedPreferences.getInstance();
+    final userJson = jsonEncode(user.toJson());
+    await prefs.setString('user_data', userJson);
+  }
+
+
+  Future<User?> getUserFromPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userJson = prefs.getString('user_data');
+    if (userJson != null) {
+      return User.fromJson(jsonDecode(userJson));
+    }
+    return null;
+  }
+
   bool isValidEmail(String text) => RegExp(
-      r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$"
-    ).hasMatch(text);
+          r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$")
+      .hasMatch(text);
 
-  // Validate username: chỉ cần không rỗng hoặc tối thiểu 4 ký tự, bạn tự custom thêm nếu muốn
   bool isValidUsername(String text) => text.length >= 4;
-
-  // Validate mật khẩu
   bool isValidPassword(String pwd) => pwd.length >= 6 && pwd.length <= 20;
 
-  // Kiểm tra form trước khi login
   bool validateForm() {
     bool valid = true;
     final acc = account.text.trim();
@@ -99,35 +110,42 @@ class LoginController extends GetxController {
   // Hàm đăng nhập
   Future<void> login() async {
     if (!validateForm()) return;
-
     isLoading.value = true;
     try {
-      final result = await Auth.login(
-        account: account.text.trim(), // truyền email hoặc username
+      final user = await Auth.login(
+        account: account.text.trim(),
         password: password.text.trim(),
       );
-      if (result == true) {
+      print("Kết quả Auth.login trả về: $user (${user.runtimeType})");
+      if (user != null) {
         saveCredentials();
-        // Đã tự chuyển màn ở Auth.login
+        await saveUserToPrefs(user);
+        final prefs = await SharedPreferences.getInstance();
+        print("user_data sau khi lưu: ${prefs.getString('user_data')}");
+       Get.offAllNamed('/dashboard');
       } else {
-        Get.snackbar("Lỗi", result.toString(),
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.red[300],
-            colorText: Colors.white);
+        print("User NULL, không lưu được");
+        Get.snackbar(
+          "Lỗi",
+          "Tài khoản hoặc mật khẩu không đúng",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red[300],
+          colorText: Colors.white,
+        );
       }
+    } catch (e, stack) {
+      print("Lỗi login: $e\n$stack");
     } finally {
       isLoading.value = false;
     }
   }
 
-  // Điều hướng sang đăng ký
   void register() {
     accountError.value = '';
     passwordError.value = '';
     Get.toNamed('/register');
   }
 
-  // Điều hướng sang quên mật khẩu
   void forgotPassword() {
     accountError.value = '';
     passwordError.value = '';

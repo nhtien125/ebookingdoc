@@ -11,13 +11,13 @@ class AppointmentController extends GetxController {
     loadAppointments();
   }
 
-  // Load danh sách lịch hẹn
+
   void loadAppointments() {
     isLoading.value = true;
 
     // Simulate API call
     Future.delayed(const Duration(seconds: 1), () {
-      // Mock data với các trạng thái khác nhau
+
       appointments.value = {
         1: {
           'id': 1,

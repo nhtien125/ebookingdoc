@@ -12,7 +12,8 @@ import 'package:http/http.dart' as http;
 class APICaller {
   static APICaller? _apiCaller = APICaller();
   // final String BASE_URL = dotenv.env['API_URL'] ?? '';
-  final String BASE_URL = "http://192.168.1.20:3210/";
+  // ignore: non_constant_identifier_names
+  final String BASE_URL = "http://192.168.1.31:3210/";
   static Map<String, String> requestHeaders = {
     'Content-type': 'application/json',
     'Accept': 'application/json'
@@ -30,16 +31,19 @@ class APICaller {
   }
 
   handleResponse(http.Response response) async {
-    final body = jsonDecode(response.body);
-    if (response.statusCode ~/ 100 == 2) {
-      return body;
-    } else {
-      Utils.showSnackBar(
-          title: "${response.statusCode}!", message: body['message']);
-      if (response.statusCode == 406) Auth.backLogin(true);
-      return null;
-    }
+  print('[APICaller] Response code: ${response.statusCode}');
+  print('[APICaller] Raw body: ${response.body}');
+  final body = jsonDecode(response.body);
+  if (response.statusCode ~/ 100 == 2) {
+    return body;
+  } else {
+    Utils.showSnackBar(
+        title: "${response.statusCode}!", message: body['message'] ?? 'Lỗi không xác định');
+    if (response.statusCode == 406) Auth.backLogin(true);
+    return null;
   }
+}
+
 
   Future<dynamic> get(String endpoint, {dynamic body}) async {
     Uri uri = Uri.parse(BASE_URL + endpoint);
@@ -139,7 +143,7 @@ class APICaller {
     return handleResponse(response);
   }
 
-  Future<dynamic> put(String endpoint, {dynamic body}) async {
+  Future<dynamic> put(String endpoint, {dynamic body, Map<String, String>? headers}) async {
     Uri uri = Uri.parse(BASE_URL + endpoint);
     String token = GlobalValue.getInstance().getToken();
     var frequestHeaders = {

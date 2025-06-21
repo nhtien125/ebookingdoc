@@ -19,8 +19,8 @@ class FacilityCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 280,
-        margin: const EdgeInsets.only(right: 16),
+        width: 230,
+        margin: const EdgeInsets.only(right: 16, bottom: 12, top: 12),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
@@ -33,22 +33,42 @@ class FacilityCard extends StatelessWidget {
           ],
         ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
+            // Ảnh đại diện
             ClipRRect(
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(12),
                 topRight: Radius.circular(12),
               ),
-              child: Image.asset(
-                facility.imageUrl,
-                width: double.infinity,
-                height: 90,
-                fit: BoxFit.cover,
-              ),
+              child: facility.image != null && facility.image.isNotEmpty
+                  ? Image.network(
+                      facility.image,
+                      width: double.infinity,
+                      height: 90,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        width: double.infinity,
+                        height: 90,
+                        color: Colors.grey[300],
+                        child: const Icon(Icons.image,
+                            size: 36, color: Colors.white70),
+                      ),
+                    )
+                  : Container(
+                      width: double.infinity,
+                      height: 90,
+                      color: Colors.grey[300],
+                      child: const Icon(Icons.image,
+                          size: 36, color: Colors.white70),
+                    ),
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+            // Nội dung
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     facility.name,
@@ -61,6 +81,7 @@ class FacilityCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Icon(Icons.location_on,
                           size: 14, color: Colors.grey),
@@ -79,27 +100,6 @@ class FacilityCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 14),
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: AppColor.fourthMain.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          '${facility.rating}★',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: AppColor.fourthMain,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -110,6 +110,7 @@ class FacilityCard extends StatelessWidget {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
+                        elevation: 0,
                       ),
                       child: Text(
                         buttonText,

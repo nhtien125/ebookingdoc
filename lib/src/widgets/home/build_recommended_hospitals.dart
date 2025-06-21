@@ -4,7 +4,7 @@ import 'package:ebookingdoc/src/widgets/custom_component/section_header.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-final controller = Get.put(HomeController());
+final controller = Get.find<HomeController>();
 
 class BuildRecommendedHospitals extends StatelessWidget {
   const BuildRecommendedHospitals({super.key});
@@ -23,21 +23,32 @@ class BuildRecommendedHospitals extends StatelessWidget {
             onViewMore: () => controller.viewAllHospitals(),
           ),
           const SizedBox(height: 12),
-          SizedBox(
-            height: 265,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: controller.recommendedHospitals.length,
-              itemBuilder: (context, index) {
-                final hospital = controller.recommendedHospitals[index];
-                return FacilityCard(
-                  facility: hospital,
-                  onTap: () => controller.viewHospitalDetails(hospital.id),
-                );
-              },
-            ),
-          ),
+          Obx(() {
+            print('[UI] Hospitals trong Obx: ${controller.hospitals.length}');
+            if (controller.isLoading.value) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (controller.hospitals.isEmpty) {
+              return const Center(child: Text('Không có dữ liệu'));
+            }
+            return SizedBox(
+              height: 265,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: controller.hospitals.length,
+                itemBuilder: (context, index) {
+                  final hospital = controller.hospitals[index];
+                  print(
+                      '[UI] Hospital $index: ${hospital.name} - ${hospital.image}');
+                  return FacilityCard(
+                    facility: hospital,
+                    onTap: () => controller.viewHospitalDetails(hospital.uuid),
+                  );
+                },
+              ),
+            );
+          })
         ],
       ),
     );

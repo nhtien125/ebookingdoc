@@ -5,14 +5,22 @@ import 'package:get/get.dart';
 final controller = Get.put(HomeController());
 
 class DoctorCard extends StatelessWidget {
-  final dynamic doctor;
+  final DoctorDisplay doctor;
 
   const DoctorCard({super.key, required this.doctor});
 
   @override
   Widget build(BuildContext context) {
+    // LOG chi tiết tất cả thông tin DoctorDisplay
+    print('===== DoctorCard build() =====');
+    print('Doctor uuid: ${doctor.doctor.uuid}');
+    print('Doctor image: ${doctor.doctor.image}');
+    print('User name: ${doctor.user?.name}');
+    print('Specialization: ${doctor.specialization?.name}');
+    print('==============================');
+
     return GestureDetector(
-      onTap: () => controller.viewDoctorDetails(doctor.id),
+      onTap: () => controller.viewDoctorDetails(doctor.doctor.uuid),
       child: Container(
         width: 110,
         margin: const EdgeInsets.only(right: 12),
@@ -31,16 +39,16 @@ class DoctorCard extends StatelessWidget {
                   ),
                 ],
                 image: DecorationImage(
-                  image: AssetImage(
-                    doctor.imageUrl ?? 'assets/images/default_doctor.jpg',
-                  ),
+                  image: doctor.doctor.image != null
+                      ? NetworkImage(doctor.doctor.image!)
+                      : const AssetImage('assets/images/default_doctor.jpg') as ImageProvider,
                   fit: BoxFit.cover,
                 ),
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              doctor.name,
+              doctor.user?.name ?? 'Không rõ tên',
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -51,7 +59,7 @@ class DoctorCard extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              doctor.specialty,
+              doctor.specialization?.name ?? 'Chưa rõ chuyên khoa',
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
