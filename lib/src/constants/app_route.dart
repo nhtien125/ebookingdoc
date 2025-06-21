@@ -16,6 +16,7 @@ abstract class Routes {
   static const detaildoctor = _Paths.detaildoctor;
   static var appointmentScreen = _Paths.appointmentScreen;
   static var editMedicalRecord = _Paths.editMedicalRecord;
+  static var register = _Paths.register;
 }
 
 abstract class _Paths {
@@ -34,4 +35,5 @@ abstract class _Paths {
   static const String detaildoctor = '/detail-doctor';
   static const String appointmentScreen = '/appointment-screen';
   static const String editMedicalRecord = '/edit-medical-record';
+  static const String register = '/register';
 }

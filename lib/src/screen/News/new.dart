@@ -1,61 +1,41 @@
-import 'package:ebookingdoc/src/Global/app_color.dart';
 import 'package:flutter/material.dart';
+import 'package:ebookingdoc/src/data/model/article_model.dart';
+import 'package:ebookingdoc/src/constants/services/ArticleService.dart';
 
 class News extends StatefulWidget {
-  const News({super.key});
+  const News({Key? key}) : super(key: key);
 
   @override
   State<News> createState() => _NewsState();
 }
 
 class _NewsState extends State<News> {
-  final List<Map<String, dynamic>> _allArticles = [
-    {
-      'title': '10 Cách phòng ngừa bệnh tim mạch hiệu quả',
-      'image': 'assets/images/10cpntm.jpg',
-      'description': 'Bài viết cung cấp các phương pháp khoa học giúp bảo vệ sức khỏe tim mạch...',
-      'date': '15/03/2024',
-      'content': 'Trên thực tế cho thấy tim mạch là bệnh lý nguy hiểm và chiếm tỷ lệ tử vong cao đặc biệt tỷ lệ mắc bệnh tim mạch ngày càng trẻ hóa. Nguyên nhân do thói quen ăn uống, sinh hoạt hàng ngày thiếu lành mạnh. Do đó việc thực hiện các biện pháp phòng bệnh tim mạch là việc cấp thiết hiện nay. ',
-    },
-    {
-      'title': 'Dấu hiệu nhận biết thiếu vitamin D',
-      'image': 'assets/images/vitaminD.jpg',
-      'description': 'Những triệu chứng thường gặp khi cơ thể thiếu hụt vitamin D và cách khắc phục...',
-      'date': '10/03/2024',
-      'content': 'Đây là nội dung chi tiết về các dấu hiệu thiếu vitamin D và phương pháp bổ sung...',
-    },
-    {
-      'title': 'Hướng dẫn tập thể dục tại nhà mùa dịch',
-      'image': 'assets/images/phongchondich.jpg',
-      'description': 'Các bài tập đơn giản giúp tăng cường sức đề kháng mà không cần đến phòng gym...',
-      'date': '05/03/2024',
-      'content': 'Đây là nội dung chi tiết về các bài tập thể dục tại nhà giúp tăng cường sức khỏe...',
-    },
-  ];
-
-  late List<Map<String, dynamic>> _filteredArticles;
+  List<Article> _allArticles = [];
+  List<Article> _filteredArticles = [];
   bool _isSearching = false;
   final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
-    _filteredArticles = _allArticles;
     super.initState();
+    _fetchArticles();
   }
 
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
+  Future<void> _fetchArticles() async {
+    final articles = await ArticleService().getAllArticles();
+    setState(() {
+      _allArticles = articles;
+      _filteredArticles = articles;
+    });
   }
 
   void _searchArticles(String query) {
     setState(() {
       _filteredArticles = _allArticles.where((article) {
-        final title = article['title'].toLowerCase();
-        final description = article['description'].toLowerCase();
+        final title = (article.title ?? '').toLowerCase();
+        final content = (article.content ?? '').toLowerCase();
         final searchLower = query.toLowerCase();
-        return title.contains(searchLower) || description.contains(searchLower);
+        return title.contains(searchLower) || content.contains(searchLower);
       }).toList();
     });
   }
@@ -78,26 +58,16 @@ class _NewsState extends State<News> {
             ? TextField(
                 controller: _searchController,
                 autofocus: true,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   hintText: 'Tìm kiếm bài viết...',
                   border: InputBorder.none,
-                  hintStyle: TextStyle(color: AppColor.main),
                 ),
-                style: TextStyle(color: AppColor.main),
                 onChanged: _searchArticles,
               )
-            : Text(
-                'Tin tức y tế',
-                style: TextStyle(color: AppColor.main),
-              ),
-        centerTitle: true,
-        backgroundColor: AppColor.fourthMain,
+            : const Text('Tin tức'),
         actions: [
           IconButton(
-            icon: Icon(
-              _isSearching ? Icons.close : Icons.search,
-              color: AppColor.main, 
-            ),
+            icon: Icon(_isSearching ? Icons.close : Icons.search),
             onPressed: _toggleSearch,
           ),
         ],
@@ -105,12 +75,7 @@ class _NewsState extends State<News> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: _filteredArticles.isEmpty
-            ? Center(
-                child: Text(
-                  'Không tìm thấy bài viết phù hợp',
-                  style: TextStyle(fontSize: 16, color: AppColor.xmain),
-                ),
-              )
+            ? const Center(child: Text('Không tìm thấy bài viết phù hợp'))
             : ListView.builder(
                 itemCount: _filteredArticles.length,
                 itemBuilder: (context, index) {
@@ -122,7 +87,7 @@ class _NewsState extends State<News> {
     );
   }
 
-  Widget _buildArticleCard(Map<String, dynamic> article, BuildContext context) {
+  Widget _buildArticleCard(Article article, BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 20),
       elevation: 4,
@@ -134,19 +99,27 @@ class _NewsState extends State<News> {
         children: [
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-            child: Image.asset(
-              article['image'],
-              height: 180,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(
-                height: 180,
-                color: AppColor.main,
-                child: Center(
-                  child: Icon(Icons.image_not_supported, color: AppColor.xmain, size: 40),
-                ),
-              ),
-            ),
+            child: article.image != null && article.image!.isNotEmpty
+                ? Image.network(
+                    article.image!,
+                    height: 180,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      height: 180,
+                      color: Colors.grey,
+                      child: const Center(
+                        child: Icon(Icons.image_not_supported, size: 40),
+                      ),
+                    ),
+                  )
+                : Container(
+                    height: 180,
+                    color: Colors.grey,
+                    child: const Center(
+                      child: Icon(Icons.image_not_supported, size: 40),
+                    ),
+                  ),
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -154,7 +127,7 @@ class _NewsState extends State<News> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  article['title'],
+                  article.title ?? '',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -162,10 +135,9 @@ class _NewsState extends State<News> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  article['description'],
-                  style: TextStyle(
+                  article.content ?? '',
+                  style: const TextStyle(
                     fontSize: 14,
-                    color: Colors.grey.shade700,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -175,13 +147,37 @@ class _NewsState extends State<News> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      article['date'],
-                      style: TextStyle(
+                      article.createdAt ?? '',
+                      style: const TextStyle(
                         fontSize: 12,
-                        color: Colors.grey.shade600,
+                        color: Colors.grey,
                       ),
                     ),
-                    _buildReadMoreButton(article, context),
+                    InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ArticleDetail(article: article),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade50,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Text(
+                          'Xem chi tiết',
+                          style: TextStyle(
+                            color: Colors.blue,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -191,124 +187,86 @@ class _NewsState extends State<News> {
       ),
     );
   }
+}
 
-  Widget _buildReadMoreButton(Map<String, dynamic> article, BuildContext context) {
-    return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ArticleDetail(article: article),
-          ),
-        );
-      },
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: Colors.blue.shade50,
-          borderRadius: BorderRadius.circular(20),
+class ArticleDetail extends StatelessWidget {
+  final Article article;
+  const ArticleDetail({Key? key, required this.article}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          article.title ?? '',
+          style: const TextStyle(fontSize: 16),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
-        child: const Text(
-          'Xem chi tiết',
-          style: TextStyle(
-            color: Colors.blue,
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
-          ),
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            article.image != null && article.image!.isNotEmpty
+                ? Image.network(
+                    article.image!,
+                    height: 220,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      height: 220,
+                      color: Colors.grey.shade200,
+                      child: const Center(
+                        child: Icon(Icons.image_not_supported, size: 40),
+                      ),
+                    ),
+                  )
+                : Container(
+                    height: 220,
+                    color: Colors.grey.shade200,
+                    child: const Center(
+                      child: Icon(Icons.image_not_supported, size: 40),
+                    ),
+                  ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    article.title ?? '',
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Text(
+                      'Ngày đăng: ${article.createdAt ?? ''}',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
+                  const Divider(),
+                  const SizedBox(height: 8),
+                  Text(
+                    article.content ?? '',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
-}
-
-class ArticleDetail extends StatelessWidget {
-  final Map<String, dynamic> article;
-
-  const ArticleDetail({super.key, required this.article});
-
-  @override
- Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      title: Text(
-        article['title'],
-        style: TextStyle(fontSize: 16, color: AppColor.main), 
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      backgroundColor: AppColor.fourthMain,
-      leading: IconButton(
-        icon: Icon(Icons.arrow_back, color: Colors.white), 
-        onPressed: () {
-          Navigator.pop(context); 
-        },
-      ),
-    ),
-    body: SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Ảnh bài viết
-          Image.asset(
-            article['image'],
-            height: 220,
-            width: double.infinity,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) => Container(
-              height: 220,
-              color: Colors.grey.shade200,
-              child: Center(
-                child: Icon(Icons.image_not_supported, color:  AppColor.main, size: 40),
-              ),
-            ),
-          ),
-          
-          // Nội dung bài viết
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Tiêu đề
-                Text(
-                  article['title'],
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                
-                // Ngày đăng
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: Text(
-                    'Ngày đăng: ${article['date']}',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade600,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                ),
-                
-                const Divider(),
-                
-                // Nội dung chính
-                const SizedBox(height: 8),
-                Text(
-                  article['content'] ?? article['description'],
-                  style: const TextStyle(
-                    fontSize: 16,
-                    height: 1.5,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
 }

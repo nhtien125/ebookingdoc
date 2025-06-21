@@ -4,6 +4,7 @@ import 'package:ebookingdoc/src/Global/global_value.dart';
 import 'package:ebookingdoc/src/constants/app_page.dart';
 import 'package:ebookingdoc/src/constants/services/api_caller.dart';
 import 'package:ebookingdoc/src/Utils/utils.dart';
+import 'package:ebookingdoc/src/data/model/userModel.dart';
 import 'package:get/get.dart';
 
 class Auth {
@@ -11,7 +12,6 @@ class Auth {
     if (!isRun) {
       return null;
     }
-
     await Utils.saveStringWithKey(Constant.ACCESS_TOKEN, '');
     await Utils.saveStringWithKey(Constant.REFRESH_TOKEN, '');
     await Utils.saveStringWithKey(Constant.USERNAME, '');
@@ -21,26 +21,41 @@ class Auth {
     }
   }
 
-  static login({String? userName, String? password}) async {
-    String userNamePreferences =
-        await Utils.getStringValueWithKey(Constant.USERNAME);
-    String passwordPreferences =
-        await Utils.getStringValueWithKey(Constant.PASSWORD);
-
-    Map<String, String> param = {
-      "phone": userName ?? userNamePreferences,
-      // "password":
-      //     password != null ? Utils.generateMd5(password) : passwordPreferences,
-      "password":
-          password ?? passwordPreferences,
-      // "fcmToken": await Utils.getStringValueWithKey(Constant.FCMTOKEN)
-    };
+  static Future<User?> login({
+    required String account,
+    required String password,
+  }) async {
+    Map<String, String> param;
+    if (account.contains('@')) {
+      param = {"email": account, "password": password};
+    } else {
+      param = {"username": account, "password": password};
+    }
 
     try {
       var response =
-          await APICaller.getInstance().post('v1/user/login', body: param);
-      print(jsonEncode(response));
-      if (response != null) {
+          await APICaller.getInstance().post('api/auth/login', body: param);
+
+      print('Raw response: $response');
+      if (response is String) {
+        if (response.trim().startsWith('<!DOCTYPE html>')) {
+          Utils.showSnackBar(
+              title: 'Thông báo',
+              message:
+                  'Lỗi server: API trả về HTML, hãy kiểm tra lại backend, URL hoặc mạng!');
+          return null;
+        } else {
+          Utils.showSnackBar(
+              title: 'Thông báo', message: 'Lỗi không xác định: $response');
+          return null;
+        }
+      }
+
+      if (response != null &&
+          response is Map &&
+          response['code'] == 200 &&
+          response['data'] != null) {
+        // Nếu cần lưu token vào GlobalValue, giữ lại đoạn này
         GlobalValue.getInstance()
             .setToken('Bearer ${response['data']['access_token']}');
         Utils.saveStringWithKey(
@@ -48,16 +63,93 @@ class Auth {
         Utils.saveStringWithKey(
             Constant.REFRESH_TOKEN, response['data']['refresh_token']);
         Utils.saveStringWithKey(Constant.NAME, response['data']['name'] ?? '');
-        Utils.saveStringWithKey(Constant.AVATAR, response['data']['avatar'] ?? '');
         Utils.saveStringWithKey(
-            Constant.USERNAME, userName ?? userNamePreferences);
-        Utils.saveStringWithKey(Constant.PASSWORD, param['password']!);
-        Get.offAllNamed(Routes.dashboard);
+            Constant.AVATAR, response['data']['avatar'] ?? '');
+        Utils.saveStringWithKey(Constant.USERNAME, account);
+        Utils.saveStringWithKey(Constant.PASSWORD, password);
+
+        // **CHỈ SỬA DÒNG NÀY**: trả về object User thay vì true
+        return User.fromJson(response['data']);
       } else {
-        backLogin(true);
+        final msg = (response is Map)
+            ? (response['message'] ?? "Đăng nhập thất bại")
+            : "Đăng nhập thất bại";
+        Utils.showSnackBar(title: 'Thông báo', message: msg);
+        return null;
       }
     } catch (e) {
       Utils.showSnackBar(title: 'Thông báo', message: '$e');
+      return null;
+    }
+  }
+
+  static Future<dynamic> register({
+    required String username,
+    required String email,
+    required String password,
+    required int premissionId,
+  }) async {
+    Map<String, dynamic> param = {
+      "username": username,
+      "email": email,
+      "password": password,
+      "premission_id": premissionId,
+    };
+
+    try {
+      var response =
+          await APICaller.getInstance().post('api/auth/register', body: param);
+      if (response != null && response['code'] == 200) {
+        return true;
+      }
+      return response?['message'] ?? "Đăng ký thất bại";
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
+  static Future<Map<String, dynamic>?> updateUser({
+    required String uuid,
+    required String name,
+    required int gender,
+    required String birthDay, // yyyy-MM-dd
+    required String phone,
+    required String email,
+    required int premissionId,
+    String? accessToken,
+  }) async {
+    final param = {
+      'name': name,
+      'gender': gender,
+      'birth_day': birthDay,
+      'phone': phone,
+      'email': email,
+      'premission_id': premissionId,
+    };
+
+    try {
+      final response = await APICaller.getInstance().put(
+        'api/auth/update/$uuid',
+        body: param,
+        headers: accessToken != null
+            ? {'Authorization': 'Bearer $accessToken'}
+            : null,
+      );
+
+      print('Update user response: $response');
+
+      if (response != null && response is Map && response['code'] == 200) {
+        return response['data'];
+      } else {
+        final msg = (response is Map)
+            ? (response['message'] ?? "Cập nhật thất bại")
+            : "Cập nhật thất bại";
+        Utils.showSnackBar(title: 'Thông báo', message: msg);
+        return null;
+      }
+    } catch (e) {
+      Utils.showSnackBar(title: 'Thông báo', message: '$e');
+      return null;
     }
   }
 }

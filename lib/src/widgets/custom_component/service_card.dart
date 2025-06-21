@@ -1,19 +1,24 @@
-// lib/widgets/home/service_card.dart
 import 'package:ebookingdoc/src/widgets/controller/home_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:get/Get.dart';
-
-final controller = Get.put(HomeController());
+import 'package:get/get.dart';
 
 class ServiceCard extends StatelessWidget {
   final dynamic service;
+  final Widget? icon;
+  final Color? color;
 
-  const ServiceCard({super.key, required this.service});
+  const ServiceCard({
+    super.key,
+    required this.service,
+    this.icon,
+    this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<HomeController>();
     return GestureDetector(
-      onTap: () => controller.selectService(service.id),
+      onTap: () => controller.selectService(service.id ?? service.uuid),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -32,16 +37,16 @@ class ServiceCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: service.color.withOpacity(0.1),
+                color: (color ?? Colors.blue).withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: service.icon,
+              child: icon ?? const Icon(Icons.medical_services, color: Colors.blue),
             ),
             const SizedBox(height: 8),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
               child: Text(
-                service.name,
+                service.name ?? '',
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,

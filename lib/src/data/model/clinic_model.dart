@@ -1,19 +1,37 @@
 class Clinic {
-  final String id;
+  final String uuid;
   final String name;
   final String address;
-  final String imageUrl;
-  final double rating;
-  final double distance;
+  final String? phone;
+  final String? email;
+  final String? image;
+  final String? hospitalId;
+  final String? createdAt;
+  final String? updatedAt;
 
   Clinic({
-    required this.id,
+    required this.uuid,
     required this.name,
     required this.address,
-    required this.imageUrl,
-    required this.rating,
-    required this.distance,
+    this.phone,
+    this.email,
+    this.image,
+    this.hospitalId,
+    this.createdAt,
+    this.updatedAt,
   });
 
- 
+  factory Clinic.fromJson(Map<String, dynamic> json) {
+    return Clinic(
+      uuid: json['uuid'] ?? '',
+      name: json['name'] ?? '',
+      address: json['address'] ?? '',
+      phone: json['phone'],
+      email: json['email'],
+      image: json['image'],
+      hospitalId: json['hospital_id'],
+      createdAt: json['created_at'],
+      updatedAt: json['updated_at'],
+    );
+  }
 }

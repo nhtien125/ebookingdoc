@@ -7,7 +7,8 @@ final controller = Get.put(HomeController());
 class ArticleCard extends StatelessWidget {
   final dynamic article;
 
-  const ArticleCard({super.key, required this.article});
+  const ArticleCard(
+      {super.key, required this.article, required void Function() onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -32,15 +33,30 @@ class ArticleCard extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
+                topLeft: Radius.circular(12),
+                topRight: Radius.circular(12),
               ),
-              child: Image.asset(
-                article.imageUrl,
-                height: 120,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
+              child: article.image != null && article.image.isNotEmpty
+                  ? Image.network(
+                      article.image,
+                      width: double.infinity,
+                      height: 180,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        width: double.infinity,
+                        height: 180,
+                        color: Colors.grey[300],
+                        child: const Icon(Icons.image,
+                            size: 36, color: Colors.white70),
+                      ),
+                    )
+                  : Container(
+                      width: double.infinity,
+                      height: 180,
+                      color: Colors.grey[300],
+                      child: const Icon(Icons.image,
+                          size: 36, color: Colors.white70),
+                    ),
             ),
             Padding(
               padding: const EdgeInsets.all(12),
@@ -60,9 +76,9 @@ class ArticleCard extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        article.publishDate,
+                        article.createdAt,
                         style: TextStyle(
-                          fontSize: 10,
+                          fontSize: 13,
                           color: Colors.grey.shade600,
                         ),
                       ),

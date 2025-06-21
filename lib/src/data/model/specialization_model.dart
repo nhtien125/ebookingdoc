@@ -1,30 +1,22 @@
-class Hospital {
+class Specialization {
   final String uuid;
   final String name;
-  final String address;
-  final String image;
   final String? createdAt;
   final String? updatedAt;
 
-  Hospital({
+  Specialization({
     required this.uuid,
     required this.name,
-    required this.address,
-    required this.image,
     this.createdAt,
     this.updatedAt,
   });
 
-  factory Hospital.fromJson(Map<String, dynamic> json) {
-    return Hospital(
+  factory Specialization.fromJson(Map<String, dynamic> json) {
+    return Specialization(
       uuid: json['uuid'] ?? '',
       name: json['name'] ?? '',
-      address: json['address'] ?? '',
-      image: json['image'] ?? '',
       createdAt: json['created_at'],
       updatedAt: json['updated_at'],
     );
   }
-
-  get specialty => null;
 }

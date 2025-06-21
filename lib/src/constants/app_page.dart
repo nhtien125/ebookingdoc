@@ -12,6 +12,7 @@ import 'package:ebookingdoc/src/screen/Profile/Family/family.dart';
 import 'package:ebookingdoc/src/screen/Profile/personal/personal.dart';
 import 'package:ebookingdoc/src/screen/Profile/profile.dart';
 import 'package:ebookingdoc/src/screen/dashboard.dart';
+import  'package:ebookingdoc/src/screen/Register/register.dart';
 import 'package:get/get.dart';
 
 part 'app_route.dart';
@@ -36,5 +37,6 @@ class AppPage {
     GetPage(name: Routes.detaildoctor, page: () => DetailDoctor()),
     GetPage(name: Routes.appointmentScreen, page: () => AppointmentScreen()),
     GetPage(name: Routes.editMedicalRecord, page: () => EditMedicalRecord()),
+    GetPage(name: Routes.register, page: () => Register()),
   ];
 }

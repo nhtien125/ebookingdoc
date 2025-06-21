@@ -10,8 +10,7 @@ class AppointmentScreen extends StatelessWidget {
   final AppointmentScreenController controller =
       Get.put(AppointmentScreenController());
 
-  AppointmentScreen({super.key});
-
+  AppointmentScreen();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,12 +26,12 @@ class AppointmentScreen extends StatelessWidget {
               switch (controller.currentStep.value) {
                 case 1:
                   return _buildStep1Content();
-                case 2:
-                  return _buildStep2Content();
-                case 3:
-                  return _buildStep3Content();
-                case 4:
-                  return _buildStep4Content();
+                // case 2:
+                //   return _buildStep2Content();
+                // case 3:
+                //   return _buildStep3Content();
+                // case 4:
+                //   return _buildStep4Content();
                 default:
                   return _buildStep1Content();
               }
@@ -139,7 +138,6 @@ class AppointmentScreen extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        // Only allow going back to completed steps
         if (step < controller.currentStep.value) {
           controller.goToStep(step);
         }
@@ -258,12 +256,12 @@ class AppointmentScreen extends StatelessWidget {
                 _buildHospitalInfoCard(),
                 const SizedBox(height: 10),
 
-                _buildSectionTitle('Chọn bác sĩ'),
-                _buildDoctorSelection(),
-
-                const SizedBox(height: 20),
                 _buildSectionTitle('Chuyên khoa'),
                 _buildDepartmentSelection(),
+
+                const SizedBox(height: 20),
+                _buildSectionTitle('Chọn bác sĩ'),
+                _buildDoctorSelection(),
 
                 const SizedBox(height: 20),
                 _buildSectionTitle('Dịch vụ khám'),
@@ -277,12 +275,12 @@ class AppointmentScreen extends StatelessWidget {
                 _buildSectionTitle('Giờ khám'),
                 _buildTimeSlotSelection(),
 
-                const SizedBox(height: 80), // Thêm khoảng trống
+                const SizedBox(height: 80), 
               ],
             ),
           ),
         ),
-        // Nút tiếp tục cố định ở dưới
+      
         Obx(() {
           final isComplete = controller.isStep1Complete();
           return Container(
@@ -339,57 +337,247 @@ class AppointmentScreen extends StatelessWidget {
     return Obx(() {
       final hospital = controller.selectedHospital.value;
       if (hospital == null) {
-        return const SizedBox(); // Không hiển thị nếu chưa chọn
+        return const SizedBox(); 
       }
 
-      return Container(
-        width: double.infinity,
-        margin: const EdgeInsets.only(bottom: 16),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColor.fourthMain),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
+      return GestureDetector(
+        onTap: () {
+       
+          showModalBottomSheet(
+            context: Get.context!,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
             ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              hospital.name,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: Colors.black,
+            builder: (context) {
+              final hospitals = controller.hospitals;
+              return ListView.builder(
+                itemCount: hospitals.length,
+                itemBuilder: (context, index) {
+                  final item = hospitals[index];
+                  return ListTile(
+                    leading: item.image.isNotEmpty
+                        ? Image.network(item.image,
+                            width: 40, height: 40, fit: BoxFit.cover)
+                        : const Icon(Icons.local_hospital),
+                    title: Text(item.name),
+                    subtitle: Text(item.address),
+                    onTap: () {
+                      controller.selectHospital(item);
+                      Get.back();
+                    },
+                    selected: item.uuid == hospital.uuid,
+                    selectedTileColor: Colors.blue[50],
+                  );
+                },
+              );
+            },
+          );
+        },
+        child: Container(
+          width: double.infinity,
+          margin: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColor.fourthMain),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.1),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              hospital.address,
-              style: const TextStyle(
-                color: Colors.grey,
-                fontSize: 14,
+            ],
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+     
+              if (hospital.image.isNotEmpty)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: hospital.image.startsWith('http')
+                      ? Image.network(
+                          hospital.image,
+                          width: 60,
+                          height: 60,
+                          fit: BoxFit.cover,
+                        )
+                      : Image.asset(
+                          hospital.image,
+                          width: 60,
+                          height: 60,
+                          fit: BoxFit.cover,
+                        ),
+                )
+              else
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: Colors.blue[50],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.local_hospital,
+                      size: 36, color: Colors.blue),
+                ),
+              const SizedBox(width: 16),
+         
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      hospital.name,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Colors.black,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      hospital.address,
+                      style: const TextStyle(
+                        color: Colors.grey,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     });
   }
 
-  Widget _buildDoctorSelection() {
-    final searchController = TextEditingController();
+  Widget _buildDepartmentSelection() {
     return Obx(() {
-      final selected = controller.selectedDoctor.value;
+      final selectedSpecialization = controller.selectedDepartment.value;
+      return GestureDetector(
+        onTap: () {
+          showModalBottomSheet(
+            context: Get.context!,
+            backgroundColor: Colors.transparent,
+            isScrollControlled: true,
+            builder: (_) {
+              final specializations =
+                  controller.specializations; 
+              if (specializations.isEmpty) {
+                return const Center(child: Text('Không có chuyên khoa nào!'));
+              }
+              return Container(
+                height: MediaQuery.of(Get.context!).size.height * 0.6,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                child: ListView.builder(
+                  itemCount: specializations.length,
+                  itemBuilder: (_, index) {
+                    final sp = specializations[index];
+                    return ListTile(
+                      title: Text(sp.name ?? ''),
+                      onTap: () {
+                        controller.selectDepartment(sp);
+                        controller.selectedDoctor.value = null; 
+                        Navigator.pop(Get.context!);
+                      },
+                    );
+                  },
+                ),
+              );
+            },
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: selectedSpecialization != null
+                  ? AppColor.fourthMain
+                  : Colors.grey.shade400,
+              width: 1.5,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                selectedSpecialization?.name ?? 'Chọn chuyên khoa',
+                style: TextStyle(
+                  color: selectedSpecialization != null
+                      ? Colors.black
+                      : Colors.grey,
+                  fontSize: 16,
+                  fontWeight: selectedSpecialization != null
+                      ? FontWeight.w500
+                      : FontWeight.normal,
+                ),
+              ),
+              const Icon(Icons.arrow_drop_down),
+            ],
+          ),
+        ),
+      );
+    });
+  }
+
+
+  Widget _buildDoctorSelection() {
+    final RxString keyword = ''.obs;
+    final searchController = TextEditingController();
+
+    return Obx(() {
+      final selectedDoctor = controller.selectedDoctor.value;
+      final selectedSpecialization = controller.selectedDepartment.value;
+      final selectedHospital = controller.selectedHospital.value;
+
+
+      if (selectedSpecialization == null || selectedHospital == null) {
+        return GestureDetector(
+          onTap: () {
+            Get.snackbar(
+                "Thông báo", "Vui lòng chọn chuyên khoa và bệnh viện trước!");
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade400, width: 1.5),
+            ),
+            child: const Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Chọn bác sĩ',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ),
+                Icon(Icons.arrow_drop_down),
+              ],
+            ),
+          ),
+        );
+      }
+
+      
+      final doctorsBySpecializationAndHospital = controller.featuredDoctors
+          .where((doctorDisplay) =>
+              doctorDisplay.specialization.uuid ==
+                  selectedSpecialization.uuid &&
+              doctorDisplay.doctor.hospitalId == selectedHospital.uuid)
+          .toList();
+
       return GestureDetector(
         onTap: () {
           searchController.clear();
+          keyword.value = '';
           showModalBottomSheet(
             context: Get.context!,
             backgroundColor: Colors.transparent,
@@ -429,17 +617,24 @@ class AppointmentScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
-                        onChanged: (_) => controller.doctors.refresh(),
+                        onChanged: (val) => keyword.value = val,
                       ),
                     ),
                     const Divider(height: 1),
                     Expanded(
                       child: Obx(() {
-                        final filteredDoctors = controller.doctors
-                            .where((doctor) => doctor.name
-                                .toLowerCase()
-                                .contains(searchController.text.toLowerCase()))
-                            .toList();
+                        final filter = keyword.value.toLowerCase();
+                        final filteredDoctors =
+                            doctorsBySpecializationAndHospital
+                                .where((doctorDisplay) {
+                          return (doctorDisplay.user.name ?? '')
+                                  .toLowerCase()
+                                  .contains(filter) ||
+                              (doctorDisplay.specialization.name
+                                      ?.toLowerCase()
+                                      .contains(filter) ??
+                                  false);
+                        }).toList();
 
                         if (filteredDoctors.isEmpty) {
                           return const Center(
@@ -470,13 +665,42 @@ class AppointmentScreen extends StatelessWidget {
                                       horizontal: 16, vertical: 12),
                                   child: Row(
                                     children: [
-                                      Expanded(
-                                        child: Text(
-                                          doctor.name,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 16,
+                                      if ((doctor.doctor.image ?? '')
+                                          .isNotEmpty)
+                                        ClipOval(
+                                          child: Image.network(
+                                            doctor.doctor.image!,
+                                            width: 36,
+                                            height: 36,
+                                            fit: BoxFit.cover,
                                           ),
+                                        )
+                                      else
+                                        const CircleAvatar(
+                                          radius: 18,
+                                          child: Icon(Icons.person),
+                                        ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              doctor.user.name ?? '',
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                            Text(
+                                              doctor.specialization.name ?? '',
+                                              style: const TextStyle(
+                                                color: Colors.grey,
+                                                fontSize: 13,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ],
@@ -500,8 +724,9 @@ class AppointmentScreen extends StatelessWidget {
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color:
-                  selected != null ? AppColor.fourthMain : Colors.grey.shade400,
+              color: selectedDoctor != null
+                  ? AppColor.fourthMain
+                  : Colors.grey.shade400,
               width: 1.5,
             ),
             boxShadow: [
@@ -515,129 +740,13 @@ class AppointmentScreen extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                selected?.name ?? 'Chọn bác sĩ',
-                style: TextStyle(
-                  color: selected != null ? Colors.black : Colors.grey,
-                ),
-              ),
-              const Icon(Icons.arrow_drop_down),
-            ],
-          ),
-        ),
-      );
-    });
-  }
-
-  Widget _buildDepartmentSelection() {
-    return Obx(() {
-      final selectedDept = controller.selectedDepartment.value;
-      final departments = controller.selectedDoctor.value?.departments ?? [];
-
-      return GestureDetector(
-        onTap: () {
-          if (controller.selectedDoctor.value == null) {
-            Get.snackbar("Thông báo", "Vui lòng chọn bác sĩ trước");
-            return;
-          }
-
-          showModalBottomSheet(
-            context: Get.context!,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-            ),
-            builder: (context) {
-              return SizedBox(
-                height: MediaQuery.of(context).size.height * 0.5,
-                child: Column(
-                  children: [
-                    const SizedBox(height: 12),
-                    const Text(
-                      'Chuyên khoa',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                    ),
-                    const Divider(thickness: 1),
-                    Expanded(
-                      child: ListView(
-                        padding: const EdgeInsets.all(16),
-                        children: departments.map((dept) {
-                          final isSelected = dept == selectedDept;
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 6),
-                            child: GestureDetector(
-                              onTap: () {
-                                controller.selectDepartment(dept);
-                                Get.back();
-                              },
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[50],
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: isSelected
-                                        ? AppColor.fourthMain
-                                        : Colors.grey.shade300,
-                                    width: 1.2,
-                                  ),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 12),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        dept.name,
-                                        style: const TextStyle(fontSize: 16),
-                                      ),
-                                    ),
-                                    if (isSelected)
-                                      const Icon(Icons.check,
-                                          color: Colors.blue),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          );
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: selectedDept != null
-                  ? AppColor.fourthMain
-                  : Colors.grey.shade400,
-              width: 1.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.05),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                selectedDept?.name ?? 'Chọn chuyên khoa',
-                style: TextStyle(
-                  color: selectedDept != null ? Colors.black : Colors.grey,
-                  fontSize: 16,
-                  fontWeight: selectedDept != null
-                      ? FontWeight.w500
-                      : FontWeight.normal,
+              Expanded(
+                child: Text(
+                  selectedDoctor?.user.name ?? 'Chọn bác sĩ',
+                  style: TextStyle(
+                    color: selectedDoctor != null ? Colors.black : Colors.grey,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               const Icon(Icons.arrow_drop_down),
@@ -651,17 +760,24 @@ class AppointmentScreen extends StatelessWidget {
   Widget _buildServiceSelection() {
     return Obx(() {
       final selectedService = controller.selectedService.value;
-      final selectedDept = controller.selectedDepartment.value;
-      final services = selectedDept?.services ?? [];
+      final selectedDepartment = controller.selectedDepartment.value;
+      final services = selectedDepartment == null
+          ? []
+          : controller.medical
+              .where((service) =>
+                  service.specializationId == selectedDepartment.uuid)
+              .toList();
 
       return GestureDetector(
         onTap: () {
-          if (controller.selectedDoctor.value == null) {
-            Get.snackbar("Thông báo", "Vui lòng chọn bác sĩ trước");
+          if (selectedDepartment == null) {
+            Get.snackbar("Thông báo", "Vui lòng chọn chuyên khoa trước");
             return;
           }
-          if (selectedDept == null) {
-            Get.snackbar("Thông báo", "Vui lòng chọn chuyên khoa trước");
+
+          if (services.isEmpty) {
+            Get.snackbar(
+                "Thông báo", "Không có dịch vụ nào cho chuyên khoa này");
             return;
           }
 
@@ -671,18 +787,6 @@ class AppointmentScreen extends StatelessWidget {
               borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
             ),
             builder: (context) {
-              if (services.isEmpty) {
-                return const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Center(
-                    child: Text(
-                      "Chuyên khoa này chưa có dịch vụ nào",
-                      style: TextStyle(fontSize: 16),
-                    ),
-                  ),
-                );
-              }
-
               return SizedBox(
                 height: MediaQuery.of(context).size.height * 0.5,
                 child: Column(
@@ -703,7 +807,7 @@ class AppointmentScreen extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(vertical: 6),
                             child: GestureDetector(
                               onTap: () {
-                                controller.selectService(service);
+                                controller.selectedService.value = service;
                                 Get.back();
                               },
                               child: Container(
@@ -727,14 +831,14 @@ class AppointmentScreen extends StatelessWidget {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            service.name,
+                                            service.name ?? '',
                                             style: const TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.w500,
                                             ),
                                           ),
                                           Text(
-                                            '${service.price.toStringAsFixed(0)} VNĐ',
+                                            '${service.price?.toStringAsFixed(0) ?? '0'} VNĐ',
                                             style: const TextStyle(
                                               fontSize: 14,
                                               color: Colors.grey,
@@ -857,467 +961,495 @@ class AppointmentScreen extends StatelessWidget {
 
   Widget _buildTimeSlotSelection() {
     return Obx(() {
-      final selected = controller.selectedTimeSlot.value;
+      if (controller.selectedDate.value == null) {
+        return const Center(child: Text('Vui lòng chọn ngày'));
+      }
+      if (controller.timeSlots.isEmpty) {
+        return const Center(child: Text('Không có khung giờ trống'));
+      }
 
-      return Wrap(
-        spacing: 12,
-        runSpacing: 12,
-        children: controller.timeSlots.map((time) {
-          final isSelected = time == selected;
-
+      return GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          childAspectRatio: 2.4,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 12,
+        ),
+        itemCount: controller.timeSlots.length,
+        itemBuilder: (context, index) {
+          final slot = controller.timeSlots[index];
+          final isSelected = controller.selectedTimeSlot.value == slot;
           return GestureDetector(
-            onTap: () => controller.selectTimeSlot(time),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            onTap: () => controller.selectTimeSlot(slot),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              margin: const EdgeInsets.all(2),
               decoration: BoxDecoration(
-                color: isSelected ? AppColor.fourthMain : Colors.grey[200],
-                borderRadius: BorderRadius.circular(8),
+                color: isSelected ? Colors.blue[700] : Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isSelected ? Colors.blue[700]! : Colors.grey[300]!,
+                  width: 2,
+                ),
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: Colors.blue.withOpacity(0.13),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        )
+                      ]
+                    : [],
               ),
-              child: Text(
-                time,
-                style: TextStyle(
-                  color: isSelected ? Colors.white : Colors.black,
-                  fontWeight: FontWeight.w500,
+              child: Center(
+                child: Text(
+                  slot,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : Colors.black,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),
           );
-        }).toList(),
+        },
       );
     });
   }
-
   // ==================== Step 2: Select Patient Profile ====================Widget _buildStep2Content() {
-  Widget _buildStep2Content() {
-    return Column(
-      children: [
-        // Tiêu đề phần
-        Container(
-          padding: const EdgeInsets.all(16),
-          alignment: Alignment.centerLeft,
-          child: const Text(
-            'Chọn hồ sơ bệnh nhân cho lịch khám',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
+  // Widget _buildStep2Content() {
+  //   return Column(
+  //     children: [
+  //       // Tiêu đề phần
+  //       Container(
+  //         padding: const EdgeInsets.all(16),
+  //         alignment: Alignment.centerLeft,
+  //         child: const Text(
+  //           'Chọn hồ sơ bệnh nhân cho lịch khám',
+  //           style: TextStyle(
+  //             fontSize: 16,
+  //             fontWeight: FontWeight.bold,
+  //           ),
+  //         ),
+  //       ),
 
-        // Danh sách patients
-        Expanded(
-          child: Obx(
-            () => controller.patients.isEmpty
-                ? _buildEmptyPatientList()
-                : ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: controller.patients.length,
-                    itemBuilder: (context, index) {
-                      final patient = controller.patients[index];
-                      return Obx(() {
-                        final isSelected =
-                            controller.selectedPatient.value?.id == patient.id;
-                        return GestureDetector(
-                          onTap: () => controller.selectPatient(patient),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
-                            margin: const EdgeInsets.only(bottom: 16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: isSelected
-                                    ? AppColor.fourthMain
-                                    : Colors.grey.shade300,
-                                width: isSelected ? 2 : 1,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: isSelected
-                                      ? AppColor.fourthMain.withOpacity(0.2)
-                                      : Colors.grey.withOpacity(0.1),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Stack(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(16),
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      // Avatar
-                                      Container(
-                                        width: 60,
-                                        height: 60,
-                                        decoration: BoxDecoration(
-                                          color: AppColor.fourthMain
-                                              .withOpacity(0.1),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Center(
-                                          child: Icon(
-                                            patient.gender == 'Nam'
-                                                ? Icons.man
-                                                : Icons.woman,
-                                            color: AppColor.fourthMain,
-                                            size: 32,
-                                          ),
-                                        ),
-                                      ),
+  //       // Danh sách patients
+  //       Expanded(
+  //         child: Obx(
+  //           () => controller.patients.isEmpty
+  //               ? _buildEmptyPatientList()
+  //               : ListView.builder(
+  //                   padding: const EdgeInsets.symmetric(horizontal: 16),
+  //                   itemCount: controller.patients.length,
+  //                   itemBuilder: (context, index) {
+  //                     final patient = controller.patients[index];
+  //                     return Obx(() {
+  //                       final isSelected =
+  //                           controller.selectedPatient.value?.id == patient.id;
+  //                       return GestureDetector(
+  //                         onTap: () => controller.selectPatient(patient),
+  //                         child: AnimatedContainer(
+  //                           duration: const Duration(milliseconds: 300),
+  //                           margin: const EdgeInsets.only(bottom: 16),
+  //                           decoration: BoxDecoration(
+  //                             color: Colors.white,
+  //                             borderRadius: BorderRadius.circular(12),
+  //                             border: Border.all(
+  //                               color: isSelected
+  //                                   ? AppColor.fourthMain
+  //                                   : Colors.grey.shade300,
+  //                               width: isSelected ? 2 : 1,
+  //                             ),
+  //                             boxShadow: [
+  //                               BoxShadow(
+  //                                 color: isSelected
+  //                                     ? AppColor.fourthMain.withOpacity(0.2)
+  //                                     : Colors.grey.withOpacity(0.1),
+  //                                 blurRadius: 8,
+  //                                 offset: const Offset(0, 2),
+  //                               ),
+  //                             ],
+  //                           ),
+  //                           child: Stack(
+  //                             children: [
+  //                               Padding(
+  //                                 padding: const EdgeInsets.all(16),
+  //                                 child: Row(
+  //                                   crossAxisAlignment:
+  //                                       CrossAxisAlignment.start,
+  //                                   children: [
+  //                                     // Avatar
+  //                                     Container(
+  //                                       width: 60,
+  //                                       height: 60,
+  //                                       decoration: BoxDecoration(
+  //                                         color: AppColor.fourthMain
+  //                                             .withOpacity(0.1),
+  //                                         shape: BoxShape.circle,
+  //                                       ),
+  //                                       child: Center(
+  //                                         child: Icon(
+  //                                           patient.gender == 'Nam'
+  //                                               ? Icons.man
+  //                                               : Icons.woman,
+  //                                           color: AppColor.fourthMain,
+  //                                           size: 32,
+  //                                         ),
+  //                                       ),
+  //                                     ),
 
-                                      const SizedBox(width: 16),
+  //                                     const SizedBox(width: 16),
 
-                                      // Patient info
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              patient.name,
-                                              style: const TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            _buildInfoRow(Icons.cake,
-                                                'Ngày sinh: ${patient.dob}'),
-                                            const SizedBox(height: 4),
-                                            _buildInfoRow(
-                                                Icons.phone,
-                                                patient.phone != null
-                                                    ? 'SĐT: ${patient.phone}'
-                                                    : 'Chưa có SĐT'),
-                                            const SizedBox(height: 4),
-                                            _buildInfoRow(
-                                                Icons.home,
-                                                patient.address != null
-                                                    ? 'Địa chỉ: ${patient.address}'
-                                                    : 'Chưa có địa chỉ'),
-                                            const SizedBox(height: 4),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
+  //                                     // Patient info
+  //                                     Expanded(
+  //                                       child: Column(
+  //                                         crossAxisAlignment:
+  //                                             CrossAxisAlignment.start,
+  //                                         children: [
+  //                                           Text(
+  //                                             patient.name,
+  //                                             style: const TextStyle(
+  //                                               fontSize: 16,
+  //                                               fontWeight: FontWeight.bold,
+  //                                             ),
+  //                                           ),
+  //                                           const SizedBox(height: 4),
+  //                                           _buildInfoRow(Icons.cake,
+  //                                               'Ngày sinh: ${patient.dob}'),
+  //                                           const SizedBox(height: 4),
+  //                                           _buildInfoRow(
+  //                                               Icons.phone,
+  //                                               patient.phone != null
+  //                                                   ? 'SĐT: ${patient.phone}'
+  //                                                   : 'Chưa có SĐT'),
+  //                                           const SizedBox(height: 4),
+  //                                           _buildInfoRow(
+  //                                               Icons.home,
+  //                                               patient.address != null
+  //                                                   ? 'Địa chỉ: ${patient.address}'
+  //                                                   : 'Chưa có địa chỉ'),
+  //                                           const SizedBox(height: 4),
+  //                                         ],
+  //                                       ),
+  //                                     ),
+  //                                   ],
+  //                                 ),
+  //                               ),
 
-                                // Settings button
-                                Positioned(
-                                  top: 8,
-                                  right: 8,
-                                  child: IconButton(
-                                    icon: const Icon(Icons.settings,
-                                        size: 20, color: Colors.grey),
-                                    onPressed: () {
-                                      _showPatientOptionsBottomSheet(
-                                          context, patient);
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      });
-                    },
-                  ),
-          ),
-        ),
+  //                               // Settings button
+  //                               Positioned(
+  //                                 top: 8,
+  //                                 right: 8,
+  //                                 child: IconButton(
+  //                                   icon: const Icon(Icons.settings,
+  //                                       size: 20, color: Colors.grey),
+  //                                   onPressed: () {
+  //                                     _showPatientOptionsBottomSheet(
+  //                                         context, patient);
+  //                                   },
+  //                                 ),
+  //                               ),
+  //                             ],
+  //                           ),
+  //                         ),
+  //                       );
+  //                     });
+  //                   },
+  //                 ),
+  //         ),
+  //       ),
 
-        // Add new patient button and continue button
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.2),
-                blurRadius: 5,
-                offset: const Offset(0, -2),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () => Get.toNamed(Routes.personal),
-                  icon: const Icon(Icons.add),
-                  label: const Text('THÊM HỒ SƠ BỆNH NHÂN'),
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 48),
-                    side: BorderSide(color: AppColor.fourthMain),
-                    foregroundColor: AppColor.fourthMain,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Obx(() => _buildContinueButton(
-                    'TIẾP TỤC',
-                    controller.nextStep,
-                    enabled: controller.selectedPatient.value != null,
-                  )),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
+  //       // Add new patient button and continue button
+  //       Container(
+  //         padding: const EdgeInsets.all(16),
+  //         decoration: BoxDecoration(
+  //           color: Colors.white,
+  //           boxShadow: [
+  //             BoxShadow(
+  //               color: Colors.grey.withOpacity(0.2),
+  //               blurRadius: 5,
+  //               offset: const Offset(0, -2),
+  //             ),
+  //           ],
+  //         ),
+  //         child: Column(
+  //           children: [
+  //             SizedBox(
+  //               width: double.infinity,
+  //               child: OutlinedButton.icon(
+  //                 onPressed: () => Get.toNamed(Routes.personal),
+  //                 icon: const Icon(Icons.add),
+  //                 label: const Text('THÊM HỒ SƠ BỆNH NHÂN'),
+  //                 style: OutlinedButton.styleFrom(
+  //                   minimumSize: const Size(double.infinity, 48),
+  //                   side: BorderSide(color: AppColor.fourthMain),
+  //                   foregroundColor: AppColor.fourthMain,
+  //                 ),
+  //               ),
+  //             ),
+  //             const SizedBox(height: 12),
+  //             Obx(() => _buildContinueButton(
+  //                   'TIẾP TỤC',
+  //                   controller.nextStep,
+  //                   enabled: controller.selectedPatient.value != null,
+  //                 )),
+  //           ],
+  //         ),
+  //       ),
+  //     ],
+  //   );
+  // }
 
-  void _showPatientOptionsBottomSheet(BuildContext context, Patient patient) {
-    Get.bottomSheet(
-      Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(16),
-            topRight: Radius.circular(16),
-          ),
-        ),
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.edit, color: Colors.blue),
-              title: const Text('Chỉnh sửa hồ sơ'),
-              onTap: () {
-                Get.back();
-                // Navigate to edit screen
-                Get.toNamed(Routes.personal, arguments: patient);
-              },
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            const Divider(height: 1),
-            ListTile(
-              leading: const Icon(Icons.delete, color: Colors.red),
-              title: const Text('Xoá hồ sơ'),
-              onTap: () {
-                Get.back();
-                _showDeleteConfirmationDialog(patient);
-              },
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: TextButton(
-                onPressed: () => Get.back(),
-                child: const Text('HỦY'),
-                style: TextButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // void _showPatientOptionsBottomSheet(BuildContext context, Patient patient) {
+  //   Get.bottomSheet(
+  //     Container(
+  //       decoration: const BoxDecoration(
+  //         color: Colors.white,
+  //         borderRadius: BorderRadius.only(
+  //           topLeft: Radius.circular(16),
+  //           topRight: Radius.circular(16),
+  //         ),
+  //       ),
+  //       padding: const EdgeInsets.all(16),
+  //       child: Column(
+  //         mainAxisSize: MainAxisSize.min,
+  //         children: [
+  //           ListTile(
+  //             leading: const Icon(Icons.edit, color: Colors.blue),
+  //             title: const Text('Chỉnh sửa hồ sơ'),
+  //             onTap: () {
+  //               Get.back();
+  //               // Navigate to edit screen
+  //               Get.toNamed(Routes.personal, arguments: patient);
+  //             },
+  //             shape: RoundedRectangleBorder(
+  //               borderRadius: BorderRadius.circular(10),
+  //             ),
+  //           ),
+  //           const Divider(height: 1),
+  //           ListTile(
+  //             leading: const Icon(Icons.delete, color: Colors.red),
+  //             title: const Text('Xoá hồ sơ'),
+  //             onTap: () {
+  //               Get.back();
+  //               _showDeleteConfirmationDialog(patient);
+  //             },
+  //             shape: RoundedRectangleBorder(
+  //               borderRadius: BorderRadius.circular(10),
+  //             ),
+  //           ),
+  //           const SizedBox(height: 8),
+  //           SizedBox(
+  //             width: double.infinity,
+  //             child: TextButton(
+  //               onPressed: () => Get.back(),
+  //               child: const Text('HỦY'),
+  //               style: TextButton.styleFrom(
+  //                 shape: RoundedRectangleBorder(
+  //                   borderRadius: BorderRadius.circular(10),
+  //                 ),
+  //               ),
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
-  void _showDeleteConfirmationDialog(Patient patient) {
-    Get.dialog(
-      AlertDialog(
-        title: const Text('Xác nhận xoá'),
-        content: Text('Bạn có chắc chắn muốn xoá hồ sơ ${patient.name}?'),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: const Text('HỦY'),
-            style: TextButton.styleFrom(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              Get.back();
-              controller.deletePatient(patient);
-            },
-            child: const Text('XOÁ', style: TextStyle(color: Colors.red)),
-            style: TextButton.styleFrom(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // void _showDeleteConfirmationDialog(Patient patient) {
+  //   Get.dialog(
+  //     AlertDialog(
+  //       title: const Text('Xác nhận xoá'),
+  //       content: Text('Bạn có chắc chắn muốn xoá hồ sơ ${patient.name}?'),
+  //       shape: RoundedRectangleBorder(
+  //         borderRadius: BorderRadius.circular(16),
+  //       ),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () => Get.back(),
+  //           child: const Text('HỦY'),
+  //           style: TextButton.styleFrom(
+  //             shape: RoundedRectangleBorder(
+  //               borderRadius: BorderRadius.circular(8),
+  //             ),
+  //           ),
+  //         ),
+  //         TextButton(
+  //           onPressed: () {
+  //             Get.back();
+  //             controller.deletePatient(patient);
+  //           },
+  //           child: const Text('XOÁ', style: TextStyle(color: Colors.red)),
+  //           style: TextButton.styleFrom(
+  //             shape: RoundedRectangleBorder(
+  //               borderRadius: BorderRadius.circular(8),
+  //             ),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
-  Widget _buildInfoRow(IconData icon, String text) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Icon(icon, size: 16, color: Colors.grey[600]),
-        const SizedBox(width: 6),
-        Expanded(
-          child: Text(
-            text,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[800],
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
-    );
-  }
+  // Widget _buildInfoRow(IconData icon, String text) {
+  //   return Row(
+  //     crossAxisAlignment: CrossAxisAlignment.center,
+  //     children: [
+  //       Icon(icon, size: 16, color: Colors.grey[600]),
+  //       const SizedBox(width: 6),
+  //       Expanded(
+  //         child: Text(
+  //           text,
+  //           style: TextStyle(
+  //             fontSize: 14,
+  //             color: Colors.grey[800],
+  //           ),
+  //           maxLines: 1,
+  //           overflow: TextOverflow.ellipsis,
+  //         ),
+  //       ),
+  //     ],
+  //   );
+  // }
 
-  Widget _buildEmptyPatientList() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.person_off,
-            size: 64,
-            color: Colors.grey[400],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Chưa có hồ sơ bệnh nhân nào',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
-            ),
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton.icon(
-            onPressed: () => Get.toNamed(Routes.personal),
-            icon: const Icon(Icons.add),
-            label: const Text('THÊM HỒ SƠ BỆNH NHÂN'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColor.fourthMain,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildEmptyPatientList() {
+  //   return Center(
+  //     child: Column(
+  //       mainAxisAlignment: MainAxisAlignment.center,
+  //       children: [
+  //         Icon(
+  //           Icons.person_off,
+  //           size: 64,
+  //           color: Colors.grey[400],
+  //         ),
+  //         const SizedBox(height: 16),
+  //         Text(
+  //           'Chưa có hồ sơ bệnh nhân nào',
+  //           style: TextStyle(
+  //             fontSize: 16,
+  //             color: Colors.grey[600],
+  //           ),
+  //         ),
+  //         const SizedBox(height: 24),
+  //         ElevatedButton.icon(
+  //           onPressed: () => Get.toNamed(Routes.personal),
+  //           icon: const Icon(Icons.add),
+  //           label: const Text('THÊM HỒ SƠ BỆNH NHÂN'),
+  //           style: ElevatedButton.styleFrom(
+  //             backgroundColor: AppColor.fourthMain,
+  //             foregroundColor: Colors.white,
+  //             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
-  // ==================== Step 3: Confirm Appointment ====================
-  Widget _buildStep3Content() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          // Patient info
-          _buildConfirmCard(
-            title: 'Thông tin bệnh nhân',
-            icon: Icons.person,
-            child: Obx(() {
-              final patient = controller.selectedPatient.value;
-              if (patient == null)
-                return const Center(child: Text("Chưa chọn bệnh nhân"));
-              return Column(
-                children: [
-                  _buildConfirmItem('Họ tên', patient.name),
-                  _buildConfirmItem('SĐT', patient.phone ?? 'Chưa có'),
-                  _buildConfirmItem('Ngày sinh', patient.dob),
-                  _buildConfirmItem('Địa chỉ', patient.address ?? 'Chưa có'),
-                ],
-              );
-            }),
-          ),
+  // // ==================== Step 3: Confirm Appointment ====================
+  // Widget _buildStep3Content() {
+  //   return SingleChildScrollView(
+  //     padding: const EdgeInsets.all(16),
+  //     child: Column(
+  //       children: [
+  //         // Patient info
+  //         _buildConfirmCard(
+  //           title: 'Thông tin bệnh nhân',
+  //           icon: Icons.person,
+  //           child: Obx(() {
+  //             final patient = controller.selectedPatient.value;
+  //             if (patient == null)
+  //               return const Center(child: Text("Chưa chọn bệnh nhân"));
+  //             return Column(
+  //               children: [
+  //                 _buildConfirmItem('Họ tên', patient.name),
+  //                 _buildConfirmItem('SĐT', patient.phone ?? 'Chưa có'),
+  //                 _buildConfirmItem('Ngày sinh', patient.dob),
+  //                 _buildConfirmItem('Địa chỉ', patient.address ?? 'Chưa có'),
+  //               ],
+  //             );
+  //           }),
+  //         ),
 
-          // Doctor info
-          _buildConfirmCard(
-            title: 'Thông tin bác sĩ',
-            icon: Icons.local_hospital,
-            child: Obx(() {
-              final doctor = controller.selectedDoctor.value;
-              if (doctor == null)
-                return const Center(child: Text("Chưa chọn bác sĩ"));
-              return Column(
-                children: [
-                  _buildConfirmItem(
-                      'Bác sĩ', doctor.name), // ✅ Sửa lỗi `doctors.name`
-                  _buildConfirmItem('Địa chỉ', doctor.address),
-                  if (doctor.phone != null)
-                    _buildConfirmItem('Điện thoại', doctor.phone!),
-                ],
-              );
-            }),
-          ),
+  //         // Doctor info
+  //         _buildConfirmCard(
+  //           title: 'Thông tin bác sĩ',
+  //           icon: Icons.local_hospital,
+  //           child: Obx(() {
+  //             final doctor = controller.selectedDoctor.value;
+  //             if (doctor == null)
+  //               return const Center(child: Text("Chưa chọn bác sĩ"));
+  //             return Column(
+  //               children: [
+  //                 _buildConfirmItem(
+  //                     'Bác sĩ', doctor.name), // ✅ Sửa lỗi `doctors.name`
+  //                 _buildConfirmItem('Địa chỉ', doctor.address),
+  //                 if (doctor.phone != null)
+  //                   _buildConfirmItem('Điện thoại', doctor.phone!),
+  //               ],
+  //             );
+  //           }),
+  //         ),
 
-          // Appointment details
-          _buildConfirmCard(
-            title: 'Thông tin lịch hẹn',
-            icon: Icons.calendar_today,
-            child: Obx(() {
-              return Column(
-                children: [
-                  if (controller.selectedDepartment.value != null)
-                    _buildConfirmItem('Chuyên khoa',
-                        controller.selectedDepartment.value!.name),
-                  if (controller.selectedService.value != null)
-                    _buildConfirmItem(
-                        'Dịch vụ', controller.selectedService.value!.name),
-                  if (controller.selectedDate.value != null)
-                    _buildConfirmItem(
-                      'Ngày khám',
-                      DateFormat('dd/MM/yyyy')
-                          .format(controller.selectedDate.value!),
-                    ),
-                  if (controller.selectedTimeSlot.value != null)
-                    _buildConfirmItem(
-                        'Giờ khám', controller.selectedTimeSlot.value!),
-                ],
-              );
-            }),
-          ),
+  //         // Appointment details
+  //         _buildConfirmCard(
+  //           title: 'Thông tin lịch hẹn',
+  //           icon: Icons.calendar_today,
+  //           child: Obx(() {
+  //             return Column(
+  //               children: [
+  //                 if (controller.selectedDepartment.value != null)
+  //                   _buildConfirmItem('Chuyên khoa',
+  //                       controller.selectedDepartment.value!.name),
+  //                 if (controller.selectedService.value != null)
+  //                   _buildConfirmItem(
+  //                       'Dịch vụ', controller.selectedService.value!.name),
+  //                 if (controller.selectedDate.value != null)
+  //                   _buildConfirmItem(
+  //                     'Ngày khám',
+  //                     DateFormat('dd/MM/yyyy')
+  //                         .format(controller.selectedDate.value!),
+  //                   ),
+  //                 if (controller.selectedTimeSlot.value != null)
+  //                   _buildConfirmItem(
+  //                       'Giờ khám', controller.selectedTimeSlot.value!),
+  //               ],
+  //             );
+  //           }),
+  //         ),
 
-          // Payment summary
-          _buildConfirmCard(
-            title: 'Tổng thanh toán',
-            icon: Icons.payment,
-            child: Obx(() {
-              final service = controller.selectedService.value;
-              if (service == null)
-                return const Center(child: Text("Chưa chọn dịch vụ"));
-              return Column(
-                children: [
-                  _buildPriceItem('Phí khám bệnh', service.price),
-                  _buildPriceItem('Phí dịch vụ', 0),
-                  const Divider(height: 24),
-                  _buildPriceItem('Tổng cộng', service.price, isTotal: true),
-                ],
-              );
-            }),
-          ),
+  //         // Payment summary
+  //         _buildConfirmCard(
+  //           title: 'Tổng thanh toán',
+  //           icon: Icons.payment,
+  //           child: Obx(() {
+  //             final service = controller.selectedService.value;
+  //             if (service == null)
+  //               return const Center(child: Text("Chưa chọn dịch vụ"));
+  //             return Column(
+  //               children: [
+  //                 _buildPriceItem('Phí khám bệnh', service.price),
+  //                 _buildPriceItem('Phí dịch vụ', 0),
+  //                 const Divider(height: 24),
+  //                 _buildPriceItem('Tổng cộng', service.price, isTotal: true),
+  //               ],
+  //             );
+  //           }),
+  //         ),
 
-          // Confirm button
-          _buildContinueButton(
-            'Tiếp Tục',
-            () => controller.confirmAppointment(),
-          ),
-        ],
-      ),
-    );
-  }
+  //         // Confirm button
+  //         _buildContinueButton(
+  //           'Tiếp Tục',
+  //           () => controller.confirmAppointment(),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildConfirmCard({
     required String title,
@@ -1396,105 +1528,108 @@ class AppointmentScreen extends StatelessWidget {
   }
 
   // ==================== Step 4: Payment ====================
-Widget _buildStep4Content() {
-  return Scaffold(
-    body: Column(
-      children: [
-        Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                // Appointment summary
-                _buildConfirmCard(
-                  title: 'Thông tin đặt lịch',
-                  icon: Icons.info,
-                  child: Obx(() {
-                    final patient = controller.selectedPatient.value;
-                    final hospital = controller.selectedDoctor.value;
-                    final service = controller.selectedService.value;
+  // Widget _buildStep4Content() {
+  //   return Scaffold(
+  //     body: Column(
+  //       children: [
+  //         Expanded(
+  //           child: SingleChildScrollView(
+  //             padding: const EdgeInsets.all(16),
+  //             child: Column(
+  //               children: [
+  //                 // Appointment summary
+  //                 _buildConfirmCard(
+  //                   title: 'Thông tin đặt lịch',
+  //                   icon: Icons.info,
+  //                   child: Obx(() {
+  //                     final patient = controller.selectedPatient.value;
+  //                     final hospital = controller.selectedDoctor.value;
+  //                     final service = controller.selectedService.value;
 
-                    return Column(
-                      children: [
-                        if (patient != null)
-                          _buildConfirmItem('Bệnh nhân', patient.name),
-                        if (hospital != null)
-                          _buildConfirmItem('Bệnh viện', hospital.name),
-                        if (service != null)
-                          _buildConfirmItem('Dịch vụ', service.name),
-                        if (controller.selectedDate.value != null)
-                          _buildConfirmItem(
-                              'Ngày khám',
-                              DateFormat('dd/MM/yyyy')
-                                  .format(controller.selectedDate.value!)),
-                        if (controller.selectedTimeSlot.value != null)
-                          _buildConfirmItem(
-                              'Giờ khám', controller.selectedTimeSlot.value!),
-                        const SizedBox(height: 12),
-                        _buildPriceItem('Tổng thanh toán', service?.price ?? 0,
-                            isTotal: true),
-                      ],
-                    );
-                  }),
-                ),
+  //                     return Column(
+  //                       children: [
+  //                         if (patient != null)
+  //                           _buildConfirmItem('Bệnh nhân', patient.name),
+  //                         if (hospital != null)
+  //                           _buildConfirmItem('Bệnh viện', hospital.name),
+  //                         if (service != null)
+  //                           _buildConfirmItem('Dịch vụ', service.name),
+  //                         if (controller.selectedDate.value != null)
+  //                           _buildConfirmItem(
+  //                               'Ngày khám',
+  //                               DateFormat('dd/MM/yyyy')
+  //                                   .format(controller.selectedDate.value!)),
+  //                         if (controller.selectedTimeSlot.value != null)
+  //                           _buildConfirmItem(
+  //                               'Giờ khám', controller.selectedTimeSlot.value!),
+  //                         const SizedBox(height: 12),
+  //                         _buildPriceItem(
+  //                             'Tổng thanh toán', service?.price ?? 0,
+  //                             isTotal: true),
+  //                       ],
+  //                     );
+  //                   }),
+  //                 ),
 
-                // Payment method selector
-                _buildConfirmCard(
-                  title: 'Hình thức thanh toán',
-                  icon: Icons.payment,
-                  child: Obx(() => ListTile(
-                        leading: Icon(
-                          controller.selectedPaymentMethod.value == 'online'
-                              ? Icons.credit_card
-                              : Icons.money,
-                          color: Colors.blue,
-                        ),
-                        title: Text(
-                          controller.selectedPaymentMethod.value == 'online'
-                              ? 'Thanh toán online'
-                              : 'Thanh toán tại bệnh viện',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text(
-                          controller.selectedPaymentMethod.value == 'online'
-                              ? 'Thẻ ATM/VISA/Mastercard'
-                              : 'Khi đến khám',
-                        ),
-                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                        onTap: () => _showPaymentMethodBottomSheet(),
-                      )),
-                ),
+  //                 // Payment method selector
+  //                 _buildConfirmCard(
+  //                   title: 'Hình thức thanh toán',
+  //                   icon: Icons.payment,
+  //                   child: Obx(() => ListTile(
+  //                         leading: Icon(
+  //                           controller.selectedPaymentMethod.value == 'online'
+  //                               ? Icons.credit_card
+  //                               : Icons.money,
+  //                           color: Colors.blue,
+  //                         ),
+  //                         title: Text(
+  //                           controller.selectedPaymentMethod.value == 'online'
+  //                               ? 'Thanh toán online'
+  //                               : 'Thanh toán tại bệnh viện',
+  //                           style: const TextStyle(fontWeight: FontWeight.bold),
+  //                         ),
+  //                         subtitle: Text(
+  //                           controller.selectedPaymentMethod.value == 'online'
+  //                               ? 'Thẻ ATM/VISA/Mastercard'
+  //                               : 'Khi đến khám',
+  //                         ),
+  //                         trailing:
+  //                             const Icon(Icons.arrow_forward_ios, size: 16),
+  //                         onTap: () => _showPaymentMethodBottomSheet(),
+  //                       )),
+  //                 ),
 
-                // Thêm khoảng trống phía dưới
-                const SizedBox(height: 80),
-              ],
-            ),
-          ),
-        ),
-      ],
-    ),
-    bottomNavigationBar: Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: _buildContinueButton(
-        'THANH TOÁN',
-        () {
-          controller.completePayment();
-          Get.until((route) => route.isFirst);
-        },
-      ),
-    ),
-  );
-}
+  //                 // Thêm khoảng trống phía dưới
+  //                 const SizedBox(height: 80),
+  //               ],
+  //             ),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //     bottomNavigationBar: Container(
+  //       padding: const EdgeInsets.all(16),
+  //       decoration: BoxDecoration(
+  //         color: Colors.white,
+  //         boxShadow: [
+  //           BoxShadow(
+  //             color: Colors.grey.withOpacity(0.2),
+  //             blurRadius: 8,
+  //             offset: const Offset(0, -2),
+  //           ),
+  //         ],
+  //       ),
+  //       child: _buildContinueButton(
+  //         'THANH TOÁN',
+  //         () {
+  //           controller.completePayment();
+  //           Get.until((route) => route.isFirst);
+  //         },
+  //       ),
+  //     ),
+  //   );
+  // }
+
   void _showPaymentMethodBottomSheet() {
     Get.bottomSheet(
       Container(
@@ -1536,7 +1671,6 @@ Widget _buildStep4Content() {
                     Get.back();
                   },
                 )),
-          
           ],
         ),
       ),

@@ -1,171 +1,59 @@
 import 'package:ebookingdoc/src/Global/app_color.dart';
 import 'package:ebookingdoc/src/constants/app_page.dart';
+import 'package:ebookingdoc/src/constants/services/ArticleService.dart';
+import 'package:ebookingdoc/src/constants/services/Doctorservice.dart';
+import 'package:ebookingdoc/src/constants/services/HospitalService.dart';
+import 'package:ebookingdoc/src/constants/services/MedicalService.dart';
+import 'package:ebookingdoc/src/constants/services/clinic_service.dart';
+import 'package:ebookingdoc/src/constants/services/user_service.dart';
 import 'package:ebookingdoc/src/data/model/appointment_model.dart';
 import 'package:ebookingdoc/src/data/model/article_model.dart';
 import 'package:ebookingdoc/src/data/model/clinic_model.dart';
 import 'package:ebookingdoc/src/data/model/doctor_model.dart';
 import 'package:ebookingdoc/src/data/model/hospital_model.dart';
 import 'package:ebookingdoc/src/data/model/medical_service_model.dart';
+import 'package:ebookingdoc/src/data/model/specialization_model.dart';
+import 'package:ebookingdoc/src/constants/services/specialization_service.dart';
+import 'package:ebookingdoc/src/data/model/userModel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
+class DoctorDisplay {
+  final Doctor doctor;
+  final User? user;
+  final Specialization? specialization;
+
+  DoctorDisplay({required this.doctor, this.user, this.specialization});
+}
+
 class HomeController extends GetxController {
-  // State variables
+  final RxList<Clinic> clinics = <Clinic>[].obs;
+  final ClinicService _clinicService = ClinicService();
   final RxInt selectedIndex = 0.obs;
   final RxInt currentCarouselIndex = 0.obs;
   final RxBool isLoading = true.obs;
   final RxBool hasUpcomingAppointment = false.obs;
-
-  final RxList<Doctor> featuredDoctors = <Doctor>[].obs;
+  final RxList<DoctorDisplay> featuredDoctors = <DoctorDisplay>[].obs;
   final TextEditingController searchController = TextEditingController();
   final RxList<Map<String, String>> filteredResults =
       <Map<String, String>>[].obs;
+  final HospitalService _hospitalService = HospitalService();
+  final MedicalServiceService _medicalService = MedicalServiceService();
+  final RxList<MedicalServiceModel> medicalserviceModel =
+      <MedicalServiceModel>[].obs;
+  final RxList<Hospital> hospitals = <Hospital>[].obs;
+  final ArticleService _articleService = ArticleService();
+  final RxList<Article> article = <Article>[].obs;
+  final DoctorService _doctorService = DoctorService();
+  final UserService _userService = UserService();
+  final SpecializationService _specService = SpecializationService();
 
   final List<Map<String, String>> allSearchableItems = [
     {'name': 'Bác sĩ Nguyễn Văn Chiến', 'type': 'Bác sĩ'},
     {'name': 'Bệnh viện Bạch Mai', 'type': 'Bệnh viện'},
     {'name': 'Phòng khám Đa khoa Medlatec', 'type': 'Phòng khám'},
     {'name': 'Trung tâm tiêm chủng Quốc gia', 'type': 'Trung tâm tiêm chủng'},
-    // Có thể mở rộng thêm các mục từ các model sẵn có như recommendedHospitals, nearestClinics, featuredDoctors...
-  ];
-
-  final List<Hospital> recommendedHospitals = [
-    Hospital(
-      id: '1',
-      name: 'Bệnh viện Đa khoa Quốc tế Vinmec',
-      address: '458 Minh Khai, Hai Bà Trưng, Hà Nội',
-      imageUrl: 'assets/images/carosel7.jpg',
-      rating: 4.8,
-      distance: 2.5,
-    ),
-    Hospital(
-      id: '2',
-      name: 'Bệnh viện Hữu nghị Việt Đức',
-      address: '40 Tràng Thi, Hoàn Kiếm, Hà Nội',
-      imageUrl: 'assets/images/carosel8.jpg',
-      rating: 4.7,
-      distance: 3.2,
-    ),
-    Hospital(
-      id: '3',
-      name: 'Bệnh viện Bạch Mai',
-      address: '78 Giải Phóng, Đống Đa, Hà Nội',
-      imageUrl: 'assets/images/carosel6.jpg',
-      rating: 4.6,
-      distance: 4.1,
-    ),
-  ];
-
-  final List<Clinic> nearestClinics = [
-    Clinic(
-      id: '1',
-      name: 'Phòng khám Đa khoa Medlatec',
-      address: '42-44 Nghĩa Dũng, Ba Đình, Hà Nội',
-      imageUrl: 'assets/images/vitaminD.jpg',
-      rating: 4.7,
-      distance: 1.2,
-    ),
-    Clinic(
-      id: '2',
-      name: 'Phòng khám Chuyên khoa Nội Hồng Ngọc',
-      address: '55 Yên Ninh, Ba Đình, Hà Nội',
-      imageUrl: 'assets/images/carosel1.jpg',
-      rating: 5.0,
-      distance: 0.8,
-    ),
-    Clinic(
-      id: '3',
-      name: 'Phòng khám Đa khoa Quốc tế Thu Cúc',
-      address: '286 Thụy Khuê, Tây Hồ, Hà Nội',
-      imageUrl: 'assets/images/carosel2.jpg',
-      rating: 4.9,
-      distance: 2.1,
-    ),
-  ];
-
-  final List<MedicalService> medicalServices = [
-    MedicalService(
-      id: '1',
-      name: 'Đặt khám tại cơ sở',
-      icon: SvgPicture.asset(
-        'assets/icons/tongquat.svg',
-        height: 20,
-        width: 20,
-      ),
-      color: AppColor.fourthMain,
-    ),
-    MedicalService(
-      id: '2',
-      name: 'Đặt khám tại nhà',
-      icon: SvgPicture.asset(
-        'assets/icons/nn.svg',
-        height: 20,
-        width: 20,
-      ),
-      color: AppColor.fourthMain,
-    ),
-    MedicalService(
-      id: '3',
-      name: 'Đặt lịch xét nghiệm',
-      icon: SvgPicture.asset(
-        'assets/icons/xetnghiem.svg',
-        height: 20,
-        width: 20,
-      ),
-      color: AppColor.fourthMain,
-    ),
-    MedicalService(
-      id: '4',
-      name: 'Đặt bác sĩ',
-      icon: SvgPicture.asset(
-        'assets/icons/bs111.svg',
-        height: 20,
-        width: 20,
-      ),
-      color: AppColor.fourthMain,
-    ),
-    MedicalService(
-      id: '5',
-      name: 'Gói khám sức khoẻ',
-      icon: SvgPicture.asset(
-        'assets/icons/tiemchung.svg',
-        height: 20,
-        width: 20,
-      ),
-      color: AppColor.fourthMain,
-    ),
-    MedicalService(
-      id: '6',
-      name: 'Sống khoẻ tiểu đường',
-      icon: SvgPicture.asset(
-        'assets/icons/tieuduong.svg',
-        height: 20,
-        width: 20,
-      ),
-      color: AppColor.fourthMain,
-    ),
-  ];
-
-  final List<Article> healthArticles = [
-    Article(
-      id: '1',
-      title: '10 cách tăng cường hệ miễn dịch mùa dịch',
-      imageUrl: 'assets/images/carosel4.jpg',
-      publishDate: '20/04/2025',
-    ),
-    Article(
-      id: '2',
-      title: 'Dấu hiệu nhận biết sớm bệnh tim mạch',
-      imageUrl: 'assets/images/carosel5.jpg',
-      publishDate: '18/04/2025',
-    ),
-    Article(
-      id: '3',
-      title: 'Chế độ dinh dưỡng cho người tiểu đường',
-      imageUrl: 'assets/images/10cpntm.jpg',
-      publishDate: '15/04/2025',
-    ),
   ];
 
   final List<Appointment> upcomingAppointments = [
@@ -188,54 +76,92 @@ class HomeController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // Simulate loading data
-    Future.delayed(const Duration(seconds: 2), () {
-      isLoading.value = false;
-      hasUpcomingAppointment.value = upcomingAppointments.isNotEmpty;
-    });
+    loadAllData();
+  }
 
-    featuredDoctors.value = [
-      Doctor(
-        id: '1',
-        title: "TS. BS",
-        name: 'BS. Nguyễn Văn Chiến',
-        specialty: 'Tổng quát',
-        imageUrl: 'assets/images/bs4.jpg',
-        rating: 4.8,
-        experience: '15 năm kinh nghiệm',
-        hospital: 'Bệnh viện Bạch Mai',
-      ),
-      Doctor(
-        id: '2',
-        title: "PGS. TS. BS",
-        name: 'BS. Phạm Ngọc Ánh',
-        specialty: 'Tim mạch',
-        imageUrl: 'assets/images/bs5.jpg',
-        rating: 4.8,
-        experience: '15 năm kinh nghiệm',
-        hospital: 'Bệnh viện Bạch Mai',
-      ),
-      Doctor(
-        id: '3',
-        title: "GS. PGS. BS",
-        name: 'BS. Ngô Diệu Linh',
-        specialty: 'Nhi khoa',
-        imageUrl: 'assets/images/bs6.jpg',
-        rating: 4.8,
-        experience: '15 năm kinh nghiệm',
-        hospital: 'Bệnh viện Bạch Mai',
-      ),
-      Doctor(
-        id: '4',
-        title: "BS. CK2",
-        name: 'BS. Đào Khánh Toàn',
-        specialty: 'Nội tiết',
-        imageUrl: 'assets/images/bs7.jpg',
-        rating: 4.8,
-        experience: '15 năm kinh nghiệm',
-        hospital: 'Bệnh viện Bạch Mai',
-      ),
-    ];
+  Future<void> loadAllData() async {
+    isLoading.value = true;
+    await Future.wait([
+      fetchDoctors(),
+      fetchHospital(),
+      fetchClinics(),
+      fetchArticle(),
+      fetchMedicalService()
+    ]);
+    isLoading.value = false;
+  }
+
+  Future<void> fetchDoctors() async {
+    isLoading.value = true;
+    featuredDoctors.clear();
+
+    List<Doctor> doctors = await _doctorService.getAllDoctors();
+    print('[DEBUG] Số lượng bác sĩ từ API: ${doctors.length}');
+
+    for (var doc in doctors) {
+      if ((doc.userId == null || doc.userId!.isEmpty) ||
+          (doc.specializationId == null || doc.specializationId!.isEmpty)) {
+        print('Bác sĩ ${doc.uuid} thiếu userId hoặc specializationId, bỏ qua!');
+        continue; // bỏ qua bác sĩ này
+      }
+
+      final userFuture = _userService.getUserById(doc.userId!);
+      final specFuture = _specService.getById(doc.specializationId!);
+
+      final results = await Future.wait([userFuture, specFuture]);
+      final user = results[0] as User?;
+      final specialization = results[1] as Specialization?;
+
+      featuredDoctors.add(
+        DoctorDisplay(
+          doctor: doc,
+          user: user,
+          specialization: specialization,
+        ),
+      );
+      print('[DEBUG] Đã add bác sĩ: ${user?.name} - ${specialization?.name}');
+    }
+
+    print('[DEBUG] Tổng bác sĩ featured: ${featuredDoctors.length}');
+    isLoading.value = false;
+  }
+
+  Future<void> fetchHospital() async {
+    print('BẮT ĐẦU fetchHospital');
+    isLoading.value = true;
+    hospitals.clear();
+
+    List<Hospital> result =
+        (await _hospitalService.getAllHospital()).cast<Hospital>();
+    hospitals.addAll(result);
+
+    isLoading.value = false;
+    print('KẾT THÚC fetchHospital');
+  }
+
+  Future<void> fetchMedicalService() async {
+    print('BẮT ĐẦU MedicalService');
+    isLoading.value = true;
+    hospitals.clear();
+
+    List<Hospital> result =
+        (await _hospitalService.getAllHospital()).cast<Hospital>();
+    hospitals.addAll(result);
+
+    isLoading.value = false;
+    print('KẾT THÚC fetchHospital');
+  }
+
+  Future<void> fetchClinics() async {
+    clinics.clear();
+    List<Clinic> result = await _clinicService.getAllClinic();
+    clinics.addAll(result);
+  }
+
+  Future<void> fetchArticle() async {
+    article.clear();
+    List<Article> result = await _articleService.getAllArticles();
+    article.addAll(result);
   }
 
   void onSearchPressed() {
@@ -249,33 +175,19 @@ class HomeController extends GetxController {
         .toList();
   }
 
-  Future<void> refreshData() async {
-    isLoading.value = true;
-    await Future.delayed(const Duration(seconds: 1));
-    isLoading.value = false;
-  }
+  Future<void> refreshData() => loadAllData();
 
-  // Navigation methods
   void changeTabIndex(int index) {
     selectedIndex.value = index;
-    // You can add navigation logic here if needed
   }
 
-  void openBookingFlow() {
-    // Get.toNamed(Routes.BOOKING);
-  }
+  void openBookingFlow() {}
 
-  void viewHistory() {
-    // Get.toNamed(Routes.APPOINTMENT_HISTORY);
-  }
+  void viewHistory() {}
 
-  void viewMedications() {
-    // Get.toNamed(Routes.MEDICATIONS);
-  }
+  void viewMedications() {}
 
-  void openConsultation() {
-    // Get.toNamed(Routes.CONSULTATION);
-  }
+  void openConsultation() {}
 
   void onNotificationPressed() {
     Get.toNamed(Routes.notification);
@@ -285,7 +197,6 @@ class HomeController extends GetxController {
     currentCarouselIndex.value = index;
   }
 
-  // Detail view methods
   void viewDoctorDetails(String doctorId) {
     Get.toNamed(Routes.detaildoctor, arguments: doctorId);
   }
@@ -299,13 +210,11 @@ class HomeController extends GetxController {
   }
 
   void viewArticleDetails(String articleId) {
-    Get.toNamed(Routes.news);}
-
-  void viewAppointmentDetails(String appointmentId) {
-    // Get.toNamed(Routes.APPOINTMENT_DETAIL, arguments: appointmentId);
+    Get.toNamed(Routes.news);
   }
 
-  // View all methods
+  void viewAppointmentDetails(String appointmentId) {}
+
   void viewAllDoctors() {
     Get.toNamed(Routes.excellentDoctor);
   }
@@ -330,7 +239,6 @@ class HomeController extends GetxController {
     Get.toNamed(Routes.appointment);
   }
 
-  // Service selection
   void selectService(String serviceId) {
     Get.toNamed(Routes.excellentDoctor);
   }

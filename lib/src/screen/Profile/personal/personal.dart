@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:ebookingdoc/src/Global/app_color.dart';
 import 'package:ebookingdoc/src/widgets/Profile/personal/personal_controller.dart';
 import 'package:flutter/material.dart';
@@ -16,21 +18,22 @@ class Personal extends StatelessWidget {
     );
   }
 
- AppBar _buildAppBar() {
-  return AppBar(
-    backgroundColor: AppColor.fourthMain, // Đặt màu nền thành màu xanh
-    title: const Text(
-      'Thông tin cá nhân',
-      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-    ),
-    centerTitle: true,
-    leading: IconButton(
-      icon: const Icon(Icons.arrow_back, color: Colors.white), // Màu trắng cho nút lùi lại
-      onPressed: () => Get.back(),
-    ),
-    elevation: 0,
-  );
-}
+  AppBar _buildAppBar() {
+    return AppBar(
+      backgroundColor: AppColor.fourthMain, // Đặt màu nền thành màu xanh
+      title: const Text(
+        'Thông tin cá nhân',
+        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+      ),
+      centerTitle: true,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back,
+            color: Colors.white), // Màu trắng cho nút lùi lại
+        onPressed: () => Get.back(),
+      ),
+      elevation: 0,
+    );
+  }
 
   Widget _buildBody(BuildContext context) {
     return Form(
@@ -65,20 +68,44 @@ class Personal extends StatelessWidget {
     return Column(
       children: [
         Obx(() {
+          Widget avatarWidget;
+          if (controller.avatar.value != null) {
+            // Ảnh vừa chọn (local)
+            avatarWidget = CircleAvatar(
+              radius: 50,
+              backgroundColor: AppColor.fivethMain,
+              backgroundImage: FileImage(controller.avatar.value!),
+            );
+          } else if (controller.avatarUrl.value.isNotEmpty) {
+            // Nếu là link mạng
+            if (controller.avatarUrl.value.startsWith('http')) {
+              avatarWidget = CircleAvatar(
+                radius: 50,
+                backgroundColor: AppColor.fivethMain,
+                backgroundImage: NetworkImage(controller.avatarUrl.value),
+              );
+            } else {
+              // Nếu là path local (ảnh đã chọn trước đó)
+              avatarWidget = CircleAvatar(
+                radius: 50,
+                backgroundColor: AppColor.fivethMain,
+                backgroundImage: FileImage(File(controller.avatarUrl.value)),
+              );
+            }
+          } else {
+            // Avatar mặc định
+            avatarWidget = CircleAvatar(
+              radius: 50,
+              backgroundColor: AppColor.fivethMain,
+              child: const Icon(Icons.person, size: 50, color: Colors.grey),
+            );
+          }
+
           return GestureDetector(
             onTap: controller.pickImage,
             child: Stack(
               children: [
-                CircleAvatar(
-                  radius: 50,
-                  backgroundColor: AppColor.fivethMain,
-                  backgroundImage: controller.avatar.value != null
-                      ? FileImage(controller.avatar.value!)
-                      : null,
-                  child: controller.avatar.value == null
-                      ? const Icon(Icons.person, size: 50, color: Colors.grey)
-                      : null,
-                ),
+                avatarWidget,
                 Positioned(
                   bottom: 0,
                   right: 0,

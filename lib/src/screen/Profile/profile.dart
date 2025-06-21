@@ -22,7 +22,8 @@ class Profile extends StatelessWidget {
             child: Text(
               'EbookingDoc',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              style:
+                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
           ),
         ),
@@ -50,37 +51,68 @@ class Profile extends StatelessWidget {
                       }
                     });
                   },
-                  child: Obx(
-                    () => Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColor.fivethMain,
-                        border:
-                            Border.all(color: AppColor.fourthMain, width: 2),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(300),
-                        child: Image.file(controller.image.value,
-                            errorBuilder: (context, error, stackTrace) => Icon(
-                                  Icons.person_outline,
-                                  size: 50,
-                                  color: AppColor.fourthMain,
-                                )),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                // Username
-                const Text(
-                  'Người dùng',
-                  style: TextStyle(
-                    color: Colors.black87,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  child: Obx(() {
+                    // Avatar
+                    Widget avatarWidget;
+                    if (controller.image.value.path.isNotEmpty) {
+                      avatarWidget = Image.file(
+                        controller.image.value,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Icon(
+                          Icons.person_outline,
+                          size: 50,
+                          color: AppColor.fourthMain,
+                        ),
+                      );
+                    } else if (controller.avatarUrl.value.isNotEmpty) {
+                      avatarWidget = Image.network(
+                        controller.avatarUrl.value,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Icon(
+                          Icons.person_outline,
+                          size: 50,
+                          color: AppColor.fourthMain,
+                        ),
+                      );
+                    } else {
+                      avatarWidget = Icon(
+                        Icons.person_outline,
+                        size: 50,
+                        color: AppColor.fourthMain,
+                      );
+                    }
+
+                    return Column(
+                      children: [
+                        Container(
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColor.fivethMain,
+                            border: Border.all(
+                                color: AppColor.fourthMain, width: 2),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(300),
+                            child: avatarWidget,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        // Tên user
+                        Text(
+                          controller.userName.value.isNotEmpty
+                              ? controller.userName.value
+                              : 'Người dùng',
+                          style: const TextStyle(
+                            color: Colors.black87,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    );
+                  }),
                 ),
               ],
             ),

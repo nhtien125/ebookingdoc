@@ -1,4 +1,10 @@
 import 'package:ebookingdoc/src/constants/app_page.dart';
+import 'package:ebookingdoc/src/constants/services/Doctorservice.dart';
+import 'package:ebookingdoc/src/constants/services/HospitalService.dart';
+import 'package:ebookingdoc/src/constants/services/clinic_service.dart';
+import 'package:ebookingdoc/src/data/model/clinic_model.dart';
+import 'package:ebookingdoc/src/data/model/hospital_model.dart';
+import 'package:ebookingdoc/src/widgets/controller/home_controller.dart';
 import 'package:get/get.dart';
 import 'package:ebookingdoc/src/data/model/doctor_model.dart';
 
@@ -10,14 +16,17 @@ class ExcellentDoctorController extends GetxController {
 
   // Data lists
   final RxList<Doctor> doctors = <Doctor>[].obs;
-  final RxList<Map<String, dynamic>> hospitals = <Map<String, dynamic>>[].obs;
-  final RxList<Map<String, dynamic>> clinics = <Map<String, dynamic>>[].obs;
+  final RxList<Hospital> hospitals = <Hospital>[].obs;
+  final RxList<Clinic> clinics = <Clinic>[].obs;
   final RxList<Map<String, dynamic>> specialties = <Map<String, dynamic>>[].obs;
   final RxList<Map<String, dynamic>> vaccinas = <Map<String, dynamic>>[].obs;
 
   // Filter option
   final RxString filterOption = 'Tất cả'.obs;
 
+  final DoctorService doctorService = DoctorService();
+  final HospitalService hospitalService = HospitalService();
+  final ClinicService clinicService = ClinicService();
   @override
   void onInit() {
     super.onInit();
@@ -26,108 +35,18 @@ class ExcellentDoctorController extends GetxController {
 
   void fetchData() async {
     isLoading(true);
+    await fetchDoctorsFromApi();
+    await fetchHospitalFromApi();
+    await fetchClinicFromApi();
     try {
-      await Future.delayed(const Duration(milliseconds: 800));
-
-      // Load doctors data
-      doctors.value = [
-        Doctor(
-          id: '1',
-          title: 'TS. BS',
-          name: 'Đào Bùi Quý Quyền',
-          imageUrl: 'assets/images/bs1.jpg',
-          specialty: 'Răng-hàm-mặt',
-          hospital: '242 Nguyễn Chí Thanh, Phường 2, Quận 10, Hồ Chí Minh',
-          experience: '22 năm kinh nghiệm',
-          rating: 5,
-        ),
-        Doctor(
-          id: '2',
-          title: 'ThS. BS',
-          name: 'Lê Anh Tuấn',
-          imageUrl: 'assets/images/bs2.jpg',
-          specialty: 'Sản khoa',
-          hospital: '12 Trần Phú, Phường 8, Quận 5, Hồ Chí Minh',
-          experience: '30 năm kinh nghiệm',
-          rating: 5,
-        ),
-        Doctor(
-          id: '3',
-          title: 'PGS. TS',
-          name: 'Nguyễn Văn Hùng',
-          imageUrl: 'assets/images/bs3.jpg',
-          specialty: 'Nội tổng quát',
-          hospital: '15 Lê Lợi, Phường Bến Nghé, Quận 1, Hồ Chí Minh',
-          experience: '25 năm kinh nghiệm',
-          rating: 4,
-        ),
-      ];
-
-      // Load hospitals data
-      hospitals.value = [
-        {
-          'id': '3',
-          'name': 'Bệnh viện Đại học Y Hà Nội',
-          'imageUrl': 'assets/images/bvYhn.jpg',
-          'address': '1 Phường Tôn Thất Tùng, Kim Liên, Đống Đa, Hà Nội',
-          'rating': 4.7,
-          'specialty': 'Đa khoa',
-        },
-        {
-          'id': '1',
-          'name': 'Bệnh viện Thu Cúc',
-          'imageUrl': 'assets/images/bvThucuc.jpg',
-          'address': '286 Thụy Khuê, Thuỵ Khuê, Ba Đình, Hà Nội',
-          'rating': 4.8,
-          'specialty': 'Đa khoa',
-        },
-        {
-          'id': '2',
-          'name': 'Bệnh viện Quân Đội 108',
-          'imageUrl': 'assets/images/pk108.jpg',
-          'address': '1 Trần Hưng Đạo, Hai Bà Trưng, Hà Nội',
-          'rating': 4.5,
-          'specialty': 'Đa khoa',
-        },
-        {
-          'id': '3',
-          'name': 'Bệnh viện Việt Đức',
-          'imageUrl': 'assets/images/bvVietduc.jpg',
-          'address': '40 P.Tràng Thi - Hoàn Kiếm - Hà Nội',
-          'rating': 4.7,
-          'specialty': 'Đa khoa',
-        },
-      ];
-
-      // Load clinics data
-      clinics.value = [
-        {
-          'id': '1',
-          'name': 'Phòng khám đa khoa Thái Hà',
-          'imageUrl': 'assets/images/pkThaiha.jpg',
-          'address': '11 Thái Hà, Đống Đa, Hà Nội',
-          'rating': 4.5,
-          
-        },
-        {
-          'id': '2',
-          'name': 'Phòng khám đa khoa Hà Nội',
-          'imageUrl': 'assets/images/pkHN.jpg',
-          'address': '152 P.Xã Đàn, Phương Liên, Đống Đa, Hà Nội',
-          'rating': 4.3,
-          
-        },
-        {
-          'id': '3',
-          'name': 'Phòng khám đa khoa Hà Nội Bệnh viện 108',
-          'imageUrl': 'assets/images/pk108.jpg',
-          'address': '1 Trần Hưng Đạo, Hai Bà Trưng, Hà Nội',
-          'rating': 4.6,
-         
-        },
-      ];
-
-      // Load vacancies data
+      await Future.wait([
+        fetchDoctorsFromApi(),
+        fetchHospitalFromApi(),
+        fetchClinicFromApi(),
+        Future.delayed(const Duration(milliseconds: 800)),
+      ]);
+  
+      // Load vaccinas data
       vaccinas.value = [
         {
           'id': '1',
@@ -155,6 +74,7 @@ class ExcellentDoctorController extends GetxController {
           'isOpen': false,
         },
       ];
+
       // Load specialties data
       specialties.value = [
         {
@@ -186,6 +106,32 @@ class ExcellentDoctorController extends GetxController {
     }
   }
 
+  Future<void> fetchDoctorsFromApi() async {
+    try {
+      doctors.value = await doctorService.getAllDoctors();
+    } catch (e) {
+      print('Lỗi khi lấy danh sách bác sĩ: $e');
+      doctors.clear();
+    }
+  }
+
+  Future<void> fetchHospitalFromApi() async {
+    try {
+      hospitals.value = await hospitalService.getAllHospital();
+    } catch (e) {
+      print('Lỗi khi lấy danh sách bệnh viện: $e');
+      doctors.clear();
+    }
+  }
+  Future<void> fetchClinicFromApi() async {
+    try {
+      clinics.value = await clinicService.getAllClinic();
+    } catch (e) {
+      print('Lỗi khi lấy danh sách phòng khám: $e');
+      doctors.clear();
+    }
+  }
+
   void changeTab(int index) {
     topTabIndex.value = index;
   }
@@ -193,10 +139,9 @@ class ExcellentDoctorController extends GetxController {
   void search(String query) {
     searchQuery.value = query;
 
-    // Implement search based on current tab
+   
     switch (topTabIndex.value) {
       case 0: // Tất cả - tìm kiếm tất cả
-        // Thực hiện tìm kiếm tất cả
         break;
       case 1: // Tại nhà - tìm kiếm bác sĩ
         searchDoctors(query);
@@ -206,6 +151,7 @@ class ExcellentDoctorController extends GetxController {
         break;
       case 3: // Chuyên khoa - tìm kiếm phòng khám
         searchClinics(query);
+        break;
       case 4:
         searchVaccinas(query);
         break;
@@ -213,36 +159,34 @@ class ExcellentDoctorController extends GetxController {
   }
 
   void searchDoctors(String query) {
-    if (query.isEmpty) {
-      fetchData(); // Nạp lại dữ liệu ban đầu
-      return;
-    }
+    // if (query.isEmpty) {
+    //   fetchDoctorsFromApi();
+    //   return;
+    // }
 
-    query = query.toLowerCase();
-    final List<Doctor> filteredDoctors = [];
+    // query = query.toLowerCase();
+    // final List<Doctor> filteredDoctors = [];
 
-    // Tìm trong tên bác sĩ hoặc chuyên khoa
-    for (var doctor in doctors) {
-      if (doctor.name.toLowerCase().contains(query) ||
-          doctor.specialty.toLowerCase().contains(query)) {
-        filteredDoctors.add(doctor);
-      }
-    }
+    // for (var doctor in doctors) {
+    //   if ((doctor.name?.toLowerCase().contains(query) ?? false) ||
+    //       (doctor.introduce?.toLowerCase().contains(query) ?? false)) {
+    //     filteredDoctors.add(doctor);
+    //   }
+    // }
 
-    doctors.value = filteredDoctors;
+    // doctors.value = filteredDoctors;
   }
 
   void searchHospitals(String query) {
     if (query.isEmpty) {
-      fetchData(); // Nạp lại dữ liệu ban đầu
+      fetchData();
       return;
     }
 
     query = query.toLowerCase();
     final filteredHospitals = hospitals.where((hospital) {
-      return hospital['name'].toString().toLowerCase().contains(query) ||
-          hospital['address'].toString().toLowerCase().contains(query) ||
-          hospital['specialty'].toString().toLowerCase().contains(query);
+      return hospital.name.toLowerCase().contains(query) ||
+          hospital.address.toLowerCase().contains(query);
     }).toList();
 
     hospitals.value = filteredHospitals;
@@ -250,17 +194,32 @@ class ExcellentDoctorController extends GetxController {
 
   void searchClinics(String query) {
     if (query.isEmpty) {
-      fetchData(); // Nạp lại dữ liệu ban đầu
+      fetchData();
       return;
     }
 
     query = query.toLowerCase();
     final filteredClinics = clinics.where((clinic) {
-      return clinic['name'].toString().toLowerCase().contains(query) ||
-          clinic['address'].toString().toLowerCase().contains(query);
+      return clinic.name.toLowerCase().contains(query) ||
+          clinic.address.toLowerCase().contains(query);
     }).toList();
 
     clinics.value = filteredClinics;
+  }
+
+  void searchVaccinas(String query) {
+    if (query.isEmpty) {
+      fetchData();
+      return;
+    }
+
+    query = query.toLowerCase();
+    final filteredVaccinas = vaccinas.where((v) {
+      return v['name'].toString().toLowerCase().contains(query) ||
+          v['address'].toString().toLowerCase().contains(query);
+    }).toList();
+
+    vaccinas.value = filteredVaccinas;
   }
 
   void bookAppointment(dynamic item, String type) {
@@ -276,7 +235,6 @@ class ExcellentDoctorController extends GetxController {
   }
 
   void applyFilter() {
-    // Xử lý lọc dữ liệu theo filterOption
     Get.snackbar(
       'Đã áp dụng bộ lọc',
       'Lọc theo: ${filterOption.value}',
@@ -294,48 +252,17 @@ class ExcellentDoctorController extends GetxController {
     Get.toNamed(Routes.appointmentScreen);
   }
 
-  void viewAllHospitals() {
-    // Chuyển đến trang danh sách bệnh viện
-   
-  }
+  void viewAllHospitals() {}
 
-  void viewAllClinics() {
-    // Chuyển đến trang danh sách phòng khám
-  
-  }
+  void viewAllClinics() {}
 
   void viewDoctorDetails(String id) {
-    // Chuyển đến trang thông tin bác sĩ
     Get.toNamed(Routes.detaildoctor, arguments: '$id');
   }
 
-  void viewHospitalDetails(String id) {
-    // Chuyển đến trang thông tin bệnh viện
-   
-  }
+  void viewHospitalDetails(String id) {}
 
-  void viewClinicDetails(String id) {
-    // Chuyển đến trang thông tin phòng khám
- 
-  }
+  void viewClinicDetails(String id) {}
 
-  void viewVaccinaDetails(String id) {
-    // Chuyển đến trang thông tin phòng khám
-    
-  }
-
-  void searchVaccinas(String query) {
-    if (query.isEmpty) {
-      fetchData(); // load lại
-      return;
-    }
-
-    query = query.toLowerCase();
-    final filteredVaccinas = vaccinas.where((v) {
-      return v['name'].toString().toLowerCase().contains(query) ||
-          v['address'].toString().toLowerCase().contains(query);
-    }).toList();
-
-    vaccinas.value = filteredVaccinas;
-  }
+  void viewVaccinaDetails(String id) {}
 }
