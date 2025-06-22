@@ -64,74 +64,133 @@ class Register extends StatelessWidget {
                           ),
                           const SizedBox(height: 24),
                           Obx(() => Column(
-                            children: [
-                              TextField(
-                                controller: controller.username,
-                                decoration: InputDecoration(
-                                  labelText: "Tên tài khoản",
-                                  errorText: controller.usernameError.value.isEmpty
-                                      ? null
-                                      : controller.usernameError.value,
-                                  prefixIcon: Icon(Icons.person),
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              TextField(
-                                controller: controller.email,
-                                decoration: InputDecoration(
-                                  labelText: "Email",
-                                  errorText: controller.emailError.value.isEmpty
-                                      ? null
-                                      : controller.emailError.value,
-                                  prefixIcon: Icon(Icons.email),
-                                ),
-                                keyboardType: TextInputType.emailAddress,
-                              ),
-                              const SizedBox(height: 12),
-                              TextField(
-                                controller: controller.password,
-                                obscureText: controller.hidePassword.value,
-                                decoration: InputDecoration(
-                                  labelText: "Mật khẩu",
-                                  errorText: controller.passwordError.value.isEmpty
-                                      ? null
-                                      : controller.passwordError.value,
-                                  prefixIcon: Icon(Icons.lock),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(controller.hidePassword.value
-                                        ? Icons.visibility_off
-                                        : Icons.visibility),
-                                    onPressed: () {
-                                      controller.hidePassword.value =
-                                          !controller.hidePassword.value;
-                                    },
+                                children: [
+                                  TextField(
+                                    controller: controller.username,
+                                    decoration: InputDecoration(
+                                      labelText: "Tên tài khoản",
+                                      errorText:
+                                          controller.usernameError.value.isEmpty
+                                              ? null
+                                              : controller.usernameError.value,
+                                      prefixIcon: Icon(Icons.person),
+                                    ),
                                   ),
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              TextField(
-                                controller: controller.confirmPassword,
-                                obscureText: controller.hideConfirmPassword.value,
-                                decoration: InputDecoration(
-                                  labelText: "Nhập lại mật khẩu",
-                                  errorText:
-                                      controller.confirmPasswordError.value.isEmpty
+                                  const SizedBox(height: 12),
+                                  TextField(
+                                    controller: controller.email,
+                                    decoration: InputDecoration(
+                                      labelText: "Email",
+                                      errorText:
+                                          controller.emailError.value.isEmpty
+                                              ? null
+                                              : controller.emailError.value,
+                                      prefixIcon: Icon(Icons.email),
+                                    ),
+                                    keyboardType: TextInputType.emailAddress,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  TextField(
+                                    controller: controller.password,
+                                    obscureText: controller.hidePassword.value,
+                                    decoration: InputDecoration(
+                                      labelText: "Mật khẩu",
+                                      errorText:
+                                          controller.passwordError.value.isEmpty
+                                              ? null
+                                              : controller.passwordError.value,
+                                      prefixIcon: Icon(Icons.lock),
+                                      suffixIcon: IconButton(
+                                        icon: Icon(controller.hidePassword.value
+                                            ? Icons.visibility_off
+                                            : Icons.visibility),
+                                        onPressed: () {
+                                          controller.hidePassword.value =
+                                              !controller.hidePassword.value;
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  TextField(
+                                    controller: controller.confirmPassword,
+                                    obscureText:
+                                        controller.hideConfirmPassword.value,
+                                    decoration: InputDecoration(
+                                      labelText: "Nhập lại mật khẩu",
+                                      errorText: controller.confirmPasswordError
+                                              .value.isEmpty
                                           ? null
-                                          : controller.confirmPasswordError.value,
-                                  prefixIcon: Icon(Icons.lock_outline),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(controller.hideConfirmPassword.value
-                                        ? Icons.visibility_off
-                                        : Icons.visibility),
-                                    onPressed: () {
-                                      controller.hideConfirmPassword.value =
-                                          !controller.hideConfirmPassword.value;
-                                    },
+                                          : controller
+                                              .confirmPasswordError.value,
+                                      prefixIcon: Icon(Icons.lock_outline),
+                                      suffixIcon: IconButton(
+                                        icon: Icon(
+                                            controller.hideConfirmPassword.value
+                                                ? Icons.visibility_off
+                                                : Icons.visibility),
+                                        onPressed: () {
+                                          controller.hideConfirmPassword.value =
+                                              !controller
+                                                  .hideConfirmPassword.value;
+                                        },
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ),
-                            ],
-                          )),
+                                  const SizedBox(height: 12),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const SizedBox(height: 12),
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: 20, bottom: 4, top: 2),
+                                        child: Text(
+                                          "Bạn là?",
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500,
+                                            color: Color(0xFF4B84E5), 
+                                            height: 1.2,
+                                          ),
+                                        ),
+                                      ),
+                                      Obx(() => DropdownButtonFormField<int>(
+                                            value:
+                                                controller.selectedRole.value,
+                                            decoration: InputDecoration(
+                                              hintText: "Bạn là",
+                                              prefixIcon:
+                                                  Icon(Icons.account_circle),
+                                              border: InputBorder.none,
+                                              enabledBorder: InputBorder.none,
+                                              focusedBorder: InputBorder.none,
+                                              filled: true,
+                                              fillColor: Colors.grey[100],
+                                              contentPadding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 12,
+                                                      vertical: 14),
+                                            ),
+                                            items: const [
+                                              DropdownMenuItem(
+                                                  value: 1,
+                                                  child: Text("Bác sĩ")),
+                                              DropdownMenuItem(
+                                                  value: 2,
+                                                  child: Text("Người dùng")),
+                                            ],
+                                            onChanged: (value) {
+                                              if (value != null)
+                                                controller.selectedRole.value =
+                                                    value;
+                                            },
+                                          ))
+                                    ],
+                                  )
+                                ],
+                              )),
                           const SizedBox(height: 28),
                           SizedBox(
                             width: double.infinity,

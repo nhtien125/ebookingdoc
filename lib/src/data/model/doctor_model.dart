@@ -31,7 +31,7 @@ class Doctor {
     return Doctor(
       uuid: json['uuid'] ?? '',
       userId: json['user_id'],
-      hospitalId: json['hospital_id'], // Parse trường mới
+      hospitalId: json['hospital_id'],
       doctorType: json['doctor_type'],
       specializationId: json['specialization_id'],
       license: json['license'],
@@ -48,7 +48,7 @@ class Doctor {
     return {
       'uuid': uuid,
       'user_id': userId,
-      'hospital_id': hospitalId, // Thêm trường này
+      'hospital_id': hospitalId,
       'doctor_type': doctorType,
       'specialization_id': specializationId,
       'license': license,

@@ -16,6 +16,9 @@ class RegisterController extends GetxController {
   var hidePassword = true.obs;
   var hideConfirmPassword = true.obs;
 
+final RxInt selectedRole = 2.obs; 
+
+
   void register() async {
     usernameError.value = '';
     emailError.value = '';

@@ -1,3 +1,4 @@
+import 'package:ebookingdoc/src/constants/app_page.dart';
 import 'package:ebookingdoc/src/constants/services/auth.dart';
 import 'package:ebookingdoc/src/data/model/userModel.dart';
 import 'package:ebookingdoc/src/shared_preferences.dart';
@@ -48,13 +49,11 @@ class LoginController extends GetxController {
     }
   }
 
-
   Future<void> saveUserToPrefs(User user) async {
     final prefs = await SharedPreferences.getInstance();
     final userJson = jsonEncode(user.toJson());
     await prefs.setString('user_data', userJson);
   }
-
 
   Future<User?> getUserFromPrefs() async {
     final prefs = await SharedPreferences.getInstance();
@@ -122,7 +121,12 @@ class LoginController extends GetxController {
         await saveUserToPrefs(user);
         final prefs = await SharedPreferences.getInstance();
         print("user_data sau khi lưu: ${prefs.getString('user_data')}");
-       Get.offAllNamed('/dashboard');
+
+        if (user.premissionId == 2) {
+          Get.offAllNamed(Routes.dashboarddoctor);
+        } else {
+          Get.offAllNamed(Routes.dashboard);
+        }
       } else {
         print("User NULL, không lưu được");
         Get.snackbar(
