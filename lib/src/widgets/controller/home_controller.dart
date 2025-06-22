@@ -242,4 +242,6 @@ class HomeController extends GetxController {
   void selectService(String serviceId) {
     Get.toNamed(Routes.excellentDoctor);
   }
+
+  logout() {}
 }

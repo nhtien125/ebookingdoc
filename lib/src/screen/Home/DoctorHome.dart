@@ -1,3 +1,4 @@
+import 'package:ebookingdoc/src/Utils/custom_dialog.dart';
 import 'package:ebookingdoc/src/constants/app_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -31,62 +32,69 @@ class DoctorHome extends StatelessWidget {
 class _HeaderSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.only(top: 40, left: 22, right: 22, bottom: 24),
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.blue.shade800, Colors.blue.shade400],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(38),
-          bottomRight: Radius.circular(38),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.blue.shade100.withOpacity(0.27),
-            blurRadius: 16,
-            offset: const Offset(0, 7),
-          )
-        ],
+  return Container(
+    padding: const EdgeInsets.only(top: 40, left: 22, right: 22, bottom: 24),
+    width: double.infinity,
+    decoration: BoxDecoration(
+      gradient: const LinearGradient(
+        colors: [Color.fromARGB(255, 0, 80, 145), Color.fromARGB(255, 7, 81, 141)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
       ),
-      child: Row(
-        children: [
-          const CircleAvatar(
-            radius: 37,
-            backgroundImage: NetworkImage(
-                'https://chienthanky.vn/wp-content/uploads/2024/01/top-100-anh-gai-2k7-cuc-xinh-ngay-tho-thuan-khiet-2169-31.jpg'),
-          ),
-          const SizedBox(width: 18),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Xin chào,',
-                    style: TextStyle(color: Colors.white70, fontSize: 16)),
-                Text('BS. Nguyễn Văn An',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 21,
-                        fontWeight: FontWeight.bold)),
-                Text('Chuyên khoa Tim mạch',
-                    style: TextStyle(color: Colors.white70, fontSize: 15)),
-              ],
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.white),
-            onPressed: () {
-              // Xử lý logout nếu muốn
-              Get.offAllNamed('/login');
-            },
-          ),
-        ],
+      borderRadius: const BorderRadius.only(
+        bottomLeft: Radius.circular(38),
+        bottomRight: Radius.circular(38),
       ),
-    );
-  }
+      boxShadow: [
+        BoxShadow(
+          color: Colors.blue.shade100.withOpacity(0.27),
+          blurRadius: 16,
+          offset: const Offset(0, 7),
+        )
+      ],
+    ),
+    child: Row(
+      children: [
+        const CircleAvatar(
+          radius: 37,
+          backgroundImage: NetworkImage(
+              'https://chienthanky.vn/wp-content/uploads/2024/01/top-100-anh-gai-2k7-cuc-xinh-ngay-tho-thuan-khiet-2169-31.jpg'),
+        ),
+        const SizedBox(width: 18),
+        const Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Xin chào,',
+                  style: TextStyle(color: Colors.white70, fontSize: 16)),
+              Text('BS. Nguyễn Văn An',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 21,
+                      fontWeight: FontWeight.bold)),
+              Text('Chuyên khoa Tim mạch',
+                  style: TextStyle(color: Colors.white70, fontSize: 15)),
+            ],
+          ),
+        ),
+        IconButton(
+          icon: const Icon(Icons.logout, color: Colors.white),
+          onPressed: () {
+            CustomDialog.showCustomDialog(
+              context: context,
+              title: 'Đăng xuất',
+              content: 'Bạn có chắc muốn đăng xuất không?',
+              onPressed: () {
+                // Gọi hàm logout ở controller tùy theo logic của bạn
+                Get.offAllNamed('/login'); // Hoặc controller.logout();
+              },
+            );
+          },
+        ),
+      ],
+    ),
+  );
+  } 
 }
 
 class _QuickStatsSection extends StatelessWidget {

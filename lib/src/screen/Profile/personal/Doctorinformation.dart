@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:ebookingdoc/src/Global/app_color.dart';
 import 'package:ebookingdoc/src/widgets/controller/Doctorinformation_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -10,7 +11,15 @@ class Doctorinformation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Thông tin bác sĩ'), centerTitle: true),
+      appBar: AppBar(
+        backgroundColor: AppColor.fourthMain,
+        iconTheme: const IconThemeData(color: Colors.white),
+        centerTitle: true,
+        title: const Text(
+          'Thông tin bác sĩ',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+      ),
       body: Form(
         key: controller.formKey,
         child: SingleChildScrollView(
@@ -62,11 +71,9 @@ class Doctorinformation extends StatelessWidget {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  alignLabelWithHint:
-                      true, // Đảm bảo label nằm đúng vị trí khi nhiều dòng
+                  alignLabelWithHint: true,
                 ),
-                maxLines:
-                    null, // hoặc null nếu muốn tự động cao theo nội dung (nhưng thường đặt 5 là đẹp)
+                maxLines: null,
                 minLines: 3,
                 keyboardType: TextInputType.multiline,
                 textInputAction: TextInputAction.newline,
@@ -75,13 +82,25 @@ class Doctorinformation extends StatelessWidget {
               Obx(() => SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColor.fourthMain, // Nền nút màu xanh
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
                       onPressed: controller.isLoading.value
                           ? null
                           : controller.saveProfile,
                       child: controller.isLoading.value
                           ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text('LƯU THÔNG TIN',
-                              style: TextStyle(fontWeight: FontWeight.bold)),
+                          : const Text(
+                              'LƯU THÔNG TIN',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white, // Chữ màu trắng
+                              ),
+                            ),
                     ),
                   )),
             ],

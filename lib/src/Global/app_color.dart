@@ -22,4 +22,6 @@ class AppColor {
 
   static const Color primaryDark = Color(0xFF002171);
 
+  static var primary;
+
 }

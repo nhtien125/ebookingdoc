@@ -37,7 +37,7 @@ class DashboardDoctor extends StatelessWidget {
   ];
 
   final List<Widget> _pages = [
-    DoctorHome(),
+    const DoctorHome(),
     MyNotificationDoctor(),
     TodaySchedulePage(),
     ProfileDoctor(),

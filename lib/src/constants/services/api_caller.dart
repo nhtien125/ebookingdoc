@@ -13,7 +13,7 @@ class APICaller {
   static APICaller? _apiCaller = APICaller();
   // final String BASE_URL = dotenv.env['API_URL'] ?? '';
   // ignore: non_constant_identifier_names
-  final String BASE_URL = "http://192.168.1.31:3210/";
+  final String BASE_URL = "http://192.168.1.3:3210/";
   static Map<String, String> requestHeaders = {
     'Content-type': 'application/json',
     'Accept': 'application/json'
