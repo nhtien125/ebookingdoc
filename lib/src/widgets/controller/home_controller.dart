@@ -102,7 +102,7 @@ class HomeController extends GetxController {
       if ((doc.userId == null || doc.userId!.isEmpty) ||
           (doc.specializationId == null || doc.specializationId!.isEmpty)) {
         print('Bác sĩ ${doc.uuid} thiếu userId hoặc specializationId, bỏ qua!');
-        continue; // bỏ qua bác sĩ này
+        continue;
       }
 
       final userFuture = _userService.getUserById(doc.userId!);
@@ -140,16 +140,16 @@ class HomeController extends GetxController {
   }
 
   Future<void> fetchMedicalService() async {
-    print('BẮT ĐẦU MedicalService');
+    print('BẮT ĐẦU fetchMedicalService');
     isLoading.value = true;
-    hospitals.clear();
+    medicalserviceModel.clear();
 
-    List<Hospital> result =
-        (await _hospitalService.getAllHospital()).cast<Hospital>();
-    hospitals.addAll(result);
+    List<MedicalServiceModel> result =
+        await _medicalService.getAllMedicalServices();
+    medicalserviceModel.addAll(result);
 
     isLoading.value = false;
-    print('KẾT THÚC fetchHospital');
+    print('KẾT THÚC fetchMedicalService');
   }
 
   Future<void> fetchClinics() async {

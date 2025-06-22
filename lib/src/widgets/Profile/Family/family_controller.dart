@@ -1,54 +1,47 @@
-import 'package:ebookingdoc/src/Global/app_color.dart';
-import 'package:ebookingdoc/src/constants/app_page.dart';
-import 'package:flutter/material.dart';
+import 'package:ebookingdoc/src/constants/services/patient_service.dart';
+import 'package:ebookingdoc/src/shared_preferences.dart';
 import 'package:get/get.dart';
+import 'package:flutter/material.dart';
+import 'package:ebookingdoc/src/data/model/patient_model.dart';
 
 class FamilyController extends GetxController {
-  var familyMembers = <String>[].obs;
+  var familyMembers = <Patient>[].obs;
+  final _patientService = PatientService();
 
   @override
   void onInit() {
     super.onInit();
-    familyMembers.add('Lò Thị Tươi'); 
+    loadFamilyMembers();
   }
 
-  void addMember() {
-    Get.toNamed(Routes.personal);
+  Future<void> loadFamilyMembers() async {
+    final userId = await getUserIdFromPrefs();
+    if (userId != null) {
+      final list = await _patientService.getPatientsByUserId(userId);
+      familyMembers.value = list;
+    }
   }
 
-  void confirmDeleteMember(BuildContext context, int index) {
-    showDialog(
+  Future<void> addMember(BuildContext context) async {
+    await loadFamilyMembers();
+  }
+
+  void confirmDeleteMember(BuildContext context, int index) async {
+    final member = familyMembers[index];
+    final confirm = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: const Text(
-          'Xoá thành viên',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        content: const Text('Bạn có chắc muốn xoá hay không?'),
+      builder: (_) => AlertDialog(
+        title: const Text('Xác nhận xóa'),
+        content: Text('Bạn có chắc muốn xóa thành viên "${member.name}"?'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Hủy bỏ'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              familyMembers.removeAt(index);
-              Navigator.of(context).pop();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColor.primaryDark, 
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: const Text('Xác nhận'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Không')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Có')),
         ],
       ),
     );
+    if (confirm == true) {
+      await _patientService.deletePatient(member.uuid);
+      await loadFamilyMembers();
+    }
   }
 }

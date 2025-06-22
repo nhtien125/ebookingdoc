@@ -1,25 +1,22 @@
-import 'package:ebookingdoc/src/widgets/controller/home_controller.dart';
+import 'package:ebookingdoc/src/data/model/medical_service_model.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 class ServiceCard extends StatelessWidget {
-  final dynamic service;
-  final Widget? icon;
-  final Color? color;
+  final MedicalServiceModel service;
+  final VoidCallback? onTap;
 
   const ServiceCard({
     super.key,
     required this.service,
-    this.icon,
-    this.color,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<HomeController>();
     return GestureDetector(
-      onTap: () => controller.selectService(service.id ?? service.uuid),
+      onTap: onTap,
       child: Container(
+        margin: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -32,17 +29,22 @@ class ServiceCard extends StatelessWidget {
           ],
         ),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: (color ?? Colors.blue).withOpacity(0.1),
-                shape: BoxShape.circle,
+            // Ảnh dịch vụ
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.network(
+                service.image ?? '',
+                height: 80,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) =>
+                    const Icon(Icons.broken_image, size: 80, color: Colors.grey),
               ),
-              child: icon ?? const Icon(Icons.medical_services, color: Colors.blue),
             ),
             const SizedBox(height: 8),
+            // Tên dịch vụ
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
               child: Text(
@@ -51,7 +53,35 @@ class ServiceCard extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            // Mô tả dịch vụ
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Text(
+                service.description ?? '',
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
                   fontSize: 12,
+                  color: Colors.black54,
+                ),
+              ),
+            ),
+            // Giá dịch vụ
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Text(
+                service.price != null
+                    ? '${service.price} VNĐ'
+                    : 'Liên hệ',
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Colors.redAccent,
                   fontWeight: FontWeight.w600,
                 ),
               ),

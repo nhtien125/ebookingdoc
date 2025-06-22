@@ -1,3 +1,7 @@
+import 'dart:convert';
+
+import 'package:ebookingdoc/src/constants/services/patient_service.dart';
+import 'package:ebookingdoc/src/shared_preferences.dart';
 import 'package:get/get.dart';
 import 'package:ebookingdoc/src/constants/app_page.dart';
 import 'package:ebookingdoc/src/constants/services/Doctorservice.dart';
@@ -13,8 +17,10 @@ import 'package:ebookingdoc/src/data/model/medical_service_model.dart';
 import 'package:ebookingdoc/src/data/model/schedule_model.dart';
 import 'package:ebookingdoc/src/data/model/specialization_model.dart';
 import 'package:ebookingdoc/src/data/model/userModel.dart';
-import 'package:ebookingdoc/src/data/model/select_profile.dart';
+// import 'package:ebookingdoc/src\data\model\select_profile.dart'; // Remove this import if it defines a conflicting Patient class
+import 'package:ebookingdoc/src/data/model/patient_model.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AppointmentScreenController extends GetxController {
   // Stepper
@@ -48,22 +54,20 @@ class AppointmentScreenController extends GetxController {
   final UserService _userService = UserService();
   final RxList<Specialization> specializations = <Specialization>[].obs;
 
+  // Patient
+  final PatientService _patientService = PatientService();
+  final patients = <Patient>[].obs;
+  final isLoadingPatients = false.obs;
+  final selectedPatient = Rxn<Patient>();
 
   List<MedicalServiceModel> get servicesForSelectedDepartment =>
       medical.toList();
-
-
-  final patients = <Patient>[].obs;
-  final selectedPatient = Rxn<Patient>();
-  final isLoadingPatients = false.obs;
-
 
   final appointmentConfirmed = false.obs;
   final paymentCompleted = false.obs;
   final selectedPaymentMethod = 'online'.obs;
   final Rxn<Specialization> selectedDepartment = Rxn<Specialization>();
   final Rxn<MedicalServiceModel> selectedService = Rxn<MedicalServiceModel>();
-
 
   final timeSlots = <String>[].obs;
 
@@ -85,6 +89,7 @@ class AppointmentScreenController extends GetxController {
     await fetchDoctors();
     await fetchMedicalService();
     await fetchSpecializations();
+    await loadFamilyMembers();
 
     if (args != null) {
       if (args != null && args['doctor'] != null) {
@@ -99,7 +104,7 @@ class AppointmentScreenController extends GetxController {
             specialization: specialization,
           );
           selectedDoctor.value = doctorDisplay;
-          await fetchSchedulesByDoctorId(doc.uuid); 
+          await fetchSchedulesByDoctorId(doc.uuid);
         }
       }
       if (args['hospital'] != null) {
@@ -127,10 +132,13 @@ class AppointmentScreenController extends GetxController {
         selectedDate.value = args['date'] as DateTime?;
         _updateAvailableDatesAndSlots();
       }
-      if (args['schedule'] != null)
-        selectedSchedule.value = Schedule.fromJson(args['schedule']);
-      if (args['slot'] != null)
-        selectedTimeSlot.value = args['slot'] as String?;
+      if (args['schedule'] != null) {
+        if (args['schedule'] is Schedule) {
+          selectedSchedule.value = args['schedule'] as Schedule;
+        } else if (args['schedule'] is Map<String, dynamic>) {
+          selectedSchedule.value = Schedule.fromJson(args['schedule']);
+        }
+      }
     }
   }
 
@@ -153,7 +161,7 @@ class AppointmentScreenController extends GetxController {
 
   void selectHospital(Hospital? hospital) {
     selectedHospital.value = hospital;
-  
+
     selectedDepartment.value = null;
     selectedDoctor.value = null;
     selectedService.value = null;
@@ -253,6 +261,14 @@ class AppointmentScreenController extends GetxController {
     }
   }
 
+  Future<void> loadFamilyMembers() async {
+    final userId = await getUserIdFromPrefs();
+    if (userId != null) {
+      final list = await _patientService.getPatientsByUserId(userId);
+      patients.value = list;
+    }
+  }
+
   Future<void> fetchScheduleById(String scheduleId) async {
     try {
       isLoading.value = true;
@@ -343,6 +359,44 @@ class AppointmentScreenController extends GetxController {
   // ========================== PATIENT ==========================
   // Thêm các hàm quản lý bệnh nhân nếu cần
 
+  Future<void> _loadPatients() async {
+    try {
+      isLoadingPatients.value = true;
+
+      // Simulate loading from database/API
+      await Future.delayed(Duration(milliseconds: 500));
+
+      // patients.assignAll([
+      //   Patient(
+      //     id: '1',
+      //     name: 'LÔ THỊ NỘ',
+      //     dob: '01/01/1990',
+      //     gender: 'Nữ',
+      //     phone: '0987654321',
+      //     relationship: 'Bản thân',
+      //     address: 'TP HCM',
+      //   ),
+      //   Patient(
+      //     id: '2',
+      //     name: 'NGUYỄN VĂN A',
+      //     dob: '15/05/1985',
+      //     gender: 'Nam',
+      //     phone: '0912345678',
+      //     relationship: 'Bản thân',
+      //     address: 'TP HCM',
+      //   )
+      // ]);
+
+      // Set default selected patient
+      selectedPatient.value =
+          patients.firstWhereOrNull((p) => p.name == 'LÔ THỊ NỘ');
+    } catch (e) {
+      Get.snackbar('Lỗi', 'Không thể tải danh sách bệnh nhân');
+    } finally {
+      isLoadingPatients.value = false;
+    }
+  }
+
   // ========================== STEPPER, VALIDATION ==========================
   void nextStep() {
     if (currentStep.value < 4) currentStep.value++;
@@ -372,6 +426,41 @@ class AppointmentScreenController extends GetxController {
   void confirmAppointment() {
     appointmentConfirmed.value = true;
     nextStep();
+  }
+
+  Future<void> deletePatient(Patient patient) async {
+    try {
+      if (!patients.contains(patient)) return;
+
+      if (patients.length <= 1) {
+        Get.snackbar(
+          'Không thể xoá',
+          'Cần ít nhất một hồ sơ bệnh nhân',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return;
+      }
+
+      patients.remove(patient);
+
+      if (selectedPatient.value == patient) {
+        selectedPatient.value = patients.firstOrNull;
+      }
+
+      Get.snackbar(
+        'Đã xoá',
+        'Đã xoá hồ sơ ${patient.name}',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      Get.snackbar('Lỗi', 'Không thể xoá bệnh nhân');
+    }
+  }
+
+  void selectPatient(Patient? patient) {
+    selectedPatient.value = patient;
   }
 
   void completePayment() {

@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:ebookingdoc/src/widgets/controller/home_controller.dart';
 import 'package:ebookingdoc/src/widgets/custom_component/section_header.dart';
 import 'package:ebookingdoc/src/widgets/custom_component/service_card.dart';
@@ -23,6 +24,10 @@ class BuildComprehensiveServices extends StatelessWidget {
             if (controller.medicalserviceModel.isEmpty) {
               return const Center(child: Text('Không có dịch vụ nào'));
             }
+            // Random & lấy tối đa 6 dịch vụ
+            final services = List.of(controller.medicalserviceModel)..shuffle(Random());
+            final displayedServices = services.take(6).toList();
+
             return GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -33,9 +38,9 @@ class BuildComprehensiveServices extends StatelessWidget {
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
               ),
-              itemCount: controller.medicalserviceModel.length,
+              itemCount: displayedServices.length,
               itemBuilder: (context, index) {
-                return ServiceCard(service: controller.medicalserviceModel[index]);
+                return ServiceCard(service: displayedServices[index]);
               },
             );
           }),

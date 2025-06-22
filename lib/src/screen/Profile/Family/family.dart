@@ -12,8 +12,7 @@ class Family extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Thành viên gia đình',
-            style: TextStyle(color: AppColor.main)),
+        title: Text('Thành viên gia đình', style: TextStyle(color: AppColor.main)),
         centerTitle: true,
         backgroundColor: AppColor.fourthMain,
         elevation: 1,
@@ -23,63 +22,63 @@ class Family extends StatelessWidget {
         children: [
           Expanded(
             child: Obx(() => ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: controller.familyMembers.length,
-                  itemBuilder: (context, index) {
-                    final member = controller.familyMembers[index];
-                    return Stack(
-                      children: [
-                        Card(
-                          color: Colors.blue.shade50,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+              padding: const EdgeInsets.all(16),
+              itemCount: controller.familyMembers.length,
+              itemBuilder: (context, index) {
+                final member = controller.familyMembers[index];
+                return Stack(
+                  children: [
+                    Card(
+                      color: Colors.blue.shade50,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ListTile(
+                        leading: const CircleAvatar(
+                          backgroundColor: Colors.orange,
+                          child: Icon(Icons.person, color: Colors.white),
+                        ),
+                        title: Text(member.name),
+                        subtitle: Text('${member.relationship} | ${member.dob}'),
+                      ),
+                    ),
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: GestureDetector(
+                        onTap: () => controller.confirmDeleteMember(context, index),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade300,
+                            shape: BoxShape.circle,
                           ),
-                          child: ListTile(
-                            leading: const CircleAvatar(
-                              backgroundColor: Colors.orange,
-                              child: Icon(Icons.person, color: Colors.white),
-                            ),
-                            title: Text(member),
+                          padding: const EdgeInsets.all(4),
+                          child: const Icon(
+                            Icons.close,
+                            size: 16,
+                            color: Colors.black,
                           ),
                         ),
-                        Positioned(
-                          top: 8,
-                          right: 8,
-                          child: GestureDetector(
-                            onTap: () =>
-                                controller.confirmDeleteMember(context, index),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade300,
-                                shape: BoxShape.circle,
-                              ),
-                              padding: const EdgeInsets.all(4),
-                              child: const Icon(
-                                Icons.close,
-                                size: 16,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ),
-                        )
-                      ],
-                    );
-                  },
-                )),
+                      ),
+                    )
+                  ],
+                );
+              },
+            )),
           ),
           Padding(
             padding: const EdgeInsets.all(16),
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: controller.addMember,
+                onPressed: () => controller.addMember(context),
                 icon: const Icon(Icons.add),
                 label: const Text(
                   'Thêm thành viên',
                   style: TextStyle(
-                    color: Colors.white, 
-                    fontSize: 18, // Tăng kích thước chữ
-                    fontWeight: FontWeight.bold, // Làm đậm chữ
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
