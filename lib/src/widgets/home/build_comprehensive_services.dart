@@ -28,20 +28,23 @@ class BuildComprehensiveServices extends StatelessWidget {
             final services = List.of(controller.medicalserviceModel)..shuffle(Random());
             final displayedServices = services.take(6).toList();
 
-            return GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                childAspectRatio: 0.9,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
+            // CHỈ CẦN BỌC SIZEDBOX NHƯ DƯỚI ĐÂY
+            return SizedBox(
+              height: 270, // Đảm bảo không bao giờ overflow! Có thể chỉnh cao/thấp cho vừa ý
+              child: GridView.builder(
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  childAspectRatio: 0.85, // Thấp hơn để tăng chiều cao mỗi card
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                ),
+                itemCount: displayedServices.length,
+                itemBuilder: (context, index) {
+                  return ServiceCard(service: displayedServices[index]);
+                },
               ),
-              itemCount: displayedServices.length,
-              itemBuilder: (context, index) {
-                return ServiceCard(service: displayedServices[index]);
-              },
             );
           }),
         ],
