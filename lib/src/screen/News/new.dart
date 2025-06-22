@@ -54,21 +54,34 @@ class _NewsState extends State<News> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.blue.shade800, // Nền xanh
+        iconTheme: const IconThemeData(color: Colors.white), // Nút back nếu có
         title: _isSearching
             ? TextField(
                 controller: _searchController,
                 autofocus: true,
+                style: const TextStyle(color: Colors.white), // Chữ trắng
                 decoration: const InputDecoration(
                   hintText: 'Tìm kiếm bài viết...',
+                  hintStyle: TextStyle(color: Colors.white70),
                   border: InputBorder.none,
                 ),
                 onChanged: _searchArticles,
               )
-            : const Text('Tin tức'),
+            : const Text(
+                'Tin tức',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
         actions: [
           IconButton(
-            icon: Icon(_isSearching ? Icons.close : Icons.search),
             onPressed: _toggleSearch,
+            icon: Icon(
+              _isSearching ? Icons.close : Icons.search,
+              color: Colors.white, // Icon trắng
+            ),
           ),
         ],
       ),
@@ -158,12 +171,14 @@ class _NewsState extends State<News> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ArticleDetail(article: article),
+                            builder: (context) =>
+                                ArticleDetail(article: article),
                           ),
                         );
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: Colors.blue.shade50,
                           borderRadius: BorderRadius.circular(20),
