@@ -19,4 +19,6 @@ class Specialization {
       updatedAt: json['updated_at'],
     );
   }
+
+  set value(Specialization value) {}
 }

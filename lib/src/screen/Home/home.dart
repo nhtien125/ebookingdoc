@@ -82,7 +82,7 @@ class Home extends StatelessWidget {
                     SizedBox(height: 12),
                     BuildHealthArticles(),
                     SizedBox(height: 12),
-                    BuildUpcomingAppointments(),
+                //    BuildUpcomingAppointments(),
                     SizedBox(height: 20),
                   ],
                 ),

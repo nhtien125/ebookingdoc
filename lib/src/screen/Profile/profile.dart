@@ -144,6 +144,12 @@ class Profile extends StatelessWidget {
                     onTap: () => controller.appointmentHistory(),
                   ),
                   const SizedBox(height: 16),
+                     buildMenuItem(
+                    icon: Icons.calendar_today_outlined,
+                    title: 'Lịch sử thanh toán',
+                    onTap: () => controller.paymentHistory(),
+                  ),
+                  const SizedBox(height: 16),
                   buildMenuItem(
                     icon: Icons.medical_services_outlined,
                     title: 'Hồ sơ sức khỏe',

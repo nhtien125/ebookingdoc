@@ -1,13 +1,21 @@
+import 'dart:convert';
 import 'package:ebookingdoc/src/constants/app_page.dart';
+import 'package:ebookingdoc/src/constants/services/Doctorservice.dart';
+import 'package:ebookingdoc/src/constants/services/api_caller.dart';
+import 'package:ebookingdoc/src/constants/services/specialization_service.dart';
+import 'package:ebookingdoc/src/data/model/doctor_model.dart';
+import 'package:ebookingdoc/src/data/model/specialization_model.dart';
+import 'package:ebookingdoc/src/data/model/userModel.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_connect/http/src/utils/utils.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DoctorHome extends StatelessWidget {
   const DoctorHome({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final DoctorHomeController controller = Get.put(DoctorHomeController());
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8FA),
       body: SingleChildScrollView(
@@ -27,65 +35,190 @@ class DoctorHome extends StatelessWidget {
     );
   }
 }
-
 class _HeaderSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.only(top: 40, left: 22, right: 22, bottom: 24),
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.blue.shade800, Colors.blue.shade400],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(38),
-          bottomRight: Radius.circular(38),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.blue.shade100.withOpacity(0.27),
-            blurRadius: 16,
-            offset: const Offset(0, 7),
-          )
-        ],
-      ),
-      child: Row(
-        children: [
-          const CircleAvatar(
-            radius: 37,
-            backgroundImage: NetworkImage(
-                'https://chienthanky.vn/wp-content/uploads/2024/01/top-100-anh-gai-2k7-cuc-xinh-ngay-tho-thuan-khiet-2169-31.jpg'),
+    final DoctorHomeController controller = Get.find<DoctorHomeController>();
+
+    return Obx(() {
+      final user = controller.user.value; // Sử dụng Obx để theo dõi sự thay đổi của user
+      final specialization = controller.specialization.value; // Sử dụng Obx để theo dõi sự thay đổi của specialization
+
+      if (user == null) {
+        return const Center(child: Text('Không tìm thấy thông tin người dùng'));
+      }
+
+      return Container(
+        padding: const EdgeInsets.only(top: 40, left: 22, right: 22, bottom: 24),
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.blue.shade800, Colors.blue.shade400],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-          const SizedBox(width: 18),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Xin chào,',
-                    style: TextStyle(color: Colors.white70, fontSize: 16)),
-                Text('BS. Nguyễn Văn An',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 21,
-                        fontWeight: FontWeight.bold)),
-                Text('Chuyên khoa Tim mạch',
-                    style: TextStyle(color: Colors.white70, fontSize: 15)),
-              ],
+          borderRadius: const BorderRadius.only(
+            bottomLeft: Radius.circular(38),
+            bottomRight: Radius.circular(38),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.blue.shade100.withOpacity(0.27),
+              blurRadius: 16,
+              offset: const Offset(0, 7),
             ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.white),
-            onPressed: () {
-              // Xử lý logout nếu muốn
-              Get.offAllNamed('/login');
-            },
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 37,
+              backgroundImage: user.image != null && user.image!.isNotEmpty
+                  ? NetworkImage(user.image!)
+                  : const AssetImage('assets/default_avatar.png'),
+            ),
+            const SizedBox(width: 18),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Xin chào,',
+                      style: TextStyle(color: Colors.white70, fontSize: 16)),
+                  Text(
+                    user.name ?? 'Unknown User', // Provide default value
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 19,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    specialization != null
+                        ? specialization.name // Hiển thị tên chuyên khoa nếu có
+                        : 'Chuyên khoa không xác định', // Nếu không có chuyên khoa
+                    style: const TextStyle(color: Colors.white70, fontSize: 15),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+}
+
+
+class DoctorHomeController extends GetxController {
+  final isLoading = false.obs;
+  final doctor = Rxn<Doctor>(); // Rxn<Doctor> cho phép giá trị null
+  final specialization = Rxn<Specialization>();
+  final user = Rxn<User>(); // Thêm biến để lưu user
+  final DoctorService _doctorService = DoctorService();
+  final SpecializationService _specialization = SpecializationService();
+
+  @override
+  void onInit() {
+    super.onInit();
+    loadUserData();
+    loadDoctorData();
+    fetchSpecializationFromAPI();
+  }
+
+  Future<void> loadUserData() async {
+    isLoading.value = true;
+    final fetchedUser = await getUserFromPrefs();
+    user.value = fetchedUser;
+    isLoading.value = false;
+  }
+
+  Future<void> loadDoctorData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final doctorJson = prefs.getString('doctor_data');
+    if (doctorJson != null) {
+      doctor.value = Doctor.fromJson(jsonDecode(doctorJson));
+      // Sau khi doctor được gán giá trị, gọi fetchSpecializationFromAPI
+      await fetchSpecializationFromAPI();
+    } else {
+      await fetchDoctorFromAPI();
+    }
+  }
+
+  Future<void> fetchDoctorFromAPI() async {
+    final currentUser = user.value;
+    if (currentUser != null) {
+      try {
+        final doctors =
+            await _doctorService.getDoctorsByUserId(currentUser.uuid);
+        if (doctors.isNotEmpty) {
+          doctor.value = doctors.first;
+          await saveDoctorToPrefs(doctor.value!);
+          // Sau khi doctor được gán giá trị, gọi fetchSpecializationFromAPI
+          await fetchSpecializationFromAPI();
+        }
+      } catch (e) {
+        print('Error fetching doctor: $e');
+      }
+    }
+  }
+
+  Future<void> fetchSpecializationFromAPI() async {
+    final currentDoctor = doctor.value;
+
+    // Kiểm tra nếu currentDoctor không phải là null
+    if (currentDoctor != null) {
+      try {
+        // Log ID bác sĩ trước khi lấy chuyên khoa
+        print('Fetching specialization for Doctor ID: ${currentDoctor.uuid}');
+
+        // Lấy chuyên khoa từ API
+        final fetchedSpecialization =
+            await _specialization.getById(currentDoctor.specializationId);
+
+        // Log kết quả trả về từ API (In toàn bộ đối tượng chuyên khoa)
+        print('Received specialization: $fetchedSpecialization');
+
+        if (fetchedSpecialization != null) {
+          // Kiểm tra xem fetchedSpecialization có thuộc tính name không, và log tên chuyên khoa
+          if (fetchedSpecialization.name != null) {
+            print('Specialization Name: ${fetchedSpecialization.name}');
+          } else {
+            print('Specialization does not have a name');
+          }
+
+          specialization.value = fetchedSpecialization; // Cập nhật chuyên khoa
+          // Log khi chuyên khoa được cập nhật
+          print(
+              'Specialization value updated successfully: ${fetchedSpecialization.name}');
+        } else {
+          print('No specialization found for Doctor ID: ${currentDoctor.uuid}');
+        }
+      } catch (e) {
+        // Log lỗi nếu có
+        print('Error fetching specialization: $e');
+      }
+    } else {
+      print('Doctor is null, cannot fetch specialization');
+    }
+  }
+
+  Future<User?> getUserFromPrefs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userJson = prefs.getString('user_data');
+      if (userJson != null) {
+        return User.fromJson(jsonDecode(userJson));
+      }
+      return null;
+    } catch (e) {
+      print('Error decoding user data: $e');
+      return null;
+    }
+  }
+
+  Future<void> saveDoctorToPrefs(Doctor doctor) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('doctor_data', jsonEncode(doctor.toJson()));
   }
 }
 
@@ -104,32 +237,40 @@ class _QuickStatsSection extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _StatCard(
-            label: "Lịch hôm nay",
-            value: "$todayPatients",
-            icon: Icons.calendar_today,
-            color: Colors.orange,
-            onTap: () {
-              print('Đã click Lịch hôm nay');
-              Get.toNamed(Routes.todayschedule);
-            },
+          Expanded(
+            child: _StatCard(
+              label: "Lịch hôm nay",
+              value: "$todayPatients",
+              icon: Icons.calendar_today,
+              color: Colors.orange,
+              onTap: () {
+                print('Đã click Lịch hôm nay');
+                Get.toNamed(Routes.todayschedule);
+              },
+            ),
           ),
-          _StatCard(
-            label: "Cần xác nhận",
-            value: "$waitingConfirm",
-            icon: Icons.pending_actions,
-            color: Colors.redAccent,
-            onTap: () {
-              print('Đã click Lịch hôm nay');
-              Get.toNamed(Routes.confirmschedule);
-            },
+          const SizedBox(width: 8), // Giảm khoảng cách giữa các phần tử
+          Expanded(
+            child: _StatCard(
+              label: "Cần xác nhận",
+              value: "$waitingConfirm",
+              icon: Icons.pending_actions,
+              color: Colors.redAccent,
+              onTap: () {
+                print('Đã click Lịch hôm nay');
+                Get.toNamed(Routes.confirmschedule);
+              },
+            ),
           ),
-          _StatCard(
-            label: "Bệnh nhân",
-            value: "$totalPatients",
-            icon: Icons.people,
-            color: Colors.green,
-            onTap: () => Get.toNamed('/doctor/patients'),
+          const SizedBox(width: 8), // Giảm khoảng cách giữa các phần tử
+          Expanded(
+            child: _StatCard(
+              label: "Bệnh nhân",
+              value: "$totalPatients",
+              icon: Icons.people,
+              color: Colors.green,
+              onTap: () => Get.toNamed('/doctor/patients'),
+            ),
           ),
         ],
       ),
@@ -216,7 +357,6 @@ class _QuickActionGrid extends StatelessWidget {
         'color': Colors.blue,
         'route': '/profile',
       },
-
       {
         'icon': Icons.check_circle,
         'label': "Hồ sơ bác sĩ",

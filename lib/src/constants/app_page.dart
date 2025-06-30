@@ -1,6 +1,7 @@
 import 'package:ebookingdoc/src/screen/Appointment/AppointmentScreen/appointment_screen.dart';
 import 'package:ebookingdoc/src/screen/Appointment/appointment.dart';
 import 'package:ebookingdoc/src/screen/ConfirmSchedulePage/confirmSchedulePage.dart';
+import 'package:ebookingdoc/src/screen/DetailHospitalScreen.dart';
 import 'package:ebookingdoc/src/screen/Profile/MedicalRecord/edit_medical_record.dart';
 import 'package:ebookingdoc/src/screen/Profile/MedicalRecord/medicalRecord.dart';
 import 'package:ebookingdoc/src/screen/Profile/personal/Doctorinformation.dart';
@@ -19,6 +20,7 @@ import 'package:ebookingdoc/src/screen/dashboard.dart';
 import 'package:ebookingdoc/src/screen/Register/register.dart';
 import 'package:ebookingdoc/src/screen/doctor_work_schedule_page.dart';
 import 'package:ebookingdoc/src/screen/patientlistpage.dart';
+import 'package:ebookingdoc/src/screen/payment_history_screen.dart';
 import 'package:get/get.dart';
 
 part 'app_route.dart';
@@ -51,8 +53,8 @@ class AppPage {
     GetPage(
         name: Routes.doctorworkschedulepage,
         page: () => DoctorWorkSchedulePage()),
-    GetPage(
-        name: Routes.patientlist,
-        page: () => PatientListPage()),
+    GetPage(name: Routes.patientlist, page: () => PatientListPage()),
+    GetPage(name: Routes.detailhospital, page: () => DetailHospitalScreen()),
+    GetPage(name: Routes.paymentHistory, page: () => PaymentHistoryScreen()),
   ];
 }

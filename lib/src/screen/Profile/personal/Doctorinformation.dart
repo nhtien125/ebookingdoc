@@ -17,6 +17,7 @@ class Doctorinformation extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
+              // Ảnh bác sĩ
               Obx(() {
                 Widget avatarWidget;
                 if (controller.localImage.value != null) {
@@ -41,10 +42,30 @@ class Doctorinformation extends StatelessWidget {
                 );
               }),
               const SizedBox(height: 16),
-              _buildDoctorTypeDropdown(),
+
+              // Loại bác sĩ
+              _buildDoctorTypeDropdown(controller),
+
               const SizedBox(height: 16),
-              _buildSpecializationDropdown(),
+
+              // Chuyên ngành
+              _buildSpecializationDropdown(controller),
+
               const SizedBox(height: 16),
+
+              // Bệnh viện (chỉ hiện với loại "Chính quy")
+              Obx(() => controller.doctorType.value == 1
+                  ? _buildHospitalDropdown(controller)
+                  : const SizedBox()),
+
+              // Phòng khám (chỉ hiện với loại "Cộng tác viên")
+              Obx(() => controller.doctorType.value == 2
+                  ? _buildClinicDropdown(controller)
+                  : const SizedBox()),
+
+              const SizedBox(height: 16),
+
+              // Số giấy phép hành nghề
               TextFormField(
                 controller: controller.licenseController,
                 decoration: const InputDecoration(
@@ -55,6 +76,25 @@ class Doctorinformation extends StatelessWidget {
                     value == null || value.isEmpty ? 'Nhập giấy phép' : null,
               ),
               const SizedBox(height: 16),
+
+              // Kinh nghiệm
+              TextFormField(
+                controller: controller.experienceController,
+                decoration: const InputDecoration(
+                  labelText: 'Kinh nghiệm (năm)',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty)
+                    return 'Nhập số năm kinh nghiệm';
+                  if (int.tryParse(value) == null) return 'Nhập số hợp lệ';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+
+              // Giới thiệu bản thân
               TextFormField(
                 controller: controller.introduceController,
                 decoration: InputDecoration(
@@ -62,22 +102,27 @@ class Doctorinformation extends StatelessWidget {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  alignLabelWithHint:
-                      true, // Đảm bảo label nằm đúng vị trí khi nhiều dòng
+                  alignLabelWithHint: true,
                 ),
-                maxLines:
-                    null, // hoặc null nếu muốn tự động cao theo nội dung (nhưng thường đặt 5 là đẹp)
+                maxLines: null,
                 minLines: 3,
                 keyboardType: TextInputType.multiline,
                 textInputAction: TextInputAction.newline,
               ),
               const SizedBox(height: 24),
+
+              // Nút lưu thông tin
               Obx(() => SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: controller.isLoading.value
                           ? null
-                          : controller.saveProfile,
+                          : () {
+                              if (controller.formKey.currentState!.validate()) {
+                                // Gọi hàm saveProfile trong controller
+                                // controller.saveProfile();
+                              }
+                            },
                       child: controller.isLoading.value
                           ? const CircularProgressIndicator(color: Colors.white)
                           : const Text('LƯU THÔNG TIN',
@@ -91,8 +136,7 @@ class Doctorinformation extends StatelessWidget {
     );
   }
 
-  Widget _buildDoctorTypeDropdown() {
-    final controller = Get.find<DoctorinformationController>();
+  Widget _buildDoctorTypeDropdown(DoctorinformationController controller) {
     return Obx(() => DropdownButtonFormField<int>(
           value: controller.doctorType.value,
           decoration: const InputDecoration(
@@ -104,17 +148,16 @@ class Doctorinformation extends StatelessWidget {
             DropdownMenuItem(value: 2, child: Text('Cộng tác viên')),
           ],
           onChanged: (value) {
-            if (value != null) controller.doctorType.value = value;
+            if (value != null) {
+              controller.doctorType.value = value;
+              controller.hospitalId.value = '';
+              controller.clinicId.value = '';
+            }
           },
         ));
   }
 
-  Widget _buildSpecializationDropdown() {
-    final controller = Get.find<DoctorinformationController>();
-    final List<Map<String, String>> specializations = [
-      {'id': 'spec0001uuid00000000000000000001', 'name': 'Tim mạch'},
-      {'id': 'spec0002uuid00000000000000000001', 'name': 'Ngoại khoa'},
-    ];
+  Widget _buildSpecializationDropdown(DoctorinformationController controller) {
     return Obx(() => DropdownButtonFormField<String>(
           value: controller.specializationId.value.isEmpty
               ? null
@@ -123,7 +166,7 @@ class Doctorinformation extends StatelessWidget {
             labelText: 'Chuyên ngành',
             border: OutlineInputBorder(),
           ),
-          items: specializations
+          items: controller.specializations
               .map((e) => DropdownMenuItem(
                     value: e['id'],
                     child: Text(e['name']!),
@@ -135,5 +178,52 @@ class Doctorinformation extends StatelessWidget {
           validator: (value) =>
               value == null || value.isEmpty ? 'Chọn chuyên ngành' : null,
         ));
+  }
+
+  Widget _buildHospitalDropdown(DoctorinformationController controller) {
+    return DropdownButtonFormField<String>(
+      value: controller.hospitalId.value.isEmpty
+          ? null
+          : controller.hospitalId.value,
+      decoration: const InputDecoration(
+        labelText: 'Bệnh viện',
+        border: OutlineInputBorder(),
+      ),
+      items: controller.hospitals
+          .map((e) => DropdownMenuItem(
+                value: e['id'],
+                child: Text(e['name']!),
+              ))
+          .toList(),
+      onChanged: (value) {
+        controller.hospitalId.value = value ?? '';
+        controller.clinicId.value = '';
+      },
+      validator: (value) =>
+          value == null || value.isEmpty ? 'Chọn bệnh viện' : null,
+    );
+  }
+
+  Widget _buildClinicDropdown(DoctorinformationController controller) {
+    return DropdownButtonFormField<String>(
+      value:
+          controller.clinicId.value.isEmpty ? null : controller.clinicId.value,
+      decoration: const InputDecoration(
+        labelText: 'Phòng khám',
+        border: OutlineInputBorder(),
+      ),
+      items: controller.clinics
+          .map((e) => DropdownMenuItem(
+                value: e['id'],
+                child: Text(e['name']!),
+              ))
+          .toList(),
+      onChanged: (value) {
+        controller.clinicId.value = value ?? '';
+        controller.hospitalId.value = '';
+      },
+      validator: (value) =>
+          value == null || value.isEmpty ? 'Chọn phòng khám' : null,
+    );
   }
 }

@@ -3,6 +3,7 @@ class Hospital {
   final String name;
   final String address;
   final String image;
+  final String? description;
   final String? createdAt;
   final String? updatedAt;
 
@@ -11,6 +12,7 @@ class Hospital {
     required this.name,
     required this.address,
     required this.image,
+    this.description,
     this.createdAt,
     this.updatedAt,
   });
@@ -21,10 +23,21 @@ class Hospital {
       name: json['name'] ?? '',
       address: json['address'] ?? '',
       image: json['image'] ?? '',
-      createdAt: json['created_at'],
-      updatedAt: json['updated_at'],
+      description: json['description'] ?? '',        // chống null
+      createdAt: json['created_at'] ?? '',
+      updatedAt: json['updated_at'] ?? '',
     );
   }
 
-  get specialty => null;
+  Map<String, dynamic> toJson() {
+    return {
+      'uuid': uuid,
+      'name': name,
+      'address': address,
+      'image': image,
+      'description': description ?? '',
+      'created_at': createdAt ?? '',
+      'updated_at': updatedAt ?? '',
+    };
+  }
 }

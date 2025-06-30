@@ -64,7 +64,6 @@ class AppointmentScreen extends StatelessWidget {
       color: AppColor.fourthMain,
       child: Column(
         children: [
-          // Title with back button
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Row(
@@ -244,8 +243,34 @@ class AppointmentScreen extends StatelessWidget {
 
   // ==================== Step 1: Select Hospital Info ====================
   Widget _buildStep1Content() {
+    final healthStatusController = TextEditingController(
+      text: controller.healthStatus.value,
+    );
+
     return Column(
       children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: Obx(() => DropdownButtonFormField<String>(
+                value: controller.selectedPlaceType.value,
+                decoration: const InputDecoration(
+                  labelText: 'Bạn muốn khám ở',
+                  border: OutlineInputBorder(),
+                ),
+                items: const [
+                  DropdownMenuItem(value: 'hospital', child: Text('Bệnh viện')),
+                  DropdownMenuItem(value: 'clinic', child: Text('Phòng khám')),
+                  DropdownMenuItem(
+                      value: 'vaccination',
+                      child: Text('Trung tâm tiêm chủng')),
+                ],
+                onChanged: (val) {
+                  if (val != null) controller.selectedPlaceType.value = val;
+                },
+              )),
+        ),
+        // Thêm trường nhập tình trạng sức khỏe
+
         Expanded(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -255,25 +280,46 @@ class AppointmentScreen extends StatelessWidget {
                 const SizedBox(height: 10),
                 _buildHospitalInfoCard(),
                 const SizedBox(height: 10),
-                _buildSectionTitle('Chuyên khoa'),
-                _buildDepartmentSelection(),
-                const SizedBox(height: 20),
-                _buildSectionTitle('Chọn bác sĩ'),
-                _buildDoctorSelection(),
-                const SizedBox(height: 20),
+                if (controller.selectedPlaceType.value != 'vaccination') ...[
+                  _buildSectionTitle('Chuyên khoa'),
+                  _buildDepartmentSelection(),
+                  const SizedBox(height: 20),
+                  _buildSectionTitle('Chọn bác sĩ'),
+                  _buildDoctorSelection(),
+                  const SizedBox(height: 20),
+                ],
                 _buildSectionTitle('Dịch vụ khám'),
                 _buildServiceSelection(),
                 const SizedBox(height: 20),
-                _buildSectionTitle('Ngày khám'),
-                _buildDateSelection(),
-                const SizedBox(height: 20),
-                _buildSectionTitle('Giờ khám'),
-                _buildTimeSlotSelection(),
+                if (controller.selectedPlaceType.value != 'vaccination') ...[
+                  _buildSectionTitle('Ngày khám'),
+                  _buildDateSelection(),
+                  const SizedBox(height: 20),
+                  _buildSectionTitle('Giờ khám'),
+                  _buildTimeSlotSelection(),
+                ],
+                if (controller.selectedPlaceType.value == 'vaccination') ...[
+                  _buildSectionTitle('Ngày tiêm'),
+                  _buildDateSelection(),
+                ],
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: TextFormField(
+                    controller: controller.healthStatusController,
+                    decoration: const InputDecoration(
+                      labelText: 'Tình trạng sức khỏe',
+                      border: OutlineInputBorder(),
+                      hintText: 'Nhập tình trạng sức khỏe hiện tại',
+                    ),
+                    maxLines: 2,
+                  ),
+                ),
                 const SizedBox(height: 80),
               ],
             ),
           ),
         ),
+
         Obx(() {
           final isComplete = controller.isStep1Complete();
           return Container(
@@ -291,7 +337,11 @@ class AppointmentScreen extends StatelessWidget {
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: isComplete ? () => controller.nextStep() : null,
+                onPressed: isComplete
+                    ? () async {
+                        controller.nextStep();
+                      }
+                    : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor:
                       isComplete ? AppColor.fourthMain : Colors.grey[400],
@@ -328,8 +378,28 @@ class AppointmentScreen extends StatelessWidget {
 
   Widget _buildHospitalInfoCard() {
     return Obx(() {
-      final hospital = controller.selectedHospital.value;
-      if (hospital == null) {
+      final placeType = controller.selectedPlaceType.value;
+
+      // Lấy object và danh sách tương ứng
+      dynamic selectedPlace;
+      List<dynamic> placeList = [];
+      IconData icon = Icons.local_hospital;
+
+      if (placeType == 'hospital') {
+        selectedPlace = controller.selectedHospital.value;
+        placeList = controller.hospitals;
+        icon = Icons.local_hospital;
+      } else if (placeType == 'clinic') {
+        selectedPlace = controller.selectedClinic.value;
+        placeList = controller.clinics;
+        icon = Icons.local_hospital_outlined;
+      } else if (placeType == 'vaccination') {
+        selectedPlace = controller.selectedVaccinationCenter.value;
+        placeList = controller.vaccinationCenters;
+        icon = Icons.vaccines;
+      }
+
+      if (selectedPlace == null) {
         return const SizedBox();
       }
 
@@ -341,23 +411,28 @@ class AppointmentScreen extends StatelessWidget {
               borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
             ),
             builder: (context) {
-              final hospitals = controller.hospitals;
               return ListView.builder(
-                itemCount: hospitals.length,
+                itemCount: placeList.length,
                 itemBuilder: (context, index) {
-                  final item = hospitals[index];
+                  final item = placeList[index];
                   return ListTile(
-                    leading: item.image.isNotEmpty
+                    leading: item.image != null && item.image.isNotEmpty
                         ? Image.network(item.image,
                             width: 40, height: 40, fit: BoxFit.cover)
-                        : const Icon(Icons.local_hospital),
+                        : Icon(icon),
                     title: Text(item.name),
                     subtitle: Text(item.address),
                     onTap: () {
-                      controller.selectHospital(item);
+                      if (placeType == 'hospital') {
+                        controller.selectHospital(item);
+                      } else if (placeType == 'clinic') {
+                        controller.selectClinic(item);
+                      } else if (placeType == 'vaccination') {
+                        controller.selectVaccinationCenter(item);
+                      }
                       Get.back();
                     },
-                    selected: item.uuid == hospital.uuid,
+                    selected: item.uuid == selectedPlace.uuid,
                     selectedTileColor: Colors.blue[50],
                   );
                 },
@@ -384,18 +459,18 @@ class AppointmentScreen extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (hospital.image.isNotEmpty)
+              if (selectedPlace.image != null && selectedPlace.image.isNotEmpty)
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: hospital.image.startsWith('http')
+                  child: selectedPlace.image.startsWith('http')
                       ? Image.network(
-                          hospital.image,
+                          selectedPlace.image,
                           width: 60,
                           height: 60,
                           fit: BoxFit.cover,
                         )
                       : Image.asset(
-                          hospital.image,
+                          selectedPlace.image,
                           width: 60,
                           height: 60,
                           fit: BoxFit.cover,
@@ -409,8 +484,7 @@ class AppointmentScreen extends StatelessWidget {
                     color: Colors.blue[50],
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(Icons.local_hospital,
-                      size: 36, color: Colors.blue),
+                  child: Icon(icon, size: 36, color: Colors.blue),
                 ),
               const SizedBox(width: 16),
               Expanded(
@@ -418,7 +492,7 @@ class AppointmentScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      hospital.name,
+                      selectedPlace.name,
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -427,7 +501,7 @@ class AppointmentScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      hospital.address,
+                      selectedPlace.address,
                       style: const TextStyle(
                         color: Colors.grey,
                         fontSize: 14,
@@ -947,10 +1021,13 @@ class AppointmentScreen extends StatelessWidget {
 
   Widget _buildTimeSlotSelection() {
     return Obx(() {
+      final selectedTimeSlot = controller.selectedTimeSlot.value;
+      final timeSlots = controller.timeSlots;
+
       if (controller.selectedDate.value == null) {
         return const Center(child: Text('Vui lòng chọn ngày'));
       }
-      if (controller.timeSlots.isEmpty) {
+      if (timeSlots.isEmpty) {
         return const Center(child: Text('Không có khung giờ trống'));
       }
 
@@ -964,10 +1041,10 @@ class AppointmentScreen extends StatelessWidget {
           crossAxisSpacing: 10,
           mainAxisSpacing: 12,
         ),
-        itemCount: controller.timeSlots.length,
+        itemCount: timeSlots.length,
         itemBuilder: (context, index) {
-          final slot = controller.timeSlots[index];
-          final isSelected = controller.selectedTimeSlot.value == slot;
+          final slot = timeSlots[index];
+          final isSelected = selectedTimeSlot == slot;
           return GestureDetector(
             onTap: () => controller.selectTimeSlot(slot),
             child: AnimatedContainer(
@@ -1191,7 +1268,9 @@ class AppointmentScreen extends StatelessWidget {
               const SizedBox(height: 12),
               Obx(() => _buildContinueButton(
                     'TIẾP TỤC',
-                    controller.nextStep,
+                    () {
+                      controller.nextStep();
+                    },
                     enabled: controller.selectedPatient.value != null,
                   )),
             ],
@@ -1350,26 +1429,13 @@ class AppointmentScreen extends StatelessWidget {
 
   // ==================== Step 3: Confirm Appointment ====================
   Widget _buildStep3Content() {
-    // Mock data mẫu để test giao diện
-    final mockPatient = {
-      'name': 'Nguyễn Văn A',
-      'phone': '0987654321',
-      'dob': '15/05/1990',
-      'address': '123 Đường ABC, Quận 1',
-    };
+    final patient = controller.selectedPatient.value;
+    final doctor = controller.selectedDoctor.value;
+    final department = controller.selectedDepartment.value;
+    final service = controller.selectedService.value;
+    final date = controller.selectedDate.value;
+    final timeSlot = controller.selectedTimeSlot.value;
 
-    final mockDoctor = {
-      'name': 'BS. Trần Văn B',
-      'address': 'Bệnh viện Đa khoa X',
-      'phone': '0123456789',
-    };
-
-    final mockDepartment = {'name': 'Nội khoa'};
-    final mockService = {'name': 'Khám tổng quát', 'price': 500000.0};
-    final mockDate = DateTime(2025, 6, 25);
-    final mockTimeSlot = '09:30';
-
-    // Thay vì Obx() bạn có thể bỏ, dùng trực tiếp dữ liệu mẫu
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -1380,10 +1446,10 @@ class AppointmentScreen extends StatelessWidget {
             icon: Icons.person,
             child: Column(
               children: [
-                _buildConfirmItem('Họ tên', mockPatient['name']!),
-                _buildConfirmItem('SĐT', mockPatient['phone']!),
-                _buildConfirmItem('Ngày sinh', mockPatient['dob']!),
-                _buildConfirmItem('Địa chỉ', mockPatient['address']!),
+                _buildConfirmItem('Họ tên', patient?.name ?? ''),
+                _buildConfirmItem('SĐT', patient?.phone ?? ''),
+                _buildConfirmItem('Ngày sinh', patient?.dob ?? ''),
+                _buildConfirmItem('Địa chỉ', patient?.address ?? ''),
               ],
             ),
           ),
@@ -1394,9 +1460,9 @@ class AppointmentScreen extends StatelessWidget {
             icon: Icons.local_hospital,
             child: Column(
               children: [
-                _buildConfirmItem('Bác sĩ', mockDoctor['name']!),
-                _buildConfirmItem('Địa chỉ', mockDoctor['address']!),
-                _buildConfirmItem('Điện thoại', mockDoctor['phone']!),
+                _buildConfirmItem('Bác sĩ', doctor?.user.name ?? ''),
+                _buildConfirmItem('Chuyên khoa', department?.name ?? ''),
+                _buildConfirmItem('Điện thoại', doctor?.user.phone ?? ''),
               ],
             ),
           ),
@@ -1407,11 +1473,10 @@ class AppointmentScreen extends StatelessWidget {
             icon: Icons.calendar_today,
             child: Column(
               children: [
-                _buildConfirmItem('Chuyên khoa', mockDepartment['name']!),
-                _buildConfirmItem('Dịch vụ', mockService['name']!.toString()),
-                _buildConfirmItem(
-                    'Ngày khám', DateFormat('dd/MM/yyyy').format(mockDate)),
-                _buildConfirmItem('Giờ khám', mockTimeSlot),
+                _buildConfirmItem('Dịch vụ', service?.name ?? ''),
+                _buildConfirmItem('Ngày khám',
+                    date != null ? DateFormat('dd/MM/yyyy').format(date) : ''),
+                _buildConfirmItem('Giờ khám', timeSlot ?? ''),
               ],
             ),
           ),
@@ -1423,10 +1488,10 @@ class AppointmentScreen extends StatelessWidget {
             child: Column(
               children: [
                 _buildPriceItem(
-                    'Phí khám bệnh', mockService['price'] as double),
+                    'Phí khám bệnh', service?.price?.toDouble() ?? 0),
                 _buildPriceItem('Phí dịch vụ', 0),
                 const Divider(height: 24),
-                _buildPriceItem('Tổng cộng', mockService['price'] as double,
+                _buildPriceItem('Tổng cộng', service?.price?.toDouble() ?? 0,
                     isTotal: true),
               ],
             ),
@@ -1520,13 +1585,23 @@ class AppointmentScreen extends StatelessWidget {
 
   // ==================== Step 4: Payment ====================
   Widget _buildStep4Content() {
-    // Mock data mẫu
-    final mockPatient = {'name': 'Nguyễn Văn A'};
-    final mockHospital = {'name': 'Bệnh viện Đa khoa X'};
-    final mockService = {'name': 'Khám tổng quát', 'price': 500000.0};
-    final mockDate = DateTime(2025, 6, 25);
-    final mockTimeSlot = '09:30';
-    String mockPaymentMethod = 'online'; // or 'cash'
+    final patient = controller.selectedPatient.value;
+    final hospital = controller.selectedHospital.value;
+    final clinic = controller.selectedClinic.value;
+    final vaccinationCenter = controller.selectedVaccinationCenter.value;
+    final service = controller.selectedService.value;
+    final date = controller.selectedDate.value;
+    final timeSlot = controller.selectedTimeSlot.value;
+
+    // Lấy tên nơi khám phù hợp
+    String placeName = '';
+    if (controller.selectedPlaceType.value == 'hospital') {
+      placeName = hospital?.name ?? '';
+    } else if (controller.selectedPlaceType.value == 'clinic') {
+      placeName = clinic?.name ?? '';
+    } else if (controller.selectedPlaceType.value == 'vaccination') {
+      placeName = vaccinationCenter?.name ?? '';
+    }
 
     return Scaffold(
       body: Column(
@@ -1542,19 +1617,22 @@ class AppointmentScreen extends StatelessWidget {
                     icon: Icons.info,
                     child: Column(
                       children: [
-                        _buildConfirmItem('Bệnh nhân', mockPatient['name']!),
-                        _buildConfirmItem('Bệnh viện', mockHospital['name']!),
-                        _buildConfirmItem(
-                            'Dịch vụ', mockService['name']!.toString()),
+                        _buildConfirmItem('Bệnh nhân', patient?.name ?? ''),
+                        _buildConfirmItem('Nơi khám', placeName),
+                        _buildConfirmItem('Dịch vụ', service?.name ?? ''),
                         _buildConfirmItem(
                           'Ngày khám',
-                          DateFormat('dd/MM/yyyy').format(mockDate),
+                          date != null
+                              ? DateFormat('dd/MM/yyyy').format(date)
+                              : '',
                         ),
-                        _buildConfirmItem('Giờ khám', mockTimeSlot),
+                        _buildConfirmItem('Giờ khám', timeSlot ?? ''),
                         const SizedBox(height: 12),
                         _buildPriceItem(
-                            'Tổng thanh toán', mockService['price']! as double,
-                            isTotal: true),
+                          'Tổng thanh toán',
+                          service?.price?.toDouble() ?? 0,
+                          isTotal: true,
+                        ),
                       ],
                     ),
                   ),
@@ -1563,29 +1641,30 @@ class AppointmentScreen extends StatelessWidget {
                   _buildConfirmCard(
                     title: 'Hình thức thanh toán',
                     icon: Icons.payment,
-                    child: ListTile(
-                      leading: Icon(
-                        mockPaymentMethod == 'online'
-                            ? Icons.credit_card
-                            : Icons.money,
-                        color: Colors.blue,
-                      ),
-                      title: Text(
-                        mockPaymentMethod == 'online'
-                            ? 'Thanh toán online'
-                            : 'Thanh toán tại bệnh viện',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Text(
-                        mockPaymentMethod == 'online'
-                            ? 'Thẻ ATM/VISA/Mastercard'
-                            : 'Khi đến khám',
-                      ),
-                      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                      onTap: () {
-                        // Bạn có thể gọi _showPaymentMethodBottomSheet() hoặc làm gì đó
-                      },
-                    ),
+                    child: Obx(() => ListTile(
+                          leading: Icon(
+                            controller.selectedPaymentMethod.value == 'online'
+                                ? Icons.credit_card
+                                : Icons.money,
+                            color: Colors.blue,
+                          ),
+                          title: Text(
+                            controller.selectedPaymentMethod.value == 'online'
+                                ? 'Thanh toán PayOS'
+                                : 'Thanh toán tại bệnh viện',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(
+                            controller.selectedPaymentMethod.value == 'online'
+                                ? 'Thẻ ATM/VISA/Mastercard'
+                                : 'Khi đến khám',
+                          ),
+                          trailing:
+                              const Icon(Icons.arrow_forward_ios, size: 16),
+                          onTap: () {
+                            _showPaymentMethodBottomSheet();
+                          },
+                        )),
                   ),
 
                   // Thêm khoảng trống phía dưới
@@ -1597,26 +1676,41 @@ class AppointmentScreen extends StatelessWidget {
         ],
       ),
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.2),
-              blurRadius: 8,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: _buildContinueButton(
-          'THANH TOÁN',
-          () {
-            // mock hàm hoàn thành thanh toán
-            print('Thanh toán hoàn thành');
-            Get.until((route) => route.isFirst);
-          },
-        ),
-      ),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.2),
+                blurRadius: 8,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: _buildContinueButton(
+            'THANH TOÁN',
+            () async {
+              if (controller.selectedPaymentMethod.value == 'online') {
+                // Thanh toán online (PayOS): Tự lo hết
+                await controller.handlePayOS();
+              } else {
+                // Tiền mặt: làm thủ công từng bước
+                final appointmentId = await controller.addAppointment();
+                print('AppointmentId: $appointmentId');
+                if (appointmentId != null) {
+                  final paymentSaved =
+                      await controller.savePayment(appointmentId);
+                  print('paymentSaved: $paymentSaved');
+                  if (paymentSaved) {
+                    controller
+                        .completePayment(); // show thông báo hoặc chuyển màn hình
+                  } else {
+                    Get.snackbar('Lỗi', 'Không thể lưu thông tin thanh toán!');
+                  }
+                }
+              }
+            },
+          )),
     );
   }
 

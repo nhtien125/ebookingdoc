@@ -53,4 +53,7 @@ class ProfileController extends GetxController {
   logout() {
     Get.offAllNamed(Routes.login);
   }
+  paymentHistory() {
+    Get.toNamed(Routes.paymentHistory);
+  }
 }

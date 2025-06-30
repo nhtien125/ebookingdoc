@@ -1,6 +1,7 @@
 import 'package:ebookingdoc/src/Global/app_color.dart';
 import 'package:ebookingdoc/src/data/model/clinic_model.dart';
 import 'package:ebookingdoc/src/data/model/hospital_model.dart';
+import 'package:ebookingdoc/src/data/model/vaccination_center_model.dart';
 import 'package:ebookingdoc/src/widgets/controller/excellent_doctor_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -15,6 +16,18 @@ class ExcellentDoctor extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final args = Get.arguments;
+    if (args != null) {
+      if (args['hospitals'] == true) {
+        controller.topTabIndex.value = 1; // tab Bệnh viện
+      } else if (args['clinics'] == true) {
+        controller.topTabIndex.value = 2; // tab Phòng khám
+      } else if (args['vaccines'] == true) {
+        controller.topTabIndex.value = 3; // tab Tiêm chủng
+      } else {
+        controller.topTabIndex.value = 0; // tab Bác sĩ (mặc định)
+      }
+    }
     return PopScope(
       canPop: true,
       child: Scaffold(
@@ -170,15 +183,15 @@ class ExcellentDoctor extends StatelessWidget {
   }
 
   Widget _buildVaccinationContent() {
-    if (controller.vaccinas.isEmpty) {
+    if (controller.vaccinationCenters.isEmpty) {
       return _buildEmptyState('Không tìm thấy trung tâm tiêm chủng nào');
     }
 
     return ListView.builder(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      itemCount: controller.vaccinas.length,
+      itemCount: controller.vaccinationCenters.length,
       itemBuilder: (context, index) {
-        return _buildHospitalCard(controller.hospitals[index]);
+        return _buildVaccinationCard(controller.vaccinationCenters[index]);
       },
     );
   }
@@ -288,7 +301,7 @@ class ExcellentDoctor extends StatelessWidget {
                   const SizedBox(width: 8),
                   ElevatedButton(
                     onPressed: () =>
-                        controller.bookAppointment(doctor, 'doctor'),
+                        controller.bookDoctorAppointment(doctor, 'doctor'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColor.fourthMain,
                       padding: const EdgeInsets.symmetric(
@@ -318,7 +331,7 @@ class ExcellentDoctor extends StatelessWidget {
         elevation: 3,
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
-          onTap: () => controller.viewHospitalDetails(hospital.uuid),
+          onTap: () => controller.viewHospitalDetails(hospital),
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Column(
@@ -396,8 +409,7 @@ class ExcellentDoctor extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     OutlinedButton(
-                      onPressed: () =>
-                          controller.viewHospitalDetails(hospital.uuid),
+                      onPressed: () => controller.viewHospitalDetails(hospital),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 8),
@@ -416,8 +428,12 @@ class ExcellentDoctor extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     ElevatedButton(
-                      onPressed: () =>
-                          controller.bookAppointment(hospital, 'hospital'),
+                      onPressed: () {
+                        print(
+                            'DEBUG | Button pressed hospital: ${hospital.toJson()}');
+                        controller.bookHospitalAppointment(
+                            hospital, 'hospital');
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColor.fourthMain,
                         padding: const EdgeInsets.symmetric(
@@ -454,7 +470,7 @@ class ExcellentDoctor extends StatelessWidget {
         elevation: 4,
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
-          onTap: () => controller.viewClinicDetails(clinic.uuid),
+          onTap: () => controller.viewClinicDetails(clinic),
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Row(
@@ -518,7 +534,7 @@ class ExcellentDoctor extends StatelessWidget {
                         children: [
                           OutlinedButton(
                             onPressed: () =>
-                                controller.viewClinicDetails(clinic.uuid),
+                                controller.viewClinicDetails(clinic),
                             style: OutlinedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 12, vertical: 6),
@@ -537,8 +553,12 @@ class ExcellentDoctor extends StatelessWidget {
                           ),
                           const SizedBox(width: 8),
                           ElevatedButton(
-                            onPressed: () =>
-                                controller.bookAppointment(clinic, 'clinic'),
+                            onPressed: () {
+                              print(
+                                  'DEBUG | Button pressed hospital: ${clinic.toJson()}');
+                              controller.bookClinicAppointment(
+                                  clinic, 'hospital');
+                            },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColor.fourthMain,
                               padding: const EdgeInsets.symmetric(
@@ -568,7 +588,7 @@ class ExcellentDoctor extends StatelessWidget {
     );
   }
 
-  Widget _buildVaccinationCard(Map<String, dynamic> vaccina) {
+  Widget _buildVaccinationCard(VaccinationCenter vaccina) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Card(
@@ -578,7 +598,7 @@ class ExcellentDoctor extends StatelessWidget {
         elevation: 3,
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
-          onTap: () => controller.viewVaccinaDetails(vaccina['id']),
+          onTap: () => controller.viewVaccinaDetails(vaccina),
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Column(
@@ -590,21 +610,30 @@ class ExcellentDoctor extends StatelessWidget {
                     // Hình ảnh
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-                      child: Image.asset(
-                        vaccina['imageUrl'],
-                        width: 80,
-                        height: 80,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            width: 80,
-                            height: 80,
-                            color: Colors.grey[300],
-                            child: const Icon(Icons.medical_services,
-                                color: Colors.white),
-                          );
-                        },
-                      ),
+                      child:
+                          (vaccina.image != null && vaccina.image!.isNotEmpty)
+                              ? Image.network(
+                                  vaccina.image!,
+                                  width: 80,
+                                  height: 80,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      width: 80,
+                                      height: 80,
+                                      color: Colors.grey[300],
+                                      child: const Icon(Icons.medical_services,
+                                          color: Colors.white),
+                                    );
+                                  },
+                                )
+                              : Container(
+                                  width: 80,
+                                  height: 80,
+                                  color: Colors.grey[300],
+                                  child: const Icon(Icons.medical_services,
+                                      color: Colors.white),
+                                ),
                     ),
                     const SizedBox(width: 12),
 
@@ -615,7 +644,7 @@ class ExcellentDoctor extends StatelessWidget {
                         children: [
                           // Tên trung tâm
                           Text(
-                            vaccina['name'],
+                            vaccina.name,
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
@@ -633,7 +662,7 @@ class ExcellentDoctor extends StatelessWidget {
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
-                                  vaccina['address'],
+                                  vaccina.address,
                                   style: TextStyle(
                                     fontSize: 13,
                                     color: Colors.grey[700],
@@ -646,36 +675,15 @@ class ExcellentDoctor extends StatelessWidget {
                           ),
                           const SizedBox(height: 8),
 
-                          // Đánh giá và trạng thái
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: AppColor.fourthMain.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  '${vaccina['rating']} ★',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColor.fourthMain,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                vaccina['isOpen'] ? 'Đang mở' : 'Đã đóng',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: vaccina['isOpen']
-                                      ? Colors.green
-                                      : Colors.red,
-                                ),
-                              ),
-                            ],
+                          Text(
+                            (vaccina.status == "open") ? "Đang mở" : "Đã đóng",
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: (vaccina.status == "open")
+                                  ? Colors.green
+                                  : Colors.red,
+                            ),
                           ),
                         ],
                       ),
@@ -683,14 +691,11 @@ class ExcellentDoctor extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-
-                // Nút bấm
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     OutlinedButton(
-                      onPressed: () =>
-                          controller.viewVaccinaDetails(vaccina['id']),
+                      onPressed: () => controller.viewVaccinaDetails(vaccina),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 8),
@@ -709,8 +714,8 @@ class ExcellentDoctor extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     ElevatedButton(
-                      onPressed: () =>
-                          controller.bookAppointment(vaccina, 'vaccination'),
+                      onPressed: () => controller.bookVaccinationAppointment(
+                          vaccina, 'vaccination'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColor.fourthMain,
                         padding: const EdgeInsets.symmetric(

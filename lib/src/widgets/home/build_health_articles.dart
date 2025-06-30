@@ -1,3 +1,4 @@
+import 'package:ebookingdoc/src/screen/News/article_detail.dart';
 import 'package:ebookingdoc/src/widgets/controller/home_controller.dart';
 import 'package:ebookingdoc/src/widgets/custom_component/article_card.dart';
 import 'package:ebookingdoc/src/widgets/custom_component/section_header.dart';
@@ -35,7 +36,8 @@ class BuildHealthArticles extends StatelessWidget {
                           final article = controller.article[index];
                           return ArticleCard(
                             article: article, // đổi facility => article
-                            onTap: () => controller.viewArticleDetails(article.uuid),
+                         onTap: () => Get.to(() => ArticleDetail(article: article)),
+
                           );
                         },
                       ),

@@ -1,7 +1,8 @@
 class Doctor {
   final String uuid;
   final String? userId;
-  final String? hospitalId; // Thêm trường này
+  final String? hospitalId;
+  final String? clinicId;        // <-- THÊM TRƯỜNG NÀY
   final int? doctorType;
   final String? specializationId;
   final String? license;
@@ -15,7 +16,8 @@ class Doctor {
   Doctor({
     required this.uuid,
     this.userId,
-    this.hospitalId, // Thêm vào constructor
+    this.hospitalId,
+    this.clinicId,               // <-- THÊM VÀO CONSTRUCTOR
     this.doctorType,
     this.specializationId,
     this.license,
@@ -32,6 +34,7 @@ class Doctor {
       uuid: json['uuid'] ?? '',
       userId: json['user_id'],
       hospitalId: json['hospital_id'],
+      clinicId: json['clinic_id'],      // <-- LẤY GIÁ TRỊ CLINIC_ID
       doctorType: json['doctor_type'],
       specializationId: json['specialization_id'],
       license: json['license'],
@@ -49,6 +52,7 @@ class Doctor {
       'uuid': uuid,
       'user_id': userId,
       'hospital_id': hospitalId,
+      'clinic_id': clinicId,         // <-- BỔ SUNG NÀY
       'doctor_type': doctorType,
       'specialization_id': specializationId,
       'license': license,
@@ -59,5 +63,10 @@ class Doctor {
       'created_at': createdAt,
       'updated_at': updatedAt,
     };
+  }
+
+  @override
+  String toString() {
+    return 'Doctor(uuid: $uuid, userId: $userId, hospitalId: $hospitalId, clinicId: $clinicId, doctorType: $doctorType, specializationId: $specializationId, license: $license, introduce: $introduce, experience: $experience, patientCount: $patientCount, image: $image, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 }

@@ -18,4 +18,23 @@ class ClinicService {
     }
     return [];
   }
+
+  Future<Clinic?> getById(String id) async {
+    try {
+      final response =
+          await APICaller.getInstance().get('api/clinic/getById/$id');
+      if (response != null &&
+          response['code'] == 200 &&
+          response['data'] != null) {
+        return Clinic.fromJson(response['data']);
+      } else {
+        if (response != null && response['message'] != null) {
+          print('[ClinicService] Lý do: ${response['message']}');
+        }
+      }
+    } catch (e) {
+      print('[ClinicService] Lỗi khi gọi API: $e');
+    }
+    return null;
+  }
 }

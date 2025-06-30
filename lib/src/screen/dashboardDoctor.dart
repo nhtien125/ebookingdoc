@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:ebookingdoc/src/screen/Home/DoctorHome.dart';
 import 'package:ebookingdoc/src/screen/Notification/my_notification.dart';
 import 'package:ebookingdoc/src/screen/Profile/profiledoctor.dart';
-import 'package:ebookingdoc/src/screen/Todayschedule/today_schedule.dart';
+import 'package:ebookingdoc/src/screen/doctor_work_schedule_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
@@ -39,7 +39,7 @@ class DashboardDoctor extends StatelessWidget {
   final List<Widget> _pages = [
     DoctorHome(),
     MyNotificationDoctor(),
-    TodaySchedulePage(),
+    DoctorWorkSchedulePage(),
     ProfileDoctor(),
   ];
 

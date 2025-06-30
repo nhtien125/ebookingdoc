@@ -16,6 +16,7 @@ abstract class Routes {
   static const news = _Paths.news;
   static const excellentDoctor = _Paths.excellentDoctor;
   static const detaildoctor = _Paths.detaildoctor;
+  static const detailhospital = _Paths.detailhospital;
   static var appointmentScreen = _Paths.appointmentScreen;
   static var editMedicalRecord = _Paths.editMedicalRecord;
   static var register = _Paths.register;
@@ -23,6 +24,7 @@ abstract class Routes {
   static var confirmschedule = _Paths.confirmschedule;
   static var doctorworkschedulepage = _Paths.doctorworkschedulepage;
    static var patientlist = _Paths.patientlist;
+  static var paymentHistory = _Paths.paymentHistory;
 }
 
 abstract class _Paths {
@@ -48,5 +50,7 @@ abstract class _Paths {
   static const String confirmschedule = '/confirmschedule';
   static const String doctorworkschedulepage = '/doctorworkschedulepage';
   static const String patientlist = '/patientlist';
+  static const String detailhospital = '/detail-hospital';
+  static const String paymentHistory = '/payment-history';
   
 }

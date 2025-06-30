@@ -26,5 +26,24 @@ class DoctorService {
     return null;
   }
 
+  Future<List<Doctor>> getDoctorsByUserId(String uuid) async {
+    try {
+      print("Gọi API để lấy thông tin bác sĩ với userId: $uuid");
+      final response =
+          await APICaller.getInstance().get('api/doctor/getByUserId/$uuid');
+      print("API raw response: $response"); // Kiểm tra phản hồi API
+      if (response != null && response['code'] == 200) {
+        List list = response['data'];
+        print("API trả về ${list.length} bác sĩ.");
+        return list.map((e) => Doctor.fromJson(e)).toList();
+      } else {
+        print("API không trả về dữ liệu hợp lệ.");
+      }
+    } catch (e) {
+      print("Lỗi khi gọi API: ${e.toString()}");
+    }
+    return [];
+  }
+
   featuredDoctors() {}
 }

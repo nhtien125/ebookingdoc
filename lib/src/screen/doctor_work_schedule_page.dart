@@ -1,18 +1,21 @@
-import 'package:ebookingdoc/src/constants/intl.dart';
+import 'package:ebookingdoc/src/data/model/schedule_model.dart';
 import 'package:ebookingdoc/src/widgets/controller/doctor_work_schedule_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
+List<DateTime> get7NextDays() {
+  final now = DateTime.now();
+  final list = List.generate(7, (i) {
+    final d = DateTime(now.year, now.month, now.day).add(Duration(days: i));
+    return d;
+  });
+  return list;
+}
+
 class DoctorWorkSchedulePage extends StatelessWidget {
   DoctorWorkSchedulePage({super.key});
   final controller = Get.put(DoctorWorkScheduleController());
-
-  final clinicList = [
-    "Phòng khám Y Khoa Việt Mỹ",
-    "Phòng khám Bệnh viện Đại học Y Hà Nội",
-    "Phòng khám Đa khoa Quốc tế"
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -28,18 +31,10 @@ class DoctorWorkSchedulePage extends StatelessWidget {
         elevation: 2,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showScheduleForm(context, controller, clinicList),
-        icon: const Icon(Icons.add),
-        label: const Text("Thêm lịch"),
-        backgroundColor: Colors.blue.shade800,
-      ),
       body: Column(
         children: [
-          // --- Picker chọn ngày ---
           Obx(() {
-            final today = DateTime.now();
-            final weekDays = getWeekDays(today);
+            final weekDays = get7NextDays();
             final selected = controller.selectedDate.value;
             return Container(
               margin: const EdgeInsets.only(top: 12, bottom: 10),
@@ -53,7 +48,9 @@ class DoctorWorkSchedulePage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: weekDays.map((d) {
                   final isSelected = selected != null &&
-                      d.year == selected.year && d.month == selected.month && d.day == selected.day;
+                      d.year == selected.year &&
+                      d.month == selected.month &&
+                      d.day == selected.day;
                   return InkWell(
                     borderRadius: BorderRadius.circular(12),
                     onTap: () => controller.selectDate(d),
@@ -66,7 +63,7 @@ class DoctorWorkSchedulePage extends StatelessWidget {
                       child: Column(
                         children: [
                           Text(
-                            weekdayShort(d),
+                            DateFormat.E('vi').format(d), // CN, Th 2, ...
                             style: TextStyle(
                               color: isSelected ? Colors.white : Colors.blueGrey,
                               fontWeight: FontWeight.bold,
@@ -90,13 +87,16 @@ class DoctorWorkSchedulePage extends StatelessWidget {
               ),
             );
           }),
-          // --- Danh sách lịch làm việc ngày đã chọn ---
+          // Danh sách lịch làm việc ngày đã chọn
           Expanded(
             child: Obx(() {
               final filtered = controller.filteredSchedules;
+              if (controller.isLoading.value) {
+                return const Center(child: CircularProgressIndicator());
+              }
               if (filtered.isEmpty) {
                 return const Center(
-                  child: Text("Không có lịch làm việc ngày này.", style: TextStyle(color: Colors.grey)),
+                  child: Text("Không có lịch làm việc.", style: TextStyle(color: Colors.grey)),
                 );
               }
               return ListView.separated(
@@ -105,9 +105,9 @@ class DoctorWorkSchedulePage extends StatelessWidget {
                 separatorBuilder: (_, __) => const SizedBox(height: 16),
                 itemBuilder: (_, i) {
                   final s = filtered[i];
-                  return _WorkScheduleCard(
+                  return WorkScheduleCardV2(
                     schedule: s,
-                    onEdit: () => _showScheduleForm(context, controller, clinicList, schedule: s),
+                    onEdit: () => _showEditScheduleDialog(context, s),
                     onDelete: () => controller.deleteSchedule(s.uuid),
                   );
                 },
@@ -116,197 +116,260 @@ class DoctorWorkSchedulePage extends StatelessWidget {
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showAddScheduleDialog(context),
+        backgroundColor: Colors.blue,
+        child: const Icon(Icons.add, color: Colors.white),
+        tooltip: "Thêm lịch làm việc",
+      ),
     );
   }
 
-  // Form tạo/sửa lịch làm việc
-  void _showScheduleForm(BuildContext context, DoctorWorkScheduleController controller, List<String> clinics,
-      {DoctorWorkSchedule? schedule}) {
-    final formKey = GlobalKey<FormState>();
-    final clinicCtrl = TextEditingController(text: schedule?.clinicName ?? clinics.first);
-    final dateCtrl = TextEditingController(text: schedule?.workDate ?? DateFormat('yyyy-MM-dd').format(DateTime.now()));
-    final startCtrl = TextEditingController(text: schedule?.startTime ?? "08:00:00");
-    final endCtrl = TextEditingController(text: schedule?.endTime ?? "12:00:00");
+  void _showAddScheduleDialog(BuildContext context) {
+    final controller = Get.find<DoctorWorkScheduleController>();
+    DateTime selectedDate = DateTime.now();
+    TimeOfDay? startTime;
+    TimeOfDay? endTime;
 
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: Text(schedule == null ? "Thêm lịch làm việc" : "Sửa lịch làm việc"),
-        content: Form(
-          key: formKey,
-          child: SizedBox(
-            width: 350,
-            child: SingleChildScrollView(
-              child: Column(
+      builder: (_) {
+        return StatefulBuilder(
+          builder: (ctx, setState) {
+            return AlertDialog(
+              title: const Text("Thêm lịch làm việc mới"),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  DropdownButtonFormField<String>(
-                    value: clinicCtrl.text,
-                    items: clinics
-                        .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                        .toList(),
-                    decoration: const InputDecoration(labelText: "Phòng khám"),
-                    onChanged: (v) => clinicCtrl.text = v ?? clinics.first,
-                  ),
-                  const SizedBox(height: 10),
-                  TextFormField(
-                    controller: dateCtrl,
-                    decoration: const InputDecoration(
-                      labelText: "Ngày làm việc",
-                      prefixIcon: Icon(Icons.date_range),
-                    ),
-                    readOnly: true,
+                  ListTile(
+                    leading: const Icon(Icons.calendar_today, color: Colors.blue),
+                    title: Text(DateFormat('dd/MM/yyyy').format(selectedDate)),
+                    trailing: const Icon(Icons.edit_calendar),
                     onTap: () async {
                       final picked = await showDatePicker(
-                        context: context,
-                        initialDate: DateTime.tryParse(dateCtrl.text) ?? DateTime.now(),
+                        context: ctx,
+                        initialDate: selectedDate,
                         firstDate: DateTime.now().subtract(const Duration(days: 1)),
                         lastDate: DateTime.now().add(const Duration(days: 365)),
                       );
-                      if (picked != null) {
-                        dateCtrl.text = DateFormat('yyyy-MM-dd').format(picked);
-                      }
+                      if (picked != null) setState(() => selectedDate = picked);
                     },
-                    validator: (v) => v == null || v.isEmpty ? "Chọn ngày!" : null,
                   ),
                   const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          controller: startCtrl,
-                          decoration: const InputDecoration(labelText: "Giờ bắt đầu (hh:mm)"),
-                          readOnly: true,
-                          onTap: () async {
-                            final t = await showTimePicker(
-                              context: context,
-                              initialTime: TimeOfDay(hour: 8, minute: 0),
-                            );
-                            if (t != null) {
-                              startCtrl.text = "${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}:00";
-                            }
-                          },
-                          validator: (v) => v == null || v.isEmpty ? "Chọn giờ!" : null,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: TextFormField(
-                          controller: endCtrl,
-                          decoration: const InputDecoration(labelText: "Giờ kết thúc (hh:mm)"),
-                          readOnly: true,
-                          onTap: () async {
-                            final t = await showTimePicker(
-                              context: context,
-                              initialTime: TimeOfDay(hour: 12, minute: 0),
-                            );
-                            if (t != null) {
-                              endCtrl.text = "${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}:00";
-                            }
-                          },
-                          validator: (v) => v == null || v.isEmpty ? "Chọn giờ!" : null,
-                        ),
-                      ),
-                    ],
+                  ListTile(
+                    leading: const Icon(Icons.access_time, color: Colors.green),
+                    title: Text(startTime == null ? "Chọn giờ bắt đầu" : startTime!.format(ctx)),
+                    onTap: () async {
+                      final picked = await showTimePicker(
+                        context: ctx,
+                        initialTime: TimeOfDay(hour: 8, minute: 0),
+                      );
+                      if (picked != null) setState(() => startTime = picked);
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.access_time, color: Colors.red),
+                    title: Text(endTime == null ? "Chọn giờ kết thúc" : endTime!.format(ctx)),
+                    onTap: () async {
+                      final picked = await showTimePicker(
+                        context: ctx,
+                        initialTime: TimeOfDay(hour: 17, minute: 0),
+                      );
+                      if (picked != null) setState(() => endTime = picked);
+                    },
                   ),
                 ],
               ),
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            child: const Text("Hủy"),
-            onPressed: () => Navigator.pop(context),
-          ),
-          ElevatedButton(
-            child: Text(schedule == null ? "Thêm" : "Lưu"),
-            onPressed: () {
-              if (!formKey.currentState!.validate()) return;
-              final newSchedule = DoctorWorkSchedule(
-                uuid: schedule?.uuid ?? DateTime.now().millisecondsSinceEpoch.toString(),
-                doctorId: 'doc0001uuid00000000000000000001',
-                clinicId: 'cli0001uuid00000000000000000001',
-                workDate: dateCtrl.text,
-                startTime: startCtrl.text,
-                endTime: endCtrl.text,
-                clinicName: clinicCtrl.text,
-              );
-              if (schedule == null) {
-                controller.addSchedule(newSchedule);
-              } else {
-                controller.updateSchedule(schedule.uuid, newSchedule);
-              }
-              Navigator.pop(context);
-            },
-          ),
-        ],
-      ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: const Text("Hủy"),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (startTime == null || endTime == null) return;
+                    final workDateStr = DateFormat('yyyy-MM-dd').format(selectedDate);
+                    final doctorId = controller.doctorId ?? "";
+                    final newSchedule = Schedule(
+                      uuid: '', // backend tự sinh
+                      doctorId: doctorId,
+                      workDate: workDateStr,
+                      startTime: "${startTime?.hour.toString().padLeft(2, '0')}:${startTime?.minute.toString().padLeft(2, '0')}",
+                      endTime: "${endTime?.hour.toString().padLeft(2, '0')}:${endTime?.minute.toString().padLeft(2, '0')}",
+                    );
+                    await controller.addSchedule(newSchedule);
+                    Navigator.of(ctx).pop();
+                  },
+                  child: const Text("Lưu"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showEditScheduleDialog(BuildContext context, Schedule oldSchedule) {
+    final controller = Get.find<DoctorWorkScheduleController>();
+    DateTime selectedDate = DateFormat('yyyy-MM-dd').parse(oldSchedule.workDate);
+    TimeOfDay? startTime = oldSchedule.startTime != null
+        ? TimeOfDay(
+            hour: int.parse(oldSchedule.startTime!.split(':')[0]),
+            minute: int.parse(oldSchedule.startTime!.split(':')[1]),
+          )
+        : null;
+    TimeOfDay? endTime = oldSchedule.endTime != null
+        ? TimeOfDay(
+            hour: int.parse(oldSchedule.endTime!.split(':')[0]),
+            minute: int.parse(oldSchedule.endTime!.split(':')[1]),
+          )
+        : null;
+
+    showDialog(
+      context: context,
+      builder: (_) {
+        return StatefulBuilder(
+          builder: (ctx, setState) {
+            return AlertDialog(
+              title: const Text("Sửa lịch làm việc"),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.calendar_today, color: Colors.blue),
+                    title: Text(DateFormat('dd/MM/yyyy').format(selectedDate)),
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: ctx,
+                        initialDate: selectedDate,
+                        firstDate: DateTime.now().subtract(const Duration(days: 1)),
+                        lastDate: DateTime.now().add(const Duration(days: 365)),
+                      );
+                      if (picked != null) setState(() => selectedDate = picked);
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.access_time, color: Colors.green),
+                    title: Text(startTime == null ? "Chọn giờ bắt đầu" : startTime!.format(ctx)),
+                    onTap: () async {
+                      final picked = await showTimePicker(
+                        context: ctx,
+                        initialTime: startTime ?? TimeOfDay(hour: 8, minute: 0),
+                      );
+                      if (picked != null) setState(() => startTime = picked);
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.access_time, color: Colors.red),
+                    title: Text(endTime == null ? "Chọn giờ kết thúc" : endTime!.format(ctx)),
+                    onTap: () async {
+                      final picked = await showTimePicker(
+                        context: ctx,
+                        initialTime: endTime ?? TimeOfDay(hour: 17, minute: 0),
+                      );
+                      if (picked != null) setState(() => endTime = picked);
+                    },
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: const Text("Hủy"),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (startTime == null || endTime == null) return;
+                    final workDateStr = DateFormat('yyyy-MM-dd').format(selectedDate);
+                    final doctorId = controller.doctorId ?? "";
+                    final newSchedule = Schedule(
+                      uuid: oldSchedule.uuid,
+                      doctorId: doctorId,
+                      workDate: workDateStr,
+                      startTime: "${startTime?.hour.toString().padLeft(2, '0')}:${startTime?.minute.toString().padLeft(2, '0')}",
+                      endTime: "${endTime?.hour.toString().padLeft(2, '0')}:${endTime?.minute.toString().padLeft(2, '0')}",
+                    );
+                    await controller.updateSchedule(oldSchedule.uuid, newSchedule);
+                    Navigator.of(ctx).pop();
+                  },
+                  child: const Text("Lưu"),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }
 
-// Card hiển thị từng ca làm việc
-class _WorkScheduleCard extends StatelessWidget {
-  final DoctorWorkSchedule schedule;
+class WorkScheduleCardV2 extends StatelessWidget {
+  final Schedule schedule;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
-  const _WorkScheduleCard({
+  const WorkScheduleCardV2({
     required this.schedule,
     required this.onEdit,
     required this.onDelete,
+    super.key,
   });
 
   @override
   Widget build(BuildContext context) {
+    final workDate = schedule.workDate.length > 10
+        ? schedule.workDate.substring(0, 10).split('-').reversed.join('/')
+        : schedule.workDate;
+    final start = schedule.startTime?.substring(0, 5) ?? "";
+    final end = schedule.endTime?.substring(0, 5) ?? "";
+
     return Card(
-      elevation: 4,
+      elevation: 6,
       shadowColor: Colors.blue.withOpacity(0.10),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+      ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              schedule.clinicName,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.blue),
-            ),
-            const SizedBox(height: 7),
             Row(
               children: [
-                const Icon(Icons.access_time, size: 18, color: Colors.black54),
-                const SizedBox(width: 7),
+                const Icon(Icons.calendar_today_rounded, size: 20, color: Colors.blue),
+                const SizedBox(width: 8),
                 Text(
-                  "Từ ${schedule.startTime.substring(0,5)} đến ${schedule.endTime.substring(0,5)}",
-                  style: const TextStyle(fontSize: 15),
+                  workDate,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Colors.blue,
+                  ),
                 ),
                 const Spacer(),
                 IconButton(
-                  icon: const Icon(Icons.edit, color: Colors.blue, size: 20),
+                  icon: const Icon(Icons.edit_rounded, color: Colors.blue, size: 20),
                   tooltip: "Sửa lịch",
                   onPressed: onEdit,
                 ),
                 IconButton(
-                  icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                  icon: const Icon(Icons.delete, color: Colors.red, size: 20),
                   tooltip: "Xóa lịch",
-                  onPressed: () {
-                    Get.defaultDialog(
-                      title: "Xác nhận",
-                      middleText: "Bạn có chắc chắn muốn xóa lịch này?",
-                      confirm: ElevatedButton(
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                        onPressed: () {
-                          onDelete();
-                          Get.back();
-                        },
-                        child: const Text("Xóa", style: TextStyle(color: Colors.white)),
-                      ),
-                      cancel: TextButton(onPressed: () => Get.back(), child: const Text("Hủy")),
-                    );
-                  },
-                )
+                  onPressed: onDelete,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.access_time_filled, size: 20, color: Colors.grey),
+                const SizedBox(width: 8),
+                Text(
+                  "Từ $start đến $end",
+                  style: const TextStyle(fontSize: 15, color: Colors.black87, fontWeight: FontWeight.w500),
+                ),
               ],
             ),
           ],

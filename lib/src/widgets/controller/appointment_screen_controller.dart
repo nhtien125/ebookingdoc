@@ -1,9 +1,18 @@
 import 'dart:convert';
+import 'dart:math';
 
+import 'package:ebookingdoc/src/constants/app_page.dart';
+import 'package:ebookingdoc/src/constants/services/PayOSService.dart';
+import 'package:ebookingdoc/src/constants/services/PaymentService.dart';
+import 'package:ebookingdoc/src/constants/services/appointmentService.dart';
+import 'package:ebookingdoc/src/constants/services/clinic_service.dart';
 import 'package:ebookingdoc/src/constants/services/patient_service.dart';
+import 'package:ebookingdoc/src/constants/services/vaccination_center_service.dart';
+import 'package:ebookingdoc/src/data/model/clinic_model.dart';
+import 'package:ebookingdoc/src/data/model/vaccination_center_model.dart';
+import 'package:ebookingdoc/src/screen/PayOSWebViewScreen.dart';
 import 'package:ebookingdoc/src/shared_preferences.dart';
 import 'package:get/get.dart';
-import 'package:ebookingdoc/src/constants/app_page.dart';
 import 'package:ebookingdoc/src/constants/services/Doctorservice.dart';
 import 'package:ebookingdoc/src/constants/services/HospitalService.dart';
 import 'package:ebookingdoc/src/constants/services/ScheduleService.dart';
@@ -17,7 +26,6 @@ import 'package:ebookingdoc/src/data/model/medical_service_model.dart';
 import 'package:ebookingdoc/src/data/model/schedule_model.dart';
 import 'package:ebookingdoc/src/data/model/specialization_model.dart';
 import 'package:ebookingdoc/src/data/model/userModel.dart';
-// import 'package:ebookingdoc/src\data\model\select_profile.dart'; // Remove this import if it defines a conflicting Patient class
 import 'package:ebookingdoc/src/data/model/patient_model.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -25,11 +33,30 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AppointmentScreenController extends GetxController {
   // Stepper
   final currentStep = 1.obs;
+  final PaymentService paymentService = PaymentService();
 
   // Hospital
   final HospitalService hospitalService = HospitalService();
   final RxList<Hospital> hospitals = <Hospital>[].obs;
   final Rxn<Hospital> selectedHospital = Rxn<Hospital>();
+  final RxString selectedPlaceType = 'hospital'.obs;
+
+  // Clinic
+  final ClinicService clinicService = ClinicService();
+  final RxList<Clinic> clinics = <Clinic>[].obs;
+  final Rxn<Clinic> selectedClinic = Rxn<Clinic>();
+
+  // Vaccination Center
+  final VaccinationCenterService vaccinationCenterService =
+      VaccinationCenterService();
+  final RxList<VaccinationCenter> vaccinationCenters =
+      <VaccinationCenter>[].obs;
+  final Rxn<VaccinationCenter> selectedVaccinationCenter =
+      Rxn<VaccinationCenter>();
+
+  //
+  final healthStatus = ''.obs;
+  final healthStatusController = TextEditingController();
 
   // Doctor
   final DoctorService _doctorService = DoctorService();
@@ -41,9 +68,9 @@ class AppointmentScreenController extends GetxController {
   // Medical Service
   final MedicalServiceService _medicalServiceService = MedicalServiceService();
   final RxList<MedicalServiceModel> medical = <MedicalServiceModel>[].obs;
-
   // Schedule
   final ScheduleService _scheduleService = ScheduleService();
+  final AppointmentService _appointmentService = AppointmentService();
   final RxList<Schedule> schedules = <Schedule>[].obs;
   final Rxn<Schedule> selectedSchedule = Rxn<Schedule>();
   final Rxn<DateTime> selectedDate = Rxn<DateTime>();
@@ -68,6 +95,7 @@ class AppointmentScreenController extends GetxController {
   final selectedPaymentMethod = 'online'.obs;
   final Rxn<Specialization> selectedDepartment = Rxn<Specialization>();
   final Rxn<MedicalServiceModel> selectedService = Rxn<MedicalServiceModel>();
+  final PayOSService _payosService = PayOSService();
 
   final timeSlots = <String>[].obs;
 
@@ -85,14 +113,28 @@ class AppointmentScreenController extends GetxController {
   Future<void> onInit() async {
     super.onInit();
     final args = Get.arguments;
+    final userId = args['userId'] ?? args['user_id'];
+    print('DEBUG | Nhận userId: $userId');
+    healthStatusController.text = healthStatus.value;
+    healthStatusController.addListener(() {
+      healthStatus.value = healthStatusController.text;
+    });
     await fetchHospitalFromApi();
     await fetchDoctors();
     await fetchMedicalService();
     await fetchSpecializations();
     await loadFamilyMembers();
+    await fetchClinicFromApi();
+    await fetchVaccinationCenterFromApi();
 
     if (args != null) {
-      if (args != null && args['doctor'] != null) {
+      // Nhận loại nơi khám từ arguments (nếu có)
+      if (args['selectedPlaceType'] != null) {
+        selectedPlaceType.value = args['selectedPlaceType'];
+        print('DEBUG | Nhận selectedPlaceType: ${selectedPlaceType.value}');
+      }
+
+      if (args['doctor'] != null) {
         final doc = Doctor.fromJson(args['doctor']);
         final user = await _userService.getUserById(doc.userId!);
         final specialization =
@@ -108,7 +150,9 @@ class AppointmentScreenController extends GetxController {
         }
       }
       if (args['hospital'] != null) {
+        print('DEBUG | Nhận hospital: ${args['hospital']}');
         selectedHospital.value = Hospital.fromJson(args['hospital']);
+        print('DEBUG | selectedHospital: ${selectedHospital.value?.name}');
       } else if (args['doctor'] != null) {
         if (hospitals.isNotEmpty) {
           final doctorHospitalId = Doctor.fromJson(args['doctor']).hospitalId;
@@ -116,6 +160,22 @@ class AppointmentScreenController extends GetxController {
               hospitals.firstWhereOrNull((h) => h.uuid == doctorHospitalId);
           if (found != null) selectedHospital.value = found;
         }
+      }
+      if (args['clinic'] != null) {
+        print('DEBUG | Nhận clinic: ${args['clinic']}');
+        selectedClinic.value = Clinic.fromJson(args['clinic']);
+        print('DEBUG | selectedClinic: ${selectedClinic.value?.name}');
+      } else if (args['doctor'] != null) {
+        if (hospitals.isNotEmpty) {
+          final doctorHospitalId = Doctor.fromJson(args['doctor']).hospitalId;
+          final found =
+              hospitals.firstWhereOrNull((h) => h.uuid == doctorHospitalId);
+          if (found != null) selectedHospital.value = found;
+        }
+      }
+      if (args['vaccination_center'] != null) {
+        selectedVaccinationCenter.value =
+            VaccinationCenter.fromJson(args['vaccination_center']);
       }
       if (args['specialization'] != null) {
         selectedDepartment.value =
@@ -138,6 +198,14 @@ class AppointmentScreenController extends GetxController {
         } else if (args['schedule'] is Map<String, dynamic>) {
           selectedSchedule.value = Schedule.fromJson(args['schedule']);
         }
+        if (selectedSchedule.value != null) {
+          final start =
+              selectedSchedule.value!.startTime?.substring(0, 5) ?? '';
+          final end = selectedSchedule.value!.endTime?.substring(0, 5) ?? '';
+          selectedTimeSlot.value = '$start - $end';
+        }
+      } else if (args['slot'] != null) {
+        selectedTimeSlot.value = args['slot'];
       }
     }
   }
@@ -159,15 +227,62 @@ class AppointmentScreenController extends GetxController {
     }
   }
 
+  Future<void> fetchClinicFromApi() async {
+    try {
+      isLoading.value = true;
+      final result = await clinicService.getAllClinic();
+      clinics.assignAll(result.cast<Clinic>());
+      if (clinics.isNotEmpty && selectedClinic.value == null) {
+        selectedClinic.value = clinics.first;
+      }
+    } catch (e) {
+      print('Lỗi khi lấy danh sách bệnh viện: $e');
+      clinics.clear();
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> fetchVaccinationCenterFromApi() async {
+    try {
+      isLoading.value = true;
+      final result = await vaccinationCenterService.getAllVaccinationCenters();
+      vaccinationCenters.assignAll(result.cast<VaccinationCenter>());
+      if (vaccinationCenters.isNotEmpty &&
+          selectedVaccinationCenter.value == null) {
+        selectedVaccinationCenter.value = vaccinationCenters.first;
+      }
+    } catch (e) {
+      print('Lỗi khi lấy danh sách bệnh viện: $e');
+      vaccinationCenters.clear();
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   void selectHospital(Hospital? hospital) {
     selectedHospital.value = hospital;
-
     selectedDepartment.value = null;
     selectedDoctor.value = null;
     selectedService.value = null;
     selectedDate.value = null;
     selectedTimeSlot.value = null;
     selectedSchedule.value = null;
+  }
+
+  void selectClinic(Clinic? clinic) {
+    selectedClinic.value = clinic;
+    selectedDepartment.value = null;
+    selectedDoctor.value = null;
+    selectedService.value = null;
+    selectedDate.value = null;
+    selectedTimeSlot.value = null;
+    selectedSchedule.value = null;
+  }
+
+  void selectVaccinationCenter(VaccinationCenter? center) {
+    selectedVaccinationCenter.value = center;
+    selectedDate.value = null;
   }
 
   // ========================== MEDICAL SERVICE ==========================
@@ -346,8 +461,8 @@ class AppointmentScreenController extends GetxController {
       final found = schedules.firstWhereOrNull((s) =>
           _dateToString(DateTime.parse(s.workDate)) ==
               _dateToString(selectedDate.value!) &&
-          s.startTime?.substring(0, 5) == start &&
-          s.endTime?.substring(0, 5) == end);
+          (s.startTime?.substring(0, 5) ?? '') == start &&
+          (s.endTime?.substring(0, 5) ?? '') == end);
       selectedSchedule.value = found;
     } else {
       selectedSchedule.value = null;
@@ -411,11 +526,20 @@ class AppointmentScreenController extends GetxController {
   }
 
   bool isStep1Complete() {
-    return selectedHospital.value != null &&
-        selectedDoctor.value != null &&
-        selectedDate.value != null &&
-        selectedTimeSlot.value != null &&
-        selectedSchedule.value != null;
+    if (selectedPlaceType.value == 'vaccination') {
+      // Chỉ cần chọn trung tâm, dịch vụ, ngày tiêm
+      return selectedVaccinationCenter.value != null &&
+          selectedService.value != null &&
+          selectedDate.value != null;
+    } else {
+      // Bệnh viện/phòng khám: kiểm tra đủ các trường
+      return selectedHospital.value != null &&
+          selectedDepartment.value != null &&
+          selectedDoctor.value != null &&
+          selectedService.value != null &&
+          selectedDate.value != null &&
+          selectedTimeSlot.value != null;
+    }
   }
 
   bool isStep2Complete() {
@@ -465,9 +589,173 @@ class AppointmentScreenController extends GetxController {
 
   void completePayment() {
     if (selectedPaymentMethod.value == 'online') {
-      // Xử lý thanh toán online
     } else {
-      // Xử lý thanh toán tại bệnh viện
+      Get.toNamed(Routes.dashboard);
     }
+  }
+
+  Future<String?> addAppointment() async {
+    String? dateStr;
+
+    // Build ngày giờ chuẩn cho API
+    if (selectedDate.value != null && selectedSchedule.value != null) {
+      final date = selectedDate.value!;
+      final startTime = selectedSchedule.value?.startTime ?? '09:00:00';
+      dateStr = '${date.year.toString().padLeft(4, '0')}-'
+          '${date.month.toString().padLeft(2, '0')}-'
+          '${date.day.toString().padLeft(2, '0')} $startTime';
+    } else if (selectedDate.value != null) {
+      dateStr = '${selectedDate.value!.year.toString().padLeft(4, '0')}-'
+          '${selectedDate.value!.month.toString().padLeft(2, '0')}-'
+          '${selectedDate.value!.day.toString().padLeft(2, '0')} 09:00:00';
+    }
+
+    Map<String, dynamic> data = {};
+
+    if (selectedPlaceType.value == 'vaccination') {
+      data = {
+        "doctor_id": null,
+        "patient_id": selectedPatient.value?.uuid,
+        "clinic_id": null,
+        "hospital_id": null,
+        "schedule_id": null,
+        "vaccination_center_id": selectedVaccinationCenter.value?.uuid,
+        "medical_service_id": selectedService.value?.uuid,
+        "date": dateStr,
+        "status": 1,
+        "health_status": healthStatusController.text.isNotEmpty
+            ? healthStatusController.text
+            : null,
+        "user_id": await getUserIdFromPrefs(),
+      };
+    } else if (selectedPlaceType.value == 'clinic') {
+      data = {
+        "doctor_id": selectedDoctor.value?.doctor.uuid,
+        "patient_id": selectedPatient.value?.uuid,
+        "clinic_id": selectedClinic.value?.uuid,
+        "hospital_id": null,
+        "schedule_id": selectedSchedule.value?.uuid,
+        "vaccination_center_id": null,
+        "medical_service_id": selectedService.value?.uuid,
+        "date": dateStr,
+        "status": 1,
+        "health_status": healthStatusController.text.isNotEmpty
+            ? healthStatusController.text
+            : null,
+        "user_id": await getUserIdFromPrefs(),
+      };
+    } else if (selectedPlaceType.value == 'hospital') {
+      data = {
+        "doctor_id": selectedDoctor.value?.doctor.uuid,
+        "patient_id": selectedPatient.value?.uuid,
+        "clinic_id": null,
+        "hospital_id": selectedHospital.value?.uuid,
+        "schedule_id": selectedSchedule.value?.uuid,
+        "vaccination_center_id": null,
+        "medical_service_id": selectedService.value?.uuid,
+        "date": dateStr,
+        "status": 1,
+        "health_status": healthStatusController.text.isNotEmpty
+            ? healthStatusController.text
+            : null,
+        "user_id": await getUserIdFromPrefs(),
+      };
+    }
+
+    print('[AppointmentScreenController] Data gửi API: $data');
+    final result = await _appointmentService.addAppointment(data);
+
+    if (result.isNotEmpty) {
+      final appointment = result.first;
+      print('Appointment ID: ${appointment.uuid}');
+      return appointment.uuid;
+    } else {
+      Get.snackbar('Lỗi', 'Đặt lịch thất bại!');
+      return null;
+    }
+  }
+
+  Future<void> handlePayOS() async {
+    // 1. Đặt lịch, lấy ra appointmentId vừa tạo
+    final appointmentId = await addAppointment();
+    if (appointmentId == null) {
+      Get.snackbar('Lỗi', 'Đặt lịch thất bại!');
+      return;
+    }
+
+    // 2. Lưu payment với appointmentId vừa tạo
+    final userId = await getUserIdFromPrefs();
+    final paymentResult = await paymentService.addPayment({
+      "user_id": userId,
+      "appointment_id": appointmentId, // <-- dùng id vừa tạo!
+      "amount": selectedService.value?.price?.toInt() ?? 0,
+      "payment_method": selectedPaymentMethod.value,
+      "status": 1,
+      "payment_time": DateTime.now().toIso8601String(),
+    });
+
+    if (paymentResult.isNotEmpty && paymentResult.first.uuid != null) {
+      final paymentId = paymentResult.first.uuid;
+
+      // 3. Tạo link thanh toán
+      final patient = selectedPatient.value;
+      final amount = selectedService.value?.price?.toInt() ?? 0;
+      final random = Random();
+      final orderId = 100000 + random.nextInt(900000);
+
+      final prefs = await SharedPreferences.getInstance();
+      String? email;
+      final userJson = prefs.getString('user_data');
+      if (userJson != null) {
+        final user = User.fromJson(jsonDecode(userJson));
+        email = user.email;
+      }
+
+      final paymentLinkResult = await _payosService.createPaymentLink(
+        amount: amount,
+        orderId: orderId.toString(),
+        description: 'Thanh toán lịch hẹn',
+        fullname: patient?.name,
+        phone: patient?.phone,
+        email: email ?? 'no-reply@example.com',
+        payment_id: paymentId,
+      );
+      if (paymentLinkResult != null) {
+        final paymentLink =
+            paymentLinkResult['paymentLink'] ?? paymentLinkResult;
+        Get.to(() => PayOSWebViewScreen(
+              url: paymentLink,
+              paymentId: paymentId,
+              payOSService: _payosService,
+            ));
+      } else {
+        Get.snackbar('Lỗi', 'Không lấy được link thanh toán!');
+      }
+    } else {
+      Get.snackbar('Lỗi', 'Không lưu được payment!');
+    }
+  }
+
+  Future<String?> getUserIdFromPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userJson = prefs.getString('user_data');
+    if (userJson != null) {
+      final user = User.fromJson(jsonDecode(userJson));
+      return user.uuid;
+    }
+    return null;
+  }
+
+  Future<bool> savePayment(String appointmentId) async {
+    final userId = await getUserIdFromPrefs();
+    final result = await paymentService.addPayment({
+      "user_id": userId,
+      "appointment_id": appointmentId,
+      "amount": selectedService.value?.price?.toInt() ?? 0,
+      "payment_method": selectedPaymentMethod.value,
+      "status": 1,
+      "payment_time": DateTime.now().toIso8601String(),
+    });
+    return result.isNotEmpty;
   }
 }

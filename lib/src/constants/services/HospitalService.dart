@@ -13,4 +13,18 @@ class HospitalService {
     } catch (e) {}
     return [];
   }
+  Future<Hospital?> getHospitalById(String id) async {
+  try {
+    final response = await APICaller.getInstance().get('api/hospital/getById/$id');
+    if (response != null && response['code'] == 200) {
+      final data = response['data'];
+      if (data != null) {
+        return Hospital.fromJson(data);
+      }
+    }
+  } catch (e) {
+  }
+  return null;
+}
+
 }

@@ -12,12 +12,6 @@ class DoctorCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // LOG chi tiết tất cả thông tin DoctorDisplay
-    print('===== DoctorCard build() =====');
-    print('Doctor uuid: ${doctor.doctor.uuid}');
-    print('Doctor image: ${doctor.doctor.image}');
-    print('User name: ${doctor.user?.name}');
-    print('Specialization: ${doctor.specialization?.name}');
-    print('==============================');
 
     return GestureDetector(
       onTap: () => controller.viewDoctorDetails(doctor.doctor.uuid),

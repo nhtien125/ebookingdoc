@@ -25,7 +25,11 @@ class TodaySchedulePage extends StatelessWidget {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Obx(() {
-        if (controller.schedules.isEmpty) {
+        if (controller.isLoading.value) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        final schedules = controller.todaySchedules;
+        if (schedules.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -40,12 +44,9 @@ class TodaySchedulePage extends StatelessWidget {
         }
         return ListView.separated(
           padding: const EdgeInsets.all(18),
-          itemCount: controller.schedules.length,
+          itemCount: schedules.length,
           separatorBuilder: (_, __) => const SizedBox(height: 18),
-          itemBuilder: (_, i) {
-            final s = controller.schedules[i];
-            return _ScheduleCard(schedule: s);
-          },
+          itemBuilder: (_, i) => _ScheduleCard(schedule: schedules[i]),
         );
       }),
     );
@@ -53,7 +54,7 @@ class TodaySchedulePage extends StatelessWidget {
 }
 
 class _ScheduleCard extends StatelessWidget {
-  final Schedule schedule;
+  final TodayScheduleItemVM schedule;
   const _ScheduleCard({required this.schedule});
 
   @override
@@ -79,16 +80,20 @@ class _ScheduleCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
+            // Header: Tên địa điểm & trạng thái
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  schedule.hospital,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                Flexible(
+                  child: Text(
+                    schedule.location,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                   decoration: BoxDecoration(
                     color: Colors.green.shade300,
                     borderRadius: BorderRadius.circular(13),
@@ -130,9 +135,29 @@ class _ScheduleCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _rowIconText(Icons.local_hospital, "Chuyên khoa: ${schedule.specialization}"),
-                  const SizedBox(height: 4),
-                  _rowIconText(Icons.access_time, "Thời gian: ${schedule.time}"),
+                  Row(
+                    children: [
+                      Icon(Icons.calendar_today,
+                          color: Colors.blue.shade800, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        schedule.date,
+                        style: const TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(width: 20),
+                      Icon(Icons.access_time,
+                          color: Colors.blue.shade800, size: 20),
+                      const SizedBox(width: 4),
+                      Text(
+                        schedule.timeRange,
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  _rowIconText(Icons.local_hospital,
+                      "Chuyên khoa: ${schedule.specialization.isNotEmpty ? schedule.specialization : 'Không rõ'}"),
                   const SizedBox(height: 4),
                   _rowIconText(Icons.note, "Ghi chú: ${schedule.note}"),
                 ],
@@ -153,12 +178,80 @@ class _ScheduleCard extends StatelessWidget {
                       ),
                     ),
                     icon: const Icon(Icons.info_outline),
-                    label: const Text("Chi tiết", style: TextStyle(fontWeight: FontWeight.bold)),
+                    label: const Text("Chi tiết",
+                        style: TextStyle(fontWeight: FontWeight.bold)),
                     onPressed: () {
-                      Get.snackbar(
-                        "Chi tiết lịch khám",
-                        "Bệnh nhân: ${schedule.patientName}\n"
-                        "${schedule.specialization}\n${schedule.time}\n${schedule.note}");
+                      showModalBottomSheet(
+                        context: context,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(20)),
+                        ),
+                        isScrollControlled: true,
+                        builder: (_) => Padding(
+                          padding: EdgeInsets.only(
+                            left: 18,
+                            right: 18,
+                            top: 18,
+                            bottom:
+                                MediaQuery.of(context).viewInsets.bottom + 18,
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Center(
+                                child: Container(
+                                  width: 50,
+                                  height: 4,
+                                  margin: const EdgeInsets.only(bottom: 12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade400,
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                "Chi tiết lịch khám",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                  color: Colors.blue.shade800,
+                                ),
+                              ),
+                              const SizedBox(height: 18),
+                              _detailRow("Bệnh nhân:", schedule.patientName),
+                              _detailRow(
+                                  "Chuyên khoa:",
+                                  schedule.specialization.isNotEmpty
+                                      ? schedule.specialization
+                                      : 'Không rõ'),
+                              _detailRow("Địa điểm:", schedule.location),
+                              _detailRow("Ngày khám:", schedule.date),
+                              _detailRow("Thời gian:", schedule.timeRange),
+                              _detailRow("Ghi chú:", schedule.note),
+                              const SizedBox(height: 18),
+                              Center(
+                                child: ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blue.shade800,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 32, vertical: 12),
+                                  ),
+                                  icon: const Icon(Icons.check,
+                                      color: Colors.white),
+                                  label: const Text('Đóng',
+                                      style: TextStyle(color: Colors.white)),
+                                  onPressed: () => Navigator.of(context).pop(),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
                     },
                   ),
                 ),
@@ -178,5 +271,27 @@ class _ScheduleCard extends StatelessWidget {
             child: Text(text, style: const TextStyle(fontSize: 14)),
           ),
         ],
+      );
+
+  Widget _detailRow(String label, String value) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: const TextStyle(
+                  fontWeight: FontWeight.bold, color: Colors.black87),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                value,
+                style: const TextStyle(color: Colors.black87),
+                softWrap: true,
+              ),
+            ),
+          ],
+        ),
       );
 }

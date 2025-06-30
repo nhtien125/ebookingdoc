@@ -56,23 +56,6 @@ class HomeController extends GetxController {
     {'name': 'Trung tâm tiêm chủng Quốc gia', 'type': 'Trung tâm tiêm chủng'},
   ];
 
-  final List<Appointment> upcomingAppointments = [
-    Appointment(
-      id: '1',
-      doctorName: 'BS. Nguyễn Thị Nguyệt',
-      specialtyName: 'Tim mạch',
-      doctorImageUrl: 'assets/images/bs4.jpg',
-      dateTime: '10:00, 25/04/2025',
-    ),
-    Appointment(
-      id: '2',
-      doctorName: 'BS. Trần Thanh Long',
-      specialtyName: 'Nhi khoa',
-      doctorImageUrl: 'assets/images/bs5.jpg',
-      dateTime: '14:30, 25/04/2025',
-    ),
-  ];
-
   @override
   void onInit() {
     super.onInit();

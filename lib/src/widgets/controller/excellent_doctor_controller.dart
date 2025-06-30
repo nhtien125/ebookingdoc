@@ -2,8 +2,10 @@ import 'package:ebookingdoc/src/constants/app_page.dart';
 import 'package:ebookingdoc/src/constants/services/Doctorservice.dart';
 import 'package:ebookingdoc/src/constants/services/HospitalService.dart';
 import 'package:ebookingdoc/src/constants/services/clinic_service.dart';
+import 'package:ebookingdoc/src/constants/services/vaccination_center_service.dart';
 import 'package:ebookingdoc/src/data/model/clinic_model.dart';
 import 'package:ebookingdoc/src/data/model/hospital_model.dart';
+import 'package:ebookingdoc/src/data/model/vaccination_center_model.dart';
 import 'package:ebookingdoc/src/widgets/controller/home_controller.dart';
 import 'package:get/get.dart';
 import 'package:ebookingdoc/src/data/model/doctor_model.dart';
@@ -18,8 +20,8 @@ class ExcellentDoctorController extends GetxController {
   final RxList<Doctor> doctors = <Doctor>[].obs;
   final RxList<Hospital> hospitals = <Hospital>[].obs;
   final RxList<Clinic> clinics = <Clinic>[].obs;
-  final RxList<Map<String, dynamic>> specialties = <Map<String, dynamic>>[].obs;
-  final RxList<Map<String, dynamic>> vaccinas = <Map<String, dynamic>>[].obs;
+  final RxList<VaccinationCenter> vaccinationCenters =
+      <VaccinationCenter>[].obs;
 
   // Filter option
   final RxString filterOption = 'Tất cả'.obs;
@@ -27,6 +29,9 @@ class ExcellentDoctorController extends GetxController {
   final DoctorService doctorService = DoctorService();
   final HospitalService hospitalService = HospitalService();
   final ClinicService clinicService = ClinicService();
+  final VaccinationCenterService vaccinationCenterService =
+      VaccinationCenterService();
+
   @override
   void onInit() {
     super.onInit();
@@ -38,72 +43,8 @@ class ExcellentDoctorController extends GetxController {
     await fetchDoctorsFromApi();
     await fetchHospitalFromApi();
     await fetchClinicFromApi();
-    try {
-      await Future.wait([
-        fetchDoctorsFromApi(),
-        fetchHospitalFromApi(),
-        fetchClinicFromApi(),
-        Future.delayed(const Duration(milliseconds: 800)),
-      ]);
-  
-      // Load vaccinas data
-      vaccinas.value = [
-        {
-          'id': '1',
-          'name': 'Trung tâm tiêm chủng Long châu',
-          'imageUrl': 'assets/images/tcLongChau.jpg',
-          'address': '216 P.Thái Hà, Trung Liệt, Đống Đa, Hà Nội',
-          'rating': 4.5,
-          'isOpen': true,
-        },
-        {
-          'id': '2',
-          'name': 'Trung tâm tiêm chủng VNVC',
-          'imageUrl': 'assets/images/tcVNVC.jpg',
-          'address': '35 P.Lê Văn Thiêm, Thanh Xuân Trung, Thanh Xuân, Hà Nội',
-          'rating': 4.3,
-          'isOpen': true,
-        },
-        {
-          'id': '3',
-          'name': 'Phòng tiêm chủng Vắc xin Safpo',
-          'imageUrl': 'assets/images/tcSappo.jpg',
-          'address':
-              '135 P.Lò Đúc, Phạm Đình Hổ, Hai Bà Trưng, Hà Nội, Vietnam',
-          'rating': 4.6,
-          'isOpen': false,
-        },
-      ];
-
-      // Load specialties data
-      specialties.value = [
-        {
-          'id': '1',
-          'name': 'Nha khoa',
-          'imageUrl': 'assets/images/specialty1.jpg',
-          'description': 'Khám và điều trị các bệnh về răng miệng',
-          'doctorCount': 48,
-        },
-        {
-          'id': '2',
-          'name': 'Da liễu',
-          'imageUrl': 'assets/images/specialty2.jpg',
-          'description': 'Khám và điều trị các bệnh về da',
-          'doctorCount': 36,
-        },
-        {
-          'id': '3',
-          'name': 'Tai mũi họng',
-          'imageUrl': 'assets/images/specialty3.jpg',
-          'description': 'Khám và điều trị các bệnh về tai, mũi, họng',
-          'doctorCount': 42,
-        },
-      ];
-    } catch (e) {
-      print('Lỗi khi tải dữ liệu: $e');
-    } finally {
-      isLoading(false);
-    }
+    await fetchVaccinationCenterFromApi();
+    isLoading(false);
   }
 
   Future<void> fetchDoctorsFromApi() async {
@@ -123,12 +64,23 @@ class ExcellentDoctorController extends GetxController {
       doctors.clear();
     }
   }
+
   Future<void> fetchClinicFromApi() async {
     try {
       clinics.value = await clinicService.getAllClinic();
     } catch (e) {
       print('Lỗi khi lấy danh sách phòng khám: $e');
       doctors.clear();
+    }
+  }
+
+  Future<void> fetchVaccinationCenterFromApi() async {
+    try {
+      vaccinationCenters.value =
+          await vaccinationCenterService.getAllVaccinationCenters();
+    } catch (e) {
+      print('Lỗi khi lấy danh sách trung tâm tiêm chủng: $e');
+      vaccinationCenters.clear();
     }
   }
 
@@ -139,7 +91,6 @@ class ExcellentDoctorController extends GetxController {
   void search(String query) {
     searchQuery.value = query;
 
-   
     switch (topTabIndex.value) {
       case 0: // Tất cả - tìm kiếm tất cả
         break;
@@ -214,24 +165,83 @@ class ExcellentDoctorController extends GetxController {
     }
 
     query = query.toLowerCase();
-    final filteredVaccinas = vaccinas.where((v) {
-      return v['name'].toString().toLowerCase().contains(query) ||
-          v['address'].toString().toLowerCase().contains(query);
+    final filteredVaccinas = vaccinationCenters.where((v) {
+      return v.name.toLowerCase().contains(query) ||
+          v.address.toLowerCase().contains(query);
     }).toList();
 
-    vaccinas.value = filteredVaccinas;
+    vaccinationCenters.value = filteredVaccinas;
+  }
+
+  void bookDoctorAppointment(Doctor doctor, String type) {
+    Get.toNamed(
+      Routes.appointmentScreen,
+      arguments: {
+        'doctor': doctor.toJson(),
+      },
+    );
+  }
+
+  void bookHospitalAppointment(Hospital hospital, String type) {
+    print('DEBUG | Truyền hospital: ${hospital.toJson()}');
+    Get.toNamed(
+      Routes.appointmentScreen,
+      arguments: {
+        'hospital': hospital.toJson(),
+        'selectedPlaceType': 'hospital', // Thêm type vào arguments
+      },
+    );
+  }
+
+  void bookClinicAppointment(Clinic clinic, String type) {
+    print('DEBUG | Truyền clinic: ${clinic.toJson()}');
+    Get.toNamed(
+      Routes.appointmentScreen,
+      arguments: {
+        'clinic': clinic.toJson(),
+        'selectedPlaceType': 'clinic', // Thêm type vào arguments
+      },
+    );
+  }
+
+  void bookVaccinationAppointment(VaccinationCenter vaccination, String type) {
+    print('DEBUG | Truyền vaccination: ${vaccination.toJson()}');
+    Get.toNamed(
+      Routes.appointmentScreen,
+      arguments: {
+        'vaccination_center]': vaccination.toJson(),
+        'selectedPlaceType': 'vaccination', // Thêm type vào arguments
+      },
+    );
   }
 
   void bookAppointment(dynamic item, String type) {
-    String name = '';
+    String uuid = '';
+    String? userId;
+    String? doctorId;
 
-    if (type == 'doctor') {
-      name = item.name;
+    if (item is Map) {
+      uuid = item['uuid'] ?? '';
+      userId = item['user_id'];
+      doctorId = item['uuid']; // Nếu là doctor thì uuid chính là doctorId
     } else {
-      name = item['name'];
+      uuid = item.uuid ?? '';
+      userId = item.userId;
+      doctorId = item.uuid; // Nếu là doctor thì uuid chính là doctorId
     }
-    // Chuyển hướng đến màn hình đặt lịch
-    // Get.to(() => BookingScreen(item: item, type: type));
+
+    print(
+        'DEBUG | bookAppointment: uuid = $uuid, userId = $userId, doctorId = $doctorId, type = $type');
+
+    Get.toNamed(
+      Routes.appointmentScreen,
+      arguments: {
+        'uuid': uuid,
+        'userId': userId,
+        'doctorId': doctorId,
+        'type': type,
+      },
+    );
   }
 
   void applyFilter() {
@@ -260,9 +270,17 @@ class ExcellentDoctorController extends GetxController {
     Get.toNamed(Routes.detaildoctor, arguments: '$id');
   }
 
-  void viewHospitalDetails(String id) {}
+  void viewHospitalDetails(Hospital hospital) {
+    print('DEBUG | Truyền hospital sang chi tiết: ${hospital.toJson()}');
+    Get.toNamed(Routes.detailhospital, arguments: hospital.toJson());
+  }
 
-  void viewClinicDetails(String id) {}
+  void viewClinicDetails(Clinic clinic) {
+    print('DEBUG | Truyền clinic sang chi tiết: ${clinic.toJson()}');
+    Get.toNamed(Routes.detailhospital, arguments: clinic.toJson());
+  }
 
-  void viewVaccinaDetails(String id) {}
+  void viewVaccinaDetails(VaccinationCenter vaccinationcenter) {
+    Get.toNamed(Routes.detailhospital, arguments: vaccinationcenter.toJson());
+  }
 }

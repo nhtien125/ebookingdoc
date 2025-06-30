@@ -1,21 +1,22 @@
-import 'package:ebookingdoc/src/widgets/controller/home_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:get/Get.dart';
-
-final controller = Get.put(HomeController());
+import 'package:ebookingdoc/src/data/model/article_model.dart';
 
 class ArticleCard extends StatelessWidget {
-  final dynamic article;
+  final Article article;
+  final VoidCallback? onTap;
 
-  const ArticleCard(
-      {super.key, required this.article, required void Function() onTap});
+  const ArticleCard({
+    Key? key,
+    required this.article,
+    this.onTap,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => controller.viewArticleDetails(article.id),
+      onTap: onTap,
       child: Container(
-        width: 250,
+        width: 240,
         margin: const EdgeInsets.only(right: 16),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -32,57 +33,59 @@ class ArticleCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ClipRRect(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(12),
-                topRight: Radius.circular(12),
-              ),
-              child: article.image != null && article.image.isNotEmpty
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              child: article.image != null && article.image!.isNotEmpty
                   ? Image.network(
-                      article.image,
+                      article.image!,
+                      height: 120,
                       width: double.infinity,
-                      height: 180,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) => Container(
-                        width: double.infinity,
-                        height: 180,
-                        color: Colors.grey[300],
-                        child: const Icon(Icons.image,
-                            size: 36, color: Colors.white70),
+                        height: 120,
+                        color: Colors.grey,
+                        child: const Center(
+                          child: Icon(Icons.image_not_supported, size: 40),
+                        ),
                       ),
                     )
                   : Container(
-                      width: double.infinity,
-                      height: 180,
-                      color: Colors.grey[300],
-                      child: const Icon(Icons.image,
-                          size: 36, color: Colors.white70),
+                      height: 120,
+                      color: Colors.grey,
+                      child: const Center(
+                        child: Icon(Icons.image_not_supported, size: 40),
+                      ),
                     ),
             ),
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(12.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    article.title,
+                    article.title ?? '',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
                   ),
                   const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      Text(
-                        article.createdAt,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                    ],
+                  Text(
+                    article.content ?? '',
+                    style: const TextStyle(
+                      fontSize: 13,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    article.createdAt ?? '',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Colors.grey,
+                    ),
                   ),
                 ],
               ),
