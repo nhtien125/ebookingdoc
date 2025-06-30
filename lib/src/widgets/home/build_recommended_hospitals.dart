@@ -1,3 +1,4 @@
+import 'package:ebookingdoc/src/constants/app_page.dart';
 import 'package:ebookingdoc/src/widgets/controller/home_controller.dart';
 import 'package:ebookingdoc/src/widgets/custom_component/facility_card.dart';
 import 'package:ebookingdoc/src/widgets/custom_component/section_header.dart';
@@ -39,11 +40,20 @@ class BuildRecommendedHospitals extends StatelessWidget {
                 itemCount: controller.hospitals.length,
                 itemBuilder: (context, index) {
                   final hospital = controller.hospitals[index];
-                  print(
-                      '[UI] Hospital $index: ${hospital.name} - ${hospital.image}');
+                  print('[UI] Hospital $index: ${hospital.name} - ${hospital.image}');
                   return FacilityCard(
                     facility: hospital,
-                    onTap: () => controller.viewHospitalDetails(hospital.uuid),
+                    onTap: () {
+                      // Truyền hospital vào arguments
+                      Get.toNamed(
+                        Routes.appointmentScreen,
+                        arguments: {
+                          'hospital': hospital.toJson(),
+                          'selectedPlaceType': 'hospital', // Thêm type vào arguments
+                        },
+                      );
+                    },
+                    buttonText: 'Đặt khám',
                   );
                 },
               ),

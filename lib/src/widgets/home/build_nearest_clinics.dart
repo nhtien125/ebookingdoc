@@ -1,3 +1,4 @@
+import 'package:ebookingdoc/src/constants/app_page.dart';
 import 'package:ebookingdoc/src/widgets/controller/home_controller.dart';
 import 'package:ebookingdoc/src/widgets/custom_component/facility_card.dart';
 import 'package:ebookingdoc/src/widgets/custom_component/section_header.dart';
@@ -24,23 +25,34 @@ class BuildNearestClinics extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Obx(() => SizedBox(
-            height: 265,
-            child: controller.clinics.isEmpty
-                ? const Center(child: Text('Không có dữ liệu'))
-                : ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: controller.clinics.length,
-                    itemBuilder: (context, index) {
-                      final clinic = controller.clinics[index];
-                      return FacilityCard(
-                        facility: clinic,
-                        onTap: () => controller.viewClinicDetails(clinic.uuid),
-                        buttonText: 'Đặt khám',
-                      );
-                    },
-                  ),
-          )),
+                height: 265,
+                child: controller.clinics.isEmpty
+                    ? const Center(child: Text('Không có dữ liệu'))
+                    : ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: controller.clinics.length,
+                        itemBuilder: (context, index) {
+                          final clinic = controller.clinics[index];
+                          return FacilityCard(
+                            facility: clinic,
+                            onTap: () {
+                              // Truyền ID hoặc UUID vào arguments
+                              Get.toNamed(
+                                Routes.appointmentScreen,
+                                arguments: {
+                                  'clinic': clinic.toJson(),
+                                  'selectedPlaceType': 'clinic',
+                                  'clinicId': clinic
+                                      .uuid, // Truyền `clinic.uuid` như ID
+                                },
+                              );
+                            },
+                            buttonText: 'Đặt khám',
+                          );
+                        },
+                      ),
+              )),
         ],
       ),
     );
