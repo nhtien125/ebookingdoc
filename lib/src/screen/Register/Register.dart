@@ -73,7 +73,7 @@ class Register extends StatelessWidget {
                                           controller.usernameError.value.isEmpty
                                               ? null
                                               : controller.usernameError.value,
-                                      prefixIcon: Icon(Icons.person),
+                                      prefixIcon: const Icon(Icons.person),
                                     ),
                                   ),
                                   const SizedBox(height: 12),
@@ -85,7 +85,7 @@ class Register extends StatelessWidget {
                                           controller.emailError.value.isEmpty
                                               ? null
                                               : controller.emailError.value,
-                                      prefixIcon: Icon(Icons.email),
+                                      prefixIcon: const Icon(Icons.email),
                                     ),
                                     keyboardType: TextInputType.emailAddress,
                                   ),
@@ -99,7 +99,7 @@ class Register extends StatelessWidget {
                                           controller.passwordError.value.isEmpty
                                               ? null
                                               : controller.passwordError.value,
-                                      prefixIcon: Icon(Icons.lock),
+                                      prefixIcon: const Icon(Icons.lock),
                                       suffixIcon: IconButton(
                                         icon: Icon(controller.hidePassword.value
                                             ? Icons.visibility_off
@@ -143,12 +143,12 @@ class Register extends StatelessWidget {
                                         CrossAxisAlignment.start,
                                     children: [
                                       const SizedBox(height: 12),
-                                      Padding(
-                                        padding: const EdgeInsets.only(
+                                      const Padding(
+                                        padding: EdgeInsets.only(
                                             left: 20, bottom: 4, top: 2),
                                         child: Text(
                                           "Bạn là?",
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.w500,
                                             color: Color(0xFF4B84E5), 
@@ -162,7 +162,7 @@ class Register extends StatelessWidget {
                                             decoration: InputDecoration(
                                               hintText: "Bạn là",
                                               prefixIcon:
-                                                  Icon(Icons.account_circle),
+                                                  const Icon(Icons.account_circle),
                                               border: InputBorder.none,
                                               enabledBorder: InputBorder.none,
                                               focusedBorder: InputBorder.none,

@@ -150,7 +150,8 @@ class Login extends StatelessWidget {
                                           "ĐĂNG NHẬP",
                                           style: TextStyle(
                                               fontSize: 18,
-                                              fontWeight: FontWeight.bold),
+                                              fontWeight: FontWeight.bold,
+                                               color: Colors.white,),
                                         ),
                                 )),
                           ),
