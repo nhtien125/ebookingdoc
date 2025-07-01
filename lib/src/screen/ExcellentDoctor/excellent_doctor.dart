@@ -214,6 +214,15 @@ class ExcellentDoctor extends StatelessWidget {
   }
 
   Widget _buildDoctorCard(Doctor doctor) {
+    final controller = Get.find<ExcellentDoctorController>();
+    final name = controller.doctorNames[doctor.userId ?? doctor.uuid] ??
+        'Bác sĩ không xác định';
+    final specialty =
+        controller.doctorSpecialties[doctor.userId ?? doctor.uuid] ??
+            'Chưa có chuyên khoa';
+    final clinic = controller.doctorClinics[doctor.userId ?? doctor.uuid] ??
+        'Không có phòng khám';
+
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
       elevation: 2,
@@ -254,12 +263,20 @@ class ExcellentDoctor extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          doctor.introduce ?? 'Chưa có thông tin',
+                          name,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                             color: Color(0xFF1A2E55),
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Chuyên khoa: $specialty',
+                          style:
+                              TextStyle(color: Colors.grey[600], fontSize: 13),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -269,13 +286,6 @@ class ExcellentDoctor extends StatelessWidget {
                           style:
                               TextStyle(color: Colors.grey[600], fontSize: 13),
                         ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'Đã chữa trị: ${doctor.patientCount ?? 0} bệnh nhân',
-                          style:
-                              TextStyle(color: Colors.grey[600], fontSize: 13),
-                        ),
-                        const SizedBox(height: 8),
                       ],
                     ),
                   ),
@@ -294,9 +304,11 @@ class ExcellentDoctor extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8)),
                       side: BorderSide(color: AppColor.fourthMain),
                     ),
-                    child: Text("Xem chi tiết",
-                        style: TextStyle(
-                            fontSize: 14, color: AppColor.fourthMain)),
+                    child: Text(
+                      "Xem chi tiết",
+                      style:
+                          TextStyle(fontSize: 14, color: AppColor.fourthMain),
+                    ),
                   ),
                   const SizedBox(width: 8),
                   ElevatedButton(
@@ -309,8 +321,10 @@ class ExcellentDoctor extends StatelessWidget {
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8)),
                     ),
-                    child: Text('Đặt lịch ngay',
-                        style: TextStyle(fontSize: 14, color: AppColor.main)),
+                    child: Text(
+                      'Đặt lịch ngay',
+                      style: TextStyle(fontSize: 14, color: AppColor.main),
+                    ),
                   ),
                 ],
               ),

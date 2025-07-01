@@ -1,6 +1,12 @@
 import 'package:ebookingdoc/src/constants/app_page.dart';
 import 'package:ebookingdoc/src/constants/services/ReviewService.dart';
 import 'package:ebookingdoc/src/constants/services/ScheduleService.dart';
+import 'package:ebookingdoc/src/constants/services/clinic_service.dart';
+import 'package:ebookingdoc/src/constants/services/specialization_service.dart';
+import 'package:ebookingdoc/src/constants/services/user_service.dart';
+import 'package:ebookingdoc/src/data/model/clinic_model.dart';
+import 'package:ebookingdoc/src/data/model/hospital_model.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:ebookingdoc/src/data/model/doctor_model.dart';
 import 'package:ebookingdoc/src/data/model/schedule_model.dart';
@@ -8,21 +14,32 @@ import 'package:ebookingdoc/src/data/model/review_model.dart';
 import 'package:ebookingdoc/src/constants/services/doctorservice.dart';
 
 class DetailDoctorController extends GetxController {
-  String id = '';
+String id = '';
 
+  final Rx<Doctor?> doctor = Rx<Doctor?>(null); // Added missing property
   final RxInt selectedDateIndex = 0.obs;
   final RxInt selectedTimeIndex = (-1).obs;
   final RxList<DateTime> availableDates = <DateTime>[].obs;
   final RxMap<DateTime, List<String>> availableSlotsPerDate =
       <DateTime, List<String>>{}.obs;
   final RxBool isLoading = true.obs;
-  final Rxn<Doctor> doctor = Rxn<Doctor>();
+  final RxList<Doctor> doctors = <Doctor>[].obs;
+  final RxList<Hospital> hospitals = <Hospital>[].obs;
+  final RxList<Clinic> clinics = <Clinic>[].obs;
   final RxList<Schedule> schedules = <Schedule>[].obs;
   final RxList<Review> reviews = <Review>[].obs;
-  final DoctorService _doctorService = DoctorService();
+  final Map<String, String> doctorNames = {};
+  final Map<String, String> doctorSpecialties = {};
+  final Map<String, String> doctorClinics = {};
+
+  final DoctorService doctorService = DoctorService();
+  final UserService userService = UserService();
+  final SpecializationService specializationService = SpecializationService();
   final ScheduleService _scheduleService = ScheduleService();
   final ReviewService _reviewService = ReviewService();
+  final ClinicService clinicService = ClinicService();
 
+  
   @override
   void onInit() {
     super.onInit();
@@ -32,13 +49,67 @@ class DetailDoctorController extends GetxController {
     fetchReviewsByDoctorId(id);
   }
 
-  Future<void> fetchDoctorDetails(String uuid) async {
-    isLoading.value = true;
-    Doctor? result = await _doctorService.getDoctorById(uuid);
-    if (result != null) {
-      doctor.value = result;
+  Future<void> fetchDoctorDetails(String id) async {
+    try {
+      isLoading.value = true;
+      final doctorList = await doctorService.getAllDoctors();
+      if (doctorList.isEmpty) {
+        if (kDebugMode) print('DEBUG | No doctors found from getAllDoctors');
+        doctors.clear();
+        doctorNames.clear();
+        doctorSpecialties.clear();
+        doctorClinics.clear();
+        return;
+      }
+
+      final List<Doctor> updatedDoctors = [];
+      doctorNames.clear();
+      doctorSpecialties.clear();
+      doctorClinics.clear();
+
+      for (var doctor in doctorList) {
+        final key = doctor.userId ?? doctor.uuid ?? '';
+        String userName = 'Bác sĩ không xác định';
+        String specialtyName = 'Chưa có chuyên khoa';
+        String clinicName = 'Không có phòng khám';
+
+        if (doctor.userId?.isNotEmpty ?? false) {
+          final userData = await userService.getUserById(doctor.userId!);
+          userName = userData?.name ?? userName;
+        }
+
+        if (doctor.specializationId?.isNotEmpty ?? false) {
+          final specialtyData =
+              await specializationService.getById(doctor.specializationId!);
+          specialtyName = specialtyData?.name ?? specialtyName;
+        }
+
+        if (doctor.clinicId?.isNotEmpty ?? false) {
+          final clinicData = await clinicService.getById(doctor.clinicId!);
+          clinicName = clinicData?.name ?? clinicName;
+        }
+
+        doctorNames[key] = userName;
+        doctorSpecialties[key] = specialtyName;
+        doctorClinics[key] = clinicName;
+
+        updatedDoctors.add(doctor);
+        if (doctor.uuid == id) {
+          this.doctor.value = doctor; // Now works with the defined property
+        }
+      }
+
+      doctors.value = updatedDoctors;
+      if (kDebugMode) print('DEBUG | Loaded ${doctors.length} doctors');
+    } catch (e) {
+      if (kDebugMode) print('Lỗi khi lấy danh sách bác sĩ: $e');
+      doctors.clear();
+      doctorNames.clear();
+      doctorSpecialties.clear();
+      doctorClinics.clear();
+    } finally {
+      isLoading.value = false;
     }
-    isLoading.value = false;
   }
 
   Future<void> fetchSchedulesByDoctorId(String doctorId) async {
@@ -124,7 +195,7 @@ class DetailDoctorController extends GetxController {
 
     final Schedule selectedSchedule = slots[selectedTimeIndex.value];
 
-    Get.toNamed(
+    Get.offAllNamed(
       Routes.appointmentScreen,
       arguments: {
         'doctor': doctor.value?.toJson(),

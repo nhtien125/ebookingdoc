@@ -45,7 +45,7 @@ class BuildRecommendedHospitals extends StatelessWidget {
                     facility: hospital,
                     onTap: () {
                       // Truyền hospital vào arguments
-                      Get.toNamed(
+                      Get.offAllNamed(
                         Routes.appointmentScreen,
                         arguments: {
                           'hospital': hospital.toJson(),

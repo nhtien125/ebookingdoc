@@ -83,16 +83,16 @@ class AppointmentScreenController extends GetxController {
 
   // Patient
   final PatientService _patientService = PatientService();
-  final patients = <Patient>[].obs;
-  final isLoadingPatients = false.obs;
-  final selectedPatient = Rxn<Patient>();
+  final RxList<Patient> patients = <Patient>[].obs;
+  final RxBool isLoadingPatients = false.obs;
+  final Rxn<Patient> selectedPatient = Rxn<Patient>();
 
   List<MedicalServiceModel> get servicesForSelectedDepartment =>
       medical.toList();
 
   final appointmentConfirmed = false.obs;
   final paymentCompleted = false.obs;
-  final selectedPaymentMethod = 'online'.obs;
+  final selectedPaymentMethod = 'cash'.obs;
   final Rxn<Specialization> selectedDepartment = Rxn<Specialization>();
   final Rxn<MedicalServiceModel> selectedService = Rxn<MedicalServiceModel>();
   final PayOSService _payosService = PayOSService();
@@ -101,7 +101,6 @@ class AppointmentScreenController extends GetxController {
 
   void selectDepartment(Specialization specialization) {
     selectedDepartment.value = specialization;
-
     selectedDoctor.value = null;
     selectedService.value = null;
     selectedDate.value = null;
@@ -128,12 +127,10 @@ class AppointmentScreenController extends GetxController {
     await fetchVaccinationCenterFromApi();
 
     if (args != null) {
-      // Nhận loại nơi khám từ arguments (nếu có)
       if (args['selectedPlaceType'] != null) {
         selectedPlaceType.value = args['selectedPlaceType'];
         print('DEBUG | Nhận selectedPlaceType: ${selectedPlaceType.value}');
       }
-
       if (args['doctor'] != null) {
         final doc = Doctor.fromJson(args['doctor']);
         final user = await _userService.getUserById(doc.userId!);
@@ -364,12 +361,12 @@ class AppointmentScreenController extends GetxController {
 
   // ========================== SCHEDULE ==========================
   Future<void> fetchSchedulesByDoctorId(String doctorId) async {
-    print('Fetching schedules for doctorId: $doctorId'); // Thêm log
+    print('Fetching schedules for doctorId: $doctorId');
     try {
       isLoading.value = true;
       final result = await _scheduleService.getSchedulesByDoctorId(doctorId);
       schedules.assignAll(result);
-      print('Fetched schedules: $schedules'); // Kiểm tra dữ liệu
+      print('Fetched schedules: $schedules');
       _updateAvailableDatesAndSlots();
     } finally {
       isLoading.value = false;
@@ -377,10 +374,21 @@ class AppointmentScreenController extends GetxController {
   }
 
   Future<void> loadFamilyMembers() async {
-    final userId = await getUserIdFromPrefs();
-    if (userId != null) {
-      final list = await _patientService.getPatientsByUserId(userId);
-      patients.value = list;
+    try {
+      isLoadingPatients.value = true;
+      final userId = await getUserIdFromPrefs();
+      if (userId != null) {
+        final list = await _patientService.getPatientsByUserId(userId);
+        patients.assignAll(list); // Cập nhật danh sách phản ứng
+      } else {
+        patients.clear();
+      }
+    } catch (e) {
+      patients.clear();
+      Get.snackbar('Lỗi', 'Không thể tải danh sách bệnh nhân: $e',
+          backgroundColor: Colors.red, colorText: Colors.white);
+    } finally {
+      isLoadingPatients.value = false;
     }
   }
 
@@ -424,9 +432,9 @@ class AppointmentScreenController extends GetxController {
         ..sort();
       final idx = dates.indexWhere((d) =>
           d.year == date.year && d.month == date.month && d.day == date.day);
-      selectedDateIndex.value = idx >= 0 ? idx : 0; // Đồng bộ selectedDateIndex
+      selectedDateIndex.value = idx >= 0 ? idx : 0;
     }
-    updateTimeSlotsForSelectedDate(); // Cập nhật timeSlots dựa trên ngày chọn
+    updateTimeSlotsForSelectedDate();
     selectedTimeSlot.value = null;
     selectedSchedule.value = null;
   }
@@ -437,7 +445,7 @@ class AppointmentScreenController extends GetxController {
       return;
     }
     final selectedDateStr = _dateToString(selectedDate.value!);
-    print('Selected date string: $selectedDateStr'); // Debug
+    print('Selected date string: $selectedDateStr');
     final slots = schedules
         .where((s) {
           final scheduleDate = DateTime.parse(s.workDate);
@@ -449,7 +457,7 @@ class AppointmentScreenController extends GetxController {
             '${s.startTime?.substring(0, 5)} - ${s.endTime?.substring(0, 5)}')
         .toList();
     timeSlots.assignAll(slots);
-    print('Updated time slots: $timeSlots'); // Debug
+    print('Updated time slots: $timeSlots');
   }
 
   void selectTimeSlot(String? time) {
@@ -471,42 +479,18 @@ class AppointmentScreenController extends GetxController {
 
   String _dateToString(DateTime date) =>
       '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-  // ========================== PATIENT ==========================
-  // Thêm các hàm quản lý bệnh nhân nếu cần
 
-  Future<void> _loadPatients() async {
+  // ========================== PATIENT ==========================
+  Future<void> loadPatients() async {
     try {
       isLoadingPatients.value = true;
-
-      // Simulate loading from database/API
-      await Future.delayed(Duration(milliseconds: 500));
-
-      // patients.assignAll([
-      //   Patient(
-      //     id: '1',
-      //     name: 'LÔ THỊ NỘ',
-      //     dob: '01/01/1990',
-      //     gender: 'Nữ',
-      //     phone: '0987654321',
-      //     relationship: 'Bản thân',
-      //     address: 'TP HCM',
-      //   ),
-      //   Patient(
-      //     id: '2',
-      //     name: 'NGUYỄN VĂN A',
-      //     dob: '15/05/1985',
-      //     gender: 'Nam',
-      //     phone: '0912345678',
-      //     relationship: 'Bản thân',
-      //     address: 'TP HCM',
-      //   )
-      // ]);
-
-      // Set default selected patient
-      selectedPatient.value =
-          patients.firstWhereOrNull((p) => p.name == 'LÔ THỊ NỘ');
+      final userId = await getUserIdFromPrefs();
+      if (userId != null) {
+        final list = await _patientService.getPatientsByUserId(userId);
+        patients.assignAll(list);
+      }
     } catch (e) {
-      Get.snackbar('Lỗi', 'Không thể tải danh sách bệnh nhân');
+      Get.snackbar('Lỗi', 'Không thể tải danh sách bệnh nhân: $e');
     } finally {
       isLoadingPatients.value = false;
     }
@@ -527,12 +511,10 @@ class AppointmentScreenController extends GetxController {
 
   bool isStep1Complete() {
     if (selectedPlaceType.value == 'vaccination') {
-      // Chỉ cần chọn trung tâm, dịch vụ, ngày tiêm
       return selectedVaccinationCenter.value != null &&
           selectedService.value != null &&
           selectedDate.value != null;
     } else {
-      // Bệnh viện/phòng khám: kiểm tra đủ các trường
       return selectedHospital.value != null &&
           selectedDepartment.value != null &&
           selectedDoctor.value != null &&
@@ -540,6 +522,27 @@ class AppointmentScreenController extends GetxController {
           selectedDate.value != null &&
           selectedTimeSlot.value != null;
     }
+  }
+
+  void resetData() {
+    selectedPlaceType.value = 'hospital'; // Reset to default place type
+    selectedHospital.value = null;
+    selectedClinic.value = null;
+    selectedVaccinationCenter.value = null;
+    selectedDepartment.value = null;
+    selectedDoctor.value = null;
+    selectedService.value = null;
+    selectedDate.value = null;
+    selectedTimeSlot.value = null;
+    selectedSchedule.value = null;
+    selectedPatient.value = null;
+    healthStatus.value = '';
+    healthStatusController.clear();
+    selectedPaymentMethod.value = 'cash'; // Reset to default
+    currentStep.value = 1; // Return to first step
+    selectedDateIndex.value = 0;
+    selectedTimeIndex.value = -1;
+    timeSlots.clear(); // Clear time slots as they depend on selections
   }
 
   bool isStep2Complete() {
@@ -555,29 +558,17 @@ class AppointmentScreenController extends GetxController {
   Future<void> deletePatient(Patient patient) async {
     try {
       if (!patients.contains(patient)) return;
-
       if (patients.length <= 1) {
-        Get.snackbar(
-          'Không thể xoá',
-          'Cần ít nhất một hồ sơ bệnh nhân',
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
+        Get.snackbar('Không thể xoá', 'Cần ít nhất một hồ sơ bệnh nhân',
+            backgroundColor: Colors.red, colorText: Colors.white);
         return;
       }
-
       patients.remove(patient);
-
       if (selectedPatient.value == patient) {
         selectedPatient.value = patients.firstOrNull;
       }
-
-      Get.snackbar(
-        'Đã xoá',
-        'Đã xoá hồ sơ ${patient.name}',
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
+      Get.snackbar('Đã xoá', 'Đã xoá hồ sơ ${patient.name}',
+          backgroundColor: Colors.green, colorText: Colors.white);
     } catch (e) {
       Get.snackbar('Lỗi', 'Không thể xoá bệnh nhân');
     }
@@ -596,22 +587,16 @@ class AppointmentScreenController extends GetxController {
 
   Future<String?> addAppointment() async {
     String? dateStr;
-
-    // Build ngày giờ chuẩn cho API
     if (selectedDate.value != null && selectedSchedule.value != null) {
       final date = selectedDate.value!;
       final startTime = selectedSchedule.value?.startTime ?? '09:00:00';
-      dateStr = '${date.year.toString().padLeft(4, '0')}-'
-          '${date.month.toString().padLeft(2, '0')}-'
-          '${date.day.toString().padLeft(2, '0')} $startTime';
+      dateStr =
+          '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} $startTime';
     } else if (selectedDate.value != null) {
-      dateStr = '${selectedDate.value!.year.toString().padLeft(4, '0')}-'
-          '${selectedDate.value!.month.toString().padLeft(2, '0')}-'
-          '${selectedDate.value!.day.toString().padLeft(2, '0')} 09:00:00';
+      dateStr =
+          '${selectedDate.value!.year.toString().padLeft(4, '0')}-${selectedDate.value!.month.toString().padLeft(2, '0')}-${selectedDate.value!.day.toString().padLeft(2, '0')} 09:00:00';
     }
-
     Map<String, dynamic> data = {};
-
     if (selectedPlaceType.value == 'vaccination') {
       data = {
         "doctor_id": null,
@@ -661,10 +646,8 @@ class AppointmentScreenController extends GetxController {
         "user_id": await getUserIdFromPrefs(),
       };
     }
-
     print('[AppointmentScreenController] Data gửi API: $data');
     final result = await _appointmentService.addAppointment(data);
-
     if (result.isNotEmpty) {
       final appointment = result.first;
       print('Appointment ID: ${appointment.uuid}');
@@ -676,33 +659,26 @@ class AppointmentScreenController extends GetxController {
   }
 
   Future<void> handlePayOS() async {
-    // 1. Đặt lịch, lấy ra appointmentId vừa tạo
     final appointmentId = await addAppointment();
     if (appointmentId == null) {
       Get.snackbar('Lỗi', 'Đặt lịch thất bại!');
       return;
     }
-
-    // 2. Lưu payment với appointmentId vừa tạo
     final userId = await getUserIdFromPrefs();
     final paymentResult = await paymentService.addPayment({
       "user_id": userId,
-      "appointment_id": appointmentId, // <-- dùng id vừa tạo!
+      "appointment_id": appointmentId,
       "amount": selectedService.value?.price?.toInt() ?? 0,
       "payment_method": selectedPaymentMethod.value,
       "status": 1,
       "payment_time": DateTime.now().toIso8601String(),
     });
-
     if (paymentResult.isNotEmpty && paymentResult.first.uuid != null) {
       final paymentId = paymentResult.first.uuid;
-
-      // 3. Tạo link thanh toán
       final patient = selectedPatient.value;
       final amount = selectedService.value?.price?.toInt() ?? 0;
       final random = Random();
       final orderId = 100000 + random.nextInt(900000);
-
       final prefs = await SharedPreferences.getInstance();
       String? email;
       final userJson = prefs.getString('user_data');
@@ -710,7 +686,6 @@ class AppointmentScreenController extends GetxController {
         final user = User.fromJson(jsonDecode(userJson));
         email = user.email;
       }
-
       final paymentLinkResult = await _payosService.createPaymentLink(
         amount: amount,
         orderId: orderId.toString(),

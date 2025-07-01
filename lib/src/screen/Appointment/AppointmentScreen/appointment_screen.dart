@@ -1255,7 +1255,20 @@ class AppointmentScreen extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  onPressed: () => Get.toNamed(Routes.personal),
+                  onPressed: () => Get.toNamed(Routes.patient)?.then((result) {
+                    if (result == true) {
+                      controller
+                          .loadFamilyMembers(); // Reload danh sách bệnh nhân
+                      Get.snackbar(
+                        'Thành công',
+                        'Danh sách bệnh nhân đã được cập nhật!',
+                        snackPosition: SnackPosition.TOP,
+                        duration: const Duration(seconds: 3),
+                        backgroundColor: Colors.green,
+                        colorText: Colors.white,
+                      );
+                    }
+                  }),
                   icon: const Icon(Icons.add),
                   label: const Text('THÊM HỒ SƠ BỆNH NHÂN'),
                   style: OutlinedButton.styleFrom(
@@ -1739,9 +1752,21 @@ class AppointmentScreen extends StatelessWidget {
                   subtitle: 'Thẻ ATM/VISA/Mastercard',
                   isSelected:
                       controller.selectedPaymentMethod.value == 'online',
+                  // onTap: () {
+                  //   controller.selectedPaymentMethod.value = 'online';
+                  //   Get.back();
+                  // },
                   onTap: () {
-                    controller.selectedPaymentMethod.value = 'online';
-                    Get.back();
+                    // Show toast message for PayOS (online payment)
+                    Get.snackbar(
+                      'Thông báo',
+                      'Tính năng thanh toán PayOS đang phát triển',
+                      snackPosition: SnackPosition.TOP,
+                      duration: const Duration(seconds: 3),
+                      backgroundColor: Colors.blue,
+                      colorText: Colors.white,
+                    );
+                    // Do not change selectedPaymentMethod to 'online'
                   },
                 )),
             const Divider(height: 1),

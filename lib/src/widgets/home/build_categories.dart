@@ -33,16 +33,21 @@ class BuildCategories extends StatelessWidget {
               children: [
                 const CategoryButton(title: 'Tất cả', isSelected: true),
                 CategoryButton(
-                    title: 'Bác sĩ', onTap: () => controller.viewAllDoctors()),
+                  title: 'Bác sĩ',
+                  onTap: () => controller.viewAllDoctors(),
+                ),
                 CategoryButton(
-                    title: 'Bệnh viện',
-                    onTap: () => controller.viewAllHospitals()),
+                  title: 'Bệnh viện',
+                  onTap: () => controller.viewAllHospitals(),
+                ),
                 CategoryButton(
-                    title: 'Phòng khám',
-                    onTap: () => controller.viewAllClinics()),
+                  title: 'Phòng khám',
+                  onTap: () => controller.viewAllClinics(),
+                ),
                 CategoryButton(
-                    title: 'Trung tâm tiêm chủng',
-                    onTap: () => controller.viewAllVaccines()),
+                  title: 'Trung tâm tiêm chủng',
+                  onTap: () => controller.viewAllVaccines(),
+                ),
               ],
             ),
           ),

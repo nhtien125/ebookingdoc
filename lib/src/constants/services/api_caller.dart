@@ -14,7 +14,7 @@ class APICaller {
   // final String BASE_URL = dotenv.env['API_URL'] ?? '';
   // ignore: non_constant_identifier_names
 
-  final String BASE_URL = "http://192.168.1.29:3210/";
+  final String BASE_URL = "http://192.168.2.207:3210/";
   static Map<String, String> requestHeaders = {
     'Content-type': 'application/json',
     'Accept': 'application/json'
@@ -38,9 +38,6 @@ class APICaller {
     if (response.statusCode ~/ 100 == 2) {
       return body;
     } else {
-      Utils.showSnackBar(
-          title: "${response.statusCode}!",
-          message: body['message'] ?? 'Lỗi không xác định');
       if (response.statusCode == 406) Auth.backLogin(true);
       return null;
     }

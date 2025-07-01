@@ -3,9 +3,11 @@ import 'package:ebookingdoc/src/shared_preferences.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:ebookingdoc/src/data/model/patient_model.dart';
+import 'package:intl/intl.dart';
 
 class FamilyController extends GetxController {
   var familyMembers = <Patient>[].obs;
+  var isLoading = false.obs;
   final _patientService = PatientService();
 
   @override
@@ -15,10 +17,37 @@ class FamilyController extends GetxController {
   }
 
   Future<void> loadFamilyMembers() async {
-    final userId = await getUserIdFromPrefs();
-    if (userId != null) {
-      final list = await _patientService.getPatientsByUserId(userId);
-      familyMembers.value = list;
+    isLoading.value = true;
+    try {
+      final userId = await getUserIdFromPrefs();
+      if (userId != null) {
+        final list = await _patientService.getPatientsByUserId(userId);
+        familyMembers.value = list.map((patient) {
+          if (patient.dob != null && patient.dob.isNotEmpty) {
+            final date = DateTime.parse(patient.dob);
+            final formattedDob = DateFormat('dd/MM/yyyy').format(date);
+            return Patient(
+              uuid: patient.uuid,
+              userId: patient.userId,
+              name: patient.name,
+              dob: formattedDob,
+              gender: patient.gender,
+              phone: patient.phone,
+              relationship: patient.relationship,
+              insuranceNumber: patient.insuranceNumber,
+              address: patient.address,
+              image: patient.image,
+              createdAt: patient.createdAt,
+              updatedAt: patient.updatedAt,
+            );
+          }
+          return patient;
+        }).toList();
+      }
+    } catch (e) {
+      Get.snackbar('Lỗi', 'Không thể tải danh sách thành viên: $e');
+    } finally {
+      isLoading.value = false;
     }
   }
 

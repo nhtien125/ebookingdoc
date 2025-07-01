@@ -4,9 +4,11 @@ import 'package:ebookingdoc/src/data/model/appointment_model.dart';
 class AppointmentService {
   Future<List<Appointment>> addAppointment(Map<String, dynamic> data) async {
     try {
-      final response = await APICaller.getInstance().post('api/appointment/add', body: data);
+      final response =
+          await APICaller.getInstance().post('api/appointment/add', body: data);
 
-      if (response != null && (response['code'] == 200 || response['code'] == 201)) {
+      if (response != null &&
+          (response['code'] == 200 || response['code'] == 201)) {
         final resData = response['data'];
         if (resData is List) {
           return resData.map((e) => Appointment.fromJson(e)).toList();
@@ -22,8 +24,26 @@ class AppointmentService {
     try {
       final response = await APICaller.getInstance()
           .get('api/appointment/getByDoctorId/$doctorId');
+      if (response != null &&
+          (response['code'] == 200 || response['code'] == 201)) {
+        final resData = response['data'];
+        if (resData is List) {
+          return resData.map((e) => Appointment.fromJson(e)).toList();
+        } else if (resData is Map) {
+          return [Appointment.fromJson(resData.cast<String, dynamic>())];
+        }
+      }
+    } catch (e) {}
+    return [];
+  }
 
-      if (response != null && (response['code'] == 200 || response['code'] == 201)) {
+  Future<List<Appointment>> getByUserId(String userId) async {
+    try {
+      final response = await APICaller.getInstance().get(
+          'api/appointment/getByUserId/$userId'); // Thay đổi URL để lấy theo userId
+
+      if (response != null &&
+          (response['code'] == 200 || response['code'] == 201)) {
         final resData = response['data'];
         if (resData is List) {
           return resData.map((e) => Appointment.fromJson(e)).toList();
@@ -42,7 +62,8 @@ class AppointmentService {
         body: {"status": status},
       );
 
-      if (response != null && (response['code'] == 200 || response['code'] == 201)) {
+      if (response != null &&
+          (response['code'] == 200 || response['code'] == 201)) {
         return true;
       }
     } catch (e) {}

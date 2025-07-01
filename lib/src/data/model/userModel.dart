@@ -10,6 +10,7 @@ class User {
   final String? password;
   final int? status;
   final String? image;
+  final String? birthDay; // Thêm trường ngày sinh
   final String? createdAt;
   final String? updatedAt;
 
@@ -25,6 +26,7 @@ class User {
     this.password,
     this.status,
     this.image,
+    this.birthDay, // Thêm tham số
     this.createdAt,
     this.updatedAt,
   });
@@ -42,6 +44,7 @@ class User {
       password: json['password'],
       status: json['status'],
       image: json['image'],
+      birthDay: json['birth_day'], // Ánh xạ từ 'birth_day'
       createdAt: json['created_at'],
       updatedAt: json['updated_at'],
     );
@@ -60,6 +63,7 @@ class User {
       'password': password,
       'status': status,
       'image': image,
+      'birth_day': birthDay, // Thêm vào JSON
       'created_at': createdAt,
       'updated_at': updatedAt,
     };

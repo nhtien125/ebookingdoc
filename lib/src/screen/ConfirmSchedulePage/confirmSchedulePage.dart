@@ -3,20 +3,6 @@ import 'package:ebookingdoc/src/widgets/controller/confirmSchedulepagecontroller
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-// Helper: Lấy màu trạng thái
-Color getStatusColor(AppointmentStatus status) {
-  switch (status) {
-    case AppointmentStatus.pending:
-      return Colors.orange;
-    case AppointmentStatus.confirmed:
-      return Colors.green;
-    case AppointmentStatus.rejected:
-      return Colors.red;
-    case AppointmentStatus.cancelled:
-      return Colors.grey;
-  }
-}
-
 // Helper: Định dạng ngày giờ
 String formatDateTime(String? dateTime) {
   if (dateTime == null || dateTime.isEmpty) return '';
@@ -46,6 +32,7 @@ class _ConfirmSchedulePageState extends State<ConfirmSchedulePage>
     {'title': 'Đã xác nhận', 'status': AppointmentStatus.confirmed},
     {'title': 'Từ chối', 'status': AppointmentStatus.rejected},
     {'title': 'Đã hủy', 'status': AppointmentStatus.cancelled},
+    {'title': 'Đã khám', 'status': AppointmentStatus.done},
   ];
 
   @override
@@ -64,6 +51,8 @@ class _ConfirmSchedulePageState extends State<ConfirmSchedulePage>
         return controller.rejectedAppointments;
       case AppointmentStatus.cancelled:
         return controller.cancelledAppointments;
+      case AppointmentStatus.done:
+        return controller.doneAppointments;
     }
   }
 
@@ -71,8 +60,10 @@ class _ConfirmSchedulePageState extends State<ConfirmSchedulePage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Quản lý lịch khám",
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 21)),
+        title: const Text(
+          "Quản lý lịch khám",
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 21),
+        ),
         backgroundColor: Colors.blue.shade700,
         centerTitle: true,
         elevation: 2,
@@ -96,22 +87,6 @@ class _ConfirmSchedulePageState extends State<ConfirmSchedulePage>
           children: tabs.map((tab) {
             final status = tab['status'] as AppointmentStatus;
             final filteredList = getTabAppointments(status);
-
-            if (controller.isLoading.value) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(color: Colors.blue.shade600),
-                    const SizedBox(height: 16),
-                    const Text(
-                      "Đang tải dữ liệu...",
-                      style: TextStyle(color: Colors.black45, fontSize: 15),
-                    ),
-                  ],
-                ),
-              );
-            }
             if (filteredList.isEmpty) {
               return Center(
                 child: Column(
@@ -123,9 +98,10 @@ class _ConfirmSchedulePageState extends State<ConfirmSchedulePage>
                     const Text(
                       "Không có lịch hẹn nào.",
                       style: TextStyle(
-                          color: Colors.black54,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500),
+                        color: Colors.black54,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),
@@ -149,11 +125,9 @@ class _ConfirmSchedulePageState extends State<ConfirmSchedulePage>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // AVATAR bên trái, thông tin bên phải
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Avatar bên trái
                             CircleAvatar(
                               radius: 28,
                               backgroundColor: Colors.blue.withOpacity(0.13),
@@ -164,17 +138,17 @@ class _ConfirmSchedulePageState extends State<ConfirmSchedulePage>
                               ),
                             ),
                             const SizedBox(width: 18),
-                            // Nội dung bên phải
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // Tên + trạng thái
                                   Row(
                                     children: [
                                       Expanded(
                                         child: Text(
-                                          controller.getPatientNameById(appt.patientId) ?? '(Chưa có tên)',
+                                          controller.getPatientNameById(
+                                                  appt.patientId) ??
+                                              '(Chưa có tên)',
                                           style: const TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 19,
@@ -186,15 +160,20 @@ class _ConfirmSchedulePageState extends State<ConfirmSchedulePage>
                                       ),
                                       Container(
                                         margin: const EdgeInsets.only(left: 10),
-                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 12, vertical: 6),
                                         decoration: BoxDecoration(
-                                          color: getStatusColor(appt.status.value).withOpacity(0.12),
-                                          borderRadius: BorderRadius.circular(13),
+                                          color: controller
+                                              .statusColor(appt.status.value)
+                                              .withOpacity(0.12),
+                                          borderRadius:
+                                              BorderRadius.circular(13),
                                         ),
                                         child: Text(
                                           controller.statusText(appt.status.value),
                                           style: TextStyle(
-                                            color: getStatusColor(appt.status.value),
+                                            color: controller
+                                                .statusColor(appt.status.value),
                                             fontWeight: FontWeight.w700,
                                             fontSize: 13,
                                           ),
@@ -204,14 +183,19 @@ class _ConfirmSchedulePageState extends State<ConfirmSchedulePage>
                                   ),
                                   const SizedBox(height: 8),
                                   Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      const Icon(Icons.info_outline, size: 16, color: Colors.redAccent),
+                                      const Icon(Icons.info_outline,
+                                          size: 16, color: Colors.redAccent),
                                       const SizedBox(width: 3),
                                       Expanded(
                                         child: Text(
                                           "Tình trạng sức khỏe: " +
-                                              ((appt.healthStatus == null || appt.healthStatus!.trim().isEmpty)
+                                              ((appt.healthStatus == null ||
+                                                      appt.healthStatus!
+                                                          .trim()
+                                                          .isEmpty)
                                                   ? "Không có"
                                                   : appt.healthStatus!),
                                           style: const TextStyle(
@@ -229,8 +213,8 @@ class _ConfirmSchedulePageState extends State<ConfirmSchedulePage>
                                   Text.rich(
                                     TextSpan(
                                       children: [
-                                        TextSpan(
-                                          text: 'đặt khám: ',
+                                        const TextSpan(
+                                          text: 'Đặt khám: ',
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 14,
@@ -239,7 +223,7 @@ class _ConfirmSchedulePageState extends State<ConfirmSchedulePage>
                                         ),
                                         TextSpan(
                                           text: formatDateTime(appt.dateTime),
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                             fontWeight: FontWeight.normal,
                                             fontSize: 14,
                                             color: Colors.black87,
@@ -253,7 +237,6 @@ class _ConfirmSchedulePageState extends State<ConfirmSchedulePage>
                             ),
                           ],
                         ),
-                        // Nút xác nhận/từ chối bên dưới, không nằm trong Row avatar
                         if (appt.status.value == AppointmentStatus.pending)
                           Padding(
                             padding: const EdgeInsets.only(top: 12),
@@ -266,12 +249,14 @@ class _ConfirmSchedulePageState extends State<ConfirmSchedulePage>
                                     foregroundColor: Colors.white,
                                     minimumSize: const Size(0, 38),
                                     shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10)),
+                                        borderRadius:
+                                            BorderRadius.circular(10)),
                                     elevation: 0,
                                   ),
                                   icon: const Icon(Icons.check, size: 18),
                                   label: const Text("Xác nhận",
-                                      style: TextStyle(fontWeight: FontWeight.w600)),
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w600)),
                                   onPressed: () =>
                                       controller.confirmAppointment(appt),
                                 ),
@@ -279,17 +264,45 @@ class _ConfirmSchedulePageState extends State<ConfirmSchedulePage>
                                 OutlinedButton.icon(
                                   style: OutlinedButton.styleFrom(
                                     foregroundColor: Colors.red.shade600,
-                                    side: BorderSide(color: Colors.red.shade400),
+                                    side:
+                                        BorderSide(color: Colors.red.shade400),
                                     minimumSize: const Size(0, 38),
                                     shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10)),
+                                        borderRadius:
+                                            BorderRadius.circular(10)),
                                     elevation: 0,
                                   ),
                                   icon: const Icon(Icons.close, size: 18),
                                   label: const Text("Từ chối",
-                                      style: TextStyle(fontWeight: FontWeight.w600)),
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w600)),
                                   onPressed: () =>
                                       controller.rejectAppointment(appt),
+                                ),
+                              ],
+                            ),
+                          ),
+                        if (appt.status.value == AppointmentStatus.confirmed)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 12),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blue.shade600,
+                                    foregroundColor: Colors.white,
+                                    minimumSize: const Size(0, 38),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10)),
+                                    elevation: 0,
+                                  ),
+                                  icon: const Icon(Icons.done_all, size: 18),
+                                  label: const Text("Đã khám",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w600)),
+                                  onPressed: () => controller.markAsDone(appt),
                                 ),
                               ],
                             ),

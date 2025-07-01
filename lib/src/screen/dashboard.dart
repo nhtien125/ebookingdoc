@@ -44,7 +44,7 @@ class Dashboard extends StatelessWidget {
   final List<Widget> _pages = [
     Home(),
     MyNotification(),
-    Appointment(),
+    AppointmentPage(),
     const News(),
     Profile(),
   ];

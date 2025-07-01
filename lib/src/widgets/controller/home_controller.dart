@@ -49,12 +49,7 @@ class HomeController extends GetxController {
   final UserService _userService = UserService();
   final SpecializationService _specService = SpecializationService();
 
-  final List<Map<String, String>> allSearchableItems = [
-    {'name': 'Bác sĩ Nguyễn Văn Chiến', 'type': 'Bác sĩ'},
-    {'name': 'Bệnh viện Bạch Mai', 'type': 'Bệnh viện'},
-    {'name': 'Phòng khám Đa khoa Medlatec', 'type': 'Phòng khám'},
-    {'name': 'Trung tâm tiêm chủng Quốc gia', 'type': 'Trung tâm tiêm chủng'},
-  ];
+
 
   @override
   void onInit() {
@@ -147,16 +142,7 @@ class HomeController extends GetxController {
     article.addAll(result);
   }
 
-  void onSearchPressed() {
-    final query = searchController.text.trim().toLowerCase();
-    if (query.isEmpty) {
-      filteredResults.clear();
-      return;
-    }
-    filteredResults.value = allSearchableItems
-        .where((item) => item['name']!.toLowerCase().contains(query))
-        .toList();
-  }
+
 
   Future<void> refreshData() => loadAllData();
 
@@ -185,11 +171,11 @@ class HomeController extends GetxController {
   }
 
   void viewHospitalDetails(String hospitalId) {
-    Get.toNamed(Routes.appointmentScreen);
+    Get.offAllNamed(Routes.appointmentScreen);
   }
 
   void viewClinicDetails(String clinicId) {
-    Get.toNamed(Routes.appointmentScreen);
+    Get.offAllNamed(Routes.appointmentScreen);
   }
 
   void viewArticleDetails(String articleId) {

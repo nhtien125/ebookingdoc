@@ -151,12 +151,6 @@ class Profile extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   buildMenuItem(
-                    icon: Icons.medical_services_outlined,
-                    title: 'Hồ sơ sức khỏe',
-                    onTap: () => controller.medicalRecord(),
-                  ),
-                  const SizedBox(height: 16),
-                  buildMenuItem(
                       icon: Icons.logout_outlined,
                       title: 'Đăng xuất',
                       onTap: () {

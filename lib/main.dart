@@ -40,14 +40,13 @@ class MyApp extends StatelessWidget {
         ],
         title: 'Thrift Flow',
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: AppColor.fourthMain),
           useMaterial3: true,
           appBarTheme: AppBarTheme(
             titleSpacing: 20,
             elevation: 0,
             foregroundColor: AppColor.text1,
             backgroundColor: AppColor.main,
-            systemOverlayStyle: SystemUiOverlayStyle(
+            systemOverlayStyle: const SystemUiOverlayStyle(
               statusBarColor: AppColor.transparent,
               statusBarIconBrightness: Brightness.dark,
               statusBarBrightness: Brightness.dark,

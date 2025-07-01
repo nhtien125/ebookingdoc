@@ -1,4 +1,5 @@
 import 'package:ebookingdoc/src/Global/app_color.dart';
+import 'package:ebookingdoc/src/constants/app_page.dart';
 import 'package:ebookingdoc/src/widgets/Profile/Family/family_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -6,13 +7,14 @@ import 'package:get/get.dart';
 class Family extends StatelessWidget {
   Family({super.key});
 
-  final controller = Get.put(FamilyController());
+  final FamilyController controller = Get.put(FamilyController());
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Thành viên gia đình', style: TextStyle(color: AppColor.main)),
+        title: Text('Thành viên gia đình',
+            style: TextStyle(color: AppColor.main, fontWeight: FontWeight.bold)),
         centerTitle: true,
         backgroundColor: AppColor.fourthMain,
         elevation: 1,
@@ -21,58 +23,71 @@ class Family extends StatelessWidget {
       body: Column(
         children: [
           Expanded(
-            child: Obx(() => ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: controller.familyMembers.length,
-              itemBuilder: (context, index) {
-                final member = controller.familyMembers[index];
-                return Stack(
+            child: Obx(() => Stack(
                   children: [
-                    Card(
-                      color: Colors.blue.shade50,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: ListTile(
-                        leading: const CircleAvatar(
-                          backgroundColor: Colors.orange,
-                          child: Icon(Icons.person, color: Colors.white),
-                        ),
-                        title: Text(member.name),
-                        subtitle: Text('${member.relationship} | ${member.dob}'),
-                      ),
+                    ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: controller.familyMembers.length,
+                      itemBuilder: (context, index) {
+                        final member = controller.familyMembers[index];
+                        return Card(
+                          color: Colors.white,
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: BorderSide(color: Colors.grey.shade200),
+                          ),
+                          margin: const EdgeInsets.only(bottom: 12),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.all(12),
+                            leading: CircleAvatar(
+                              backgroundColor: AppColor.primaryDark,
+                              child: Icon(Icons.person, color: Colors.white),
+                            ),
+                            title: Text(
+                              member.name,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  member.relationship,
+                                  style: TextStyle(color: Colors.grey[600]),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Ngày sinh: ${member.dob}',
+                                  style: TextStyle(color: Colors.grey[600]),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: GestureDetector(
-                        onTap: () => controller.confirmDeleteMember(context, index),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade300,
-                            shape: BoxShape.circle,
-                          ),
-                          padding: const EdgeInsets.all(4),
-                          child: const Icon(
-                            Icons.close,
-                            size: 16,
-                            color: Colors.black,
+                    if (controller.isLoading.value)
+                      Container(
+                        color: Colors.black.withOpacity(0.5),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: AppColor.primaryDark,
                           ),
                         ),
                       ),
-                    )
                   ],
-                );
-              },
-            )),
+                )),
           ),
           Padding(
             padding: const EdgeInsets.all(16),
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () => controller.addMember(context),
-                icon: const Icon(Icons.add),
+                onPressed: () => Get.toNamed(Routes.patient),
+                icon: const Icon(Icons.add, size: 20),
                 label: const Text(
                   'Thêm thành viên',
                   style: TextStyle(
@@ -83,7 +98,7 @@ class Family extends StatelessWidget {
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColor.primaryDark,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),

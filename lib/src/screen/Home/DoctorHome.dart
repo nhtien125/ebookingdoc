@@ -41,8 +41,8 @@ class _HeaderSection extends StatelessWidget {
     final DoctorHomeController controller = Get.find<DoctorHomeController>();
 
     return Obx(() {
-      final user = controller.user.value; // Sử dụng Obx để theo dõi sự thay đổi của user
-      final specialization = controller.specialization.value; // Sử dụng Obx để theo dõi sự thay đổi của specialization
+      final user = controller.user.value; 
+      final specialization = controller.specialization.value; 
 
       if (user == null) {
         return const Center(child: Text('Không tìm thấy thông tin người dùng'));
@@ -226,21 +226,16 @@ class _QuickStatsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Data cứng, sau này truyền từ controller
-    final todayPatients = 4;
-    final schedules = 8;
-    final day = 7;
-    final waitingConfirm = 2;
-    final totalPatients = 105;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 22),
+      padding: const EdgeInsets.symmetric(horizontal: 5),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
             child: _StatCard(
               label: "Lịch hôm nay",
-              value: "$todayPatients",
+              value: "",
               icon: Icons.calendar_today,
               color: Colors.orange,
               onTap: () {
@@ -252,8 +247,8 @@ class _QuickStatsSection extends StatelessWidget {
           const SizedBox(width: 8), // Giảm khoảng cách giữa các phần tử
           Expanded(
             child: _StatCard(
-              label: "Cần xác nhận",
-              value: "$waitingConfirm",
+              label: "Lịch khám",
+              value: "",
               icon: Icons.pending_actions,
               color: Colors.redAccent,
               onTap: () {
@@ -262,16 +257,7 @@ class _QuickStatsSection extends StatelessWidget {
               },
             ),
           ),
-          const SizedBox(width: 8), // Giảm khoảng cách giữa các phần tử
-          Expanded(
-            child: _StatCard(
-              label: "Bệnh nhân",
-              value: "$totalPatients",
-              icon: Icons.people,
-              color: Colors.green,
-              onTap: () => Get.toNamed('/doctor/patients'),
-            ),
-          ),
+      
         ],
       ),
     );
@@ -355,7 +341,7 @@ class _QuickActionGrid extends StatelessWidget {
         'icon': Icons.person,
         'label': "Thông tin cá nhân",
         'color': Colors.blue,
-        'route': '/profile',
+        'route': '/personal',
       },
       {
         'icon': Icons.check_circle,

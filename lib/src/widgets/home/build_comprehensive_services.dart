@@ -18,25 +18,23 @@ class BuildComprehensiveServices extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionHeader(title: 'Dịch vụ toàn diện'),
+          const SectionHeader(title: 'Dịch vụ y tế'),
           const SizedBox(height: 12),
           Obx(() {
             if (controller.medicalserviceModel.isEmpty) {
               return const Center(child: Text('Không có dịch vụ nào'));
             }
-            // Random & lấy tối đa 6 dịch vụ
+  
             final services = List.of(controller.medicalserviceModel)..shuffle(Random());
             final displayedServices = services.take(6).toList();
-
-            // CHỈ CẦN BỌC SIZEDBOX NHƯ DƯỚI ĐÂY
             return SizedBox(
-              height: 270, // Đảm bảo không bao giờ overflow! Có thể chỉnh cao/thấp cho vừa ý
+              height: 270, 
               child: GridView.builder(
                 physics: const NeverScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
-                  childAspectRatio: 0.85, // Thấp hơn để tăng chiều cao mỗi card
+                  childAspectRatio: 0.85,
                   crossAxisSpacing: 16,
                   mainAxisSpacing: 16,
                 ),

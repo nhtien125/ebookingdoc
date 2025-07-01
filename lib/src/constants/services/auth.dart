@@ -27,9 +27,9 @@ class Auth {
   }) async {
     Map<String, String> param;
     if (account.contains('@')) {
-      param = {"email": account, "password": password};
+      param = {"email": account.trim(), "password": password.trim()};
     } else {
-      param = {"username": account, "password": password};
+      param = {"username": account.trim(), "password": password.trim()};
     }
 
     try {
@@ -45,8 +45,7 @@ class Auth {
                   'Lỗi server: API trả về HTML, hãy kiểm tra lại backend, URL hoặc mạng!');
           return null;
         } else {
-          Utils.showSnackBar(
-              title: 'Thông báo', message: 'Lỗi không xác định: $response');
+          print("Unexpected string response: $response");
           return null;
         }
       }
@@ -55,7 +54,6 @@ class Auth {
           response is Map &&
           response['code'] == 200 &&
           response['data'] != null) {
-        // Nếu cần lưu token vào GlobalValue, giữ lại đoạn này
         GlobalValue.getInstance()
             .setToken('Bearer ${response['data']['access_token']}');
         Utils.saveStringWithKey(
@@ -68,16 +66,17 @@ class Auth {
         Utils.saveStringWithKey(Constant.USERNAME, account);
         Utils.saveStringWithKey(Constant.PASSWORD, password);
 
-        // **CHỈ SỬA DÒNG NÀY**: trả về object User thay vì true
         return User.fromJson(response['data']);
       } else {
         final msg = (response is Map)
             ? (response['message'] ?? "Đăng nhập thất bại")
             : "Đăng nhập thất bại";
+        print("Login failed with message: $msg");
         Utils.showSnackBar(title: 'Thông báo', message: msg);
         return null;
       }
     } catch (e) {
+      print("Auth.login error: $e");
       Utils.showSnackBar(title: 'Thông báo', message: '$e');
       return null;
     }

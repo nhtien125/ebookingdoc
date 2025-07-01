@@ -1,3 +1,4 @@
+import 'package:ebookingdoc/src/widgets/controller/appointment_screen_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ebookingdoc/src/data/model/hospital_model.dart';
@@ -216,8 +217,9 @@ class DetailHospitalScreen extends StatelessWidget {
                   height: 56,
                   child: ElevatedButton.icon(
                     onPressed: () {
+                      Get.delete<AppointmentScreenController>();
                       if (hospital != null) {
-                        Get.toNamed(
+                        Get.offAllNamed(
                           Routes.appointmentScreen,
                           arguments: {
                             'hospital': hospital.toJson(),
@@ -225,7 +227,7 @@ class DetailHospitalScreen extends StatelessWidget {
                           },
                         );
                       } else if (clinic != null) {
-                        Get.toNamed(
+                        Get.offAllNamed(
                           Routes.appointmentScreen,
                           arguments: {
                             'clinic': clinic.toJson(),
@@ -233,7 +235,7 @@ class DetailHospitalScreen extends StatelessWidget {
                           },
                         );
                       } else if (vaccinationCenter != null) {
-                        Get.toNamed(
+                        Get.offAllNamed(
                           Routes.appointmentScreen,
                           arguments: {
                             'vaccination_center': vaccinationCenter.toJson(),

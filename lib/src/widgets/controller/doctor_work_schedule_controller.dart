@@ -31,12 +31,7 @@ class DoctorWorkScheduleController extends GetxController {
       print(
           '[loadDoctorIdAndFetch] selectedDate set to today: ${DateFormat('yyyy-MM-dd – EEEE', 'vi').format(DateTime.now())}');
     } else {
-      Get.snackbar(
-        "Lỗi",
-        "Không tìm thấy thông tin bác sĩ!",
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+
     }
   }
 
@@ -95,8 +90,6 @@ class DoctorWorkScheduleController extends GetxController {
 
   Future<void> updateSchedule(String uuid, Schedule newSchedule) async {
     if (doctorId == null) {
-      Get.snackbar("Lỗi", "Không tìm thấy thông tin bác sĩ!",
-          backgroundColor: Colors.red, colorText: Colors.white);
       return;
     }
     isLoading.value = true;
@@ -121,8 +114,7 @@ class DoctorWorkScheduleController extends GetxController {
 
   Future<void> addSchedule(Schedule schedule) async {
     if (doctorId == null) {
-      Get.snackbar("Lỗi", "Không tìm thấy thông tin bác sĩ!",
-          backgroundColor: Colors.red, colorText: Colors.white);
+    
       return;
     }
     isLoading.value = true;
@@ -152,8 +144,7 @@ class DoctorWorkScheduleController extends GetxController {
   // Trong DoctorWorkScheduleController
   Future<void> deleteSchedule(String uuid) async {
     if (doctorId == null) {
-      Get.snackbar("Lỗi", "Không tìm thấy thông tin bác sĩ!",
-          backgroundColor: Colors.red, colorText: Colors.white);
+    
       return;
     }
     isLoading.value = true;

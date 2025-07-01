@@ -2,6 +2,7 @@ import 'package:ebookingdoc/src/screen/Appointment/AppointmentScreen/appointment
 import 'package:ebookingdoc/src/screen/Appointment/appointment.dart';
 import 'package:ebookingdoc/src/screen/ConfirmSchedulePage/confirmSchedulePage.dart';
 import 'package:ebookingdoc/src/screen/DetailHospitalScreen.dart';
+import 'package:ebookingdoc/src/screen/Profile/Family/addfamily.dart';
 import 'package:ebookingdoc/src/screen/Profile/MedicalRecord/edit_medical_record.dart';
 import 'package:ebookingdoc/src/screen/Profile/MedicalRecord/medicalRecord.dart';
 import 'package:ebookingdoc/src/screen/Profile/personal/Doctorinformation.dart';
@@ -41,7 +42,7 @@ class AppPage {
     GetPage(name: Routes.family, page: () => Family()),
     GetPage(name: Routes.medicalRecord, page: () => MedicalRecord()),
     GetPage(name: Routes.notification, page: () => MyNotification()),
-    GetPage(name: Routes.appointment, page: () => Appointment()),
+    GetPage(name: Routes.appointment, page: () => AppointmentPage()),
     GetPage(name: Routes.news, page: () => const News()),
     GetPage(name: Routes.excellentDoctor, page: () => ExcellentDoctor()),
     GetPage(name: Routes.detaildoctor, page: () => DetailDoctor()),
@@ -56,5 +57,6 @@ class AppPage {
     GetPage(name: Routes.patientlist, page: () => PatientListPage()),
     GetPage(name: Routes.detailhospital, page: () => DetailHospitalScreen()),
     GetPage(name: Routes.paymentHistory, page: () => PaymentHistoryScreen()),
+    GetPage(name: Routes.patient, page: () => Patient())
   ];
 }

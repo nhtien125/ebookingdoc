@@ -1,6 +1,6 @@
-import 'package:ebookingdoc/src/widgets/controller/home_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:ebookingdoc/src/widgets/controller/home_controller.dart';
 
 final controller = Get.put(HomeController());
 
@@ -11,14 +11,12 @@ class DoctorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // LOG chi tiết tất cả thông tin DoctorDisplay
-
     return GestureDetector(
       onTap: () => controller.viewDoctorDetails(doctor.doctor.uuid),
       child: Container(
-        width: 110,
         margin: const EdgeInsets.only(right: 12),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center, // Căn giữa nội dung
           children: [
             Container(
               width: 80,
@@ -64,6 +62,25 @@ class DoctorCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class DoctorList extends StatelessWidget {
+  final List<DoctorDisplay> doctors;
+
+  const DoctorList({super.key, required this.doctors});
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: doctors.map((doctor) => Flexible(
+          flex: 1, 
+          child: DoctorCard(doctor: doctor),
+        )).toList(),
       ),
     );
   }

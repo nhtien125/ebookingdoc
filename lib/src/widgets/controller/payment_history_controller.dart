@@ -50,8 +50,17 @@ class PaymentHistoryController extends GetxController {
         final result =
             await paymentService.getPaymentsByUserId(userId.toString());
         print('[fetchPayemtFromApi] Kết quả từ API: $result');
+
+        if (result.isEmpty) {
+          print('[fetchPayemtFromApi] Không có dữ liệu thanh toán');
+          Get.snackbar(
+              'Không có dữ liệu', 'Không tìm thấy bất kỳ thanh toán nào',
+              snackPosition: SnackPosition.BOTTOM);
+        }
+
         payment.assignAll(result.cast<Payment>());
         print('[fetchPayemtFromApi] Đã gán payment: ${payment.length} bản ghi');
+
         if (payment.isNotEmpty && selectedPayemt.value == null) {
           selectedPayemt.value = payment.first;
           print(
@@ -59,11 +68,15 @@ class PaymentHistoryController extends GetxController {
         }
       } else {
         print('[fetchPayemtFromApi] Không thể lấy userId từ SharedPreferences');
+        Get.snackbar('Lỗi', 'Không thể lấy thông tin người dùng',
+            snackPosition: SnackPosition.BOTTOM);
       }
     } catch (e, stack) {
       print('[fetchPayemtFromApi] Lỗi khi lấy danh sách thanh toán: $e');
       print(stack);
       payment.clear();
+      Get.snackbar('Lỗi', 'Đã xảy ra lỗi khi tải dữ liệu thanh toán',
+          snackPosition: SnackPosition.BOTTOM);
     } finally {
       isLoading.value = false;
       print('[fetchPayemtFromApi] Kết thúc lấy dữ liệu, isLoading=false');

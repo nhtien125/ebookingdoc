@@ -13,15 +13,17 @@ class PatientService {
     return [];
   }
 
-  Future<bool> createPatient(Patient patient) async {
+  Future<bool> createPatient(Map<String, dynamic> patientData) async {
     try {
       final response = await APICaller.getInstance().post(
-        'api/patient/create',
-        body: patient.toJson(),
+        'api/patient/add',
+        body: patientData, 
       );
       return response != null &&
           (response['code'] == 201 || response['code'] == 200);
-    } catch (e) {}
+    } catch (e) {
+      print('Error creating patient: $e');
+    }
     return false;
   }
 
@@ -41,7 +43,7 @@ class PatientService {
     try {
       final response =
           await APICaller.getInstance().get('api/patient/getById/$uuid');
-  
+
       if (response != null &&
           response['code'] == 200 &&
           response['data'] != null) {

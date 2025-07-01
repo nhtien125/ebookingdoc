@@ -38,7 +38,7 @@ class BuildNearestClinics extends StatelessWidget {
                             facility: clinic,
                             onTap: () {
                               // Truyền ID hoặc UUID vào arguments
-                              Get.toNamed(
+                              Get.offAllNamed(
                                 Routes.appointmentScreen,
                                 arguments: {
                                   'clinic': clinic.toJson(),

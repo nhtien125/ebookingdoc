@@ -20,20 +20,22 @@ class CategoryButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
-          backgroundColor: isSelected
-              ? AppColor.fourthMain
-              : AppColor.main, // Nền xanh khi được chọn
-          foregroundColor: isSelected
-              ? AppColor.main
-              : AppColor.fourthMain, // Chữ trắng khi được chọn
+          backgroundColor: isSelected ? AppColor.fourthMain : AppColor.fivethMain,
+          foregroundColor: isSelected ? AppColor.main : AppColor.text1,
           elevation: isSelected ? 2 : 0,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), // Đảm bảo padding đủ
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            side: BorderSide(color: AppColor.fourthMain), // Viền xanh
+            side: BorderSide(color: isSelected ? AppColor.fourthMain : Colors.transparent),
           ),
         ),
-        child: Text(title),
+        child: Text(
+          title,
+          style: TextStyle(
+            color: isSelected ? AppColor.main : AppColor.text1,
+            fontSize: 14, // Đảm bảo kích thước chữ không bị lỗi
+          ),
+        ),
       ),
     );
   }

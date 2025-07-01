@@ -34,7 +34,7 @@ class BuildFeaturedDoctors extends StatelessWidget {
               return const Center(child: Text('Không có dữ liệu'));
             }
             return SizedBox(
-              height: 170, // Cho cao lên chút đẹp hơn
+              height: 150, // Cho cao lên chút đẹp hơn
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),

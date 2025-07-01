@@ -81,17 +81,29 @@ class DetailDoctor extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       color: Colors.white,
       child: Obx(() {
+        if (controller.doctor.value == null) {
+          return const Center(child: Text('Không tìm thấy thông tin bác sĩ'));
+        }
         final doctor = controller.doctor.value!;
+        final doctorKey = doctor.userId ?? doctor.uuid ?? '';
+        final doctorName =
+            controller.doctorNames[doctorKey] ?? 'Bác sĩ không xác định';
+        final specialization =
+            controller.doctorSpecialties[doctorKey] ?? 'Chưa có chuyên khoa';
         final avgRating = controller.getAverageRating();
         final reviewCount = controller.getReviewCount();
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            //   Text(doctor.name ?? '', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            Text(
+              doctorName,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
-            //     Text(doctor.specialization ?? '', style: TextStyle(fontSize: 18, color: Colors.blue[700])),
-            const SizedBox(height: 4),
-            //    Text(doctor.hospital ?? '', style: TextStyle(fontSize: 16, color: Colors.grey[600])),
+            Text(
+              specialization,
+              style: TextStyle(fontSize: 18, color: Colors.blue[700]),
+            ),
             const SizedBox(height: 12),
             Row(
               children: [
@@ -104,8 +116,9 @@ class DetailDoctor extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                    "${avgRating.toStringAsFixed(1)} (${reviewCount} đánh giá)",
-                    style: const TextStyle(fontSize: 14)),
+                  "${avgRating.toStringAsFixed(1)} (${reviewCount} đánh giá)",
+                  style: const TextStyle(fontSize: 14),
+                ),
               ],
             ),
           ],
@@ -127,8 +140,6 @@ class DetailDoctor extends StatelessWidget {
           children: [
             _buildStatItem(
                 Icons.work, "${doctor.experience ?? 0} năm", "Kinh nghiệm"),
-            _buildStatItem(
-                Icons.people, "${doctor.patientCount ?? 0}+", "Bệnh nhân"),
             _buildStatItem(
                 Icons.star, "${(avgRating / 5 * 100).toInt()}%", "Hài lòng"),
           ],
@@ -299,12 +310,11 @@ class DetailDoctor extends StatelessWidget {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(
-          horizontal: 16, vertical: 8), // Thêm padding ngoài
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3,
-        childAspectRatio: 2.4,
-        crossAxisSpacing: 10,
+        childAspectRatio: 2.5, // Tăng nhẹ để cân đối hơn
+        crossAxisSpacing: 12,
         mainAxisSpacing: 12,
       ),
       itemCount: slots.length,
@@ -312,34 +322,56 @@ class DetailDoctor extends StatelessWidget {
         return Obx(() {
           final isSelected = index == controller.selectedTimeIndex.value;
           final slot = slots[index];
+          // Định dạng thời gian, bỏ giây
+          final startTime = slot.startTime?.substring(0, 5) ?? '';
+          final endTime = slot.endTime?.substring(0, 5) ?? '';
           return GestureDetector(
-            onTap: () => controller.selectedTimeIndex.value = index,
+            onTap: () => controller.selectTime(index),
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 150),
-              margin: const EdgeInsets.all(2), // Thêm margin cho từng slot
+              duration: const Duration(
+                  milliseconds: 200), // Tăng thời gian để mượt hơn
+              margin: const EdgeInsets.all(4),
               decoration: BoxDecoration(
-                color: isSelected ? Colors.blue[700] : Colors.white,
-                borderRadius: BorderRadius.circular(12),
+                gradient: isSelected
+                    ? LinearGradient(
+                        colors: [Colors.blue[700]!, Colors.blue[900]!],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      )
+                    : null,
+                color: isSelected ? null : Colors.white,
+                borderRadius: BorderRadius.circular(16), // Bo góc mượt hơn
                 border: Border.all(
                   color: isSelected ? Colors.blue[700]! : Colors.grey[300]!,
-                  width: 2,
+                  width: 1.5,
                 ),
                 boxShadow: isSelected
                     ? [
                         BoxShadow(
-                            color: Colors.blue.withOpacity(0.13),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2))
+                          color: Colors.blue.withOpacity(0.3),
+                          spreadRadius: 1,
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
                       ]
-                    : [],
+                    : [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.1),
+                          spreadRadius: 1,
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
               ),
               child: Center(
                 child: Text(
-                  '${slot.startTime} - ${slot.endTime}',
+                  '$startTime - $endTime',
                   style: TextStyle(
-                    color: isSelected ? Colors.white : Colors.black,
+                    color: isSelected ? Colors.white : Colors.black87,
                     fontWeight: FontWeight.w600,
+                    fontSize: 14,
                   ),
+                  textAlign: TextAlign.center,
                 ),
               ),
             ),

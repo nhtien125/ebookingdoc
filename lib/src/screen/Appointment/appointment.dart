@@ -1,9 +1,11 @@
+import 'package:ebookingdoc/src/data/model/specialization_model.dart';
 import 'package:ebookingdoc/src/widgets/controller/appointment_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ebookingdoc/src/Global/app_color.dart';
+import 'package:ebookingdoc/src/data/model/appointment_model.dart';
 
-class Appointment extends StatelessWidget {
+class AppointmentPage extends StatelessWidget {
   final controller = Get.put(AppointmentController());
 
   @override
@@ -39,8 +41,8 @@ class Appointment extends StatelessWidget {
           children: [
             TabBarView(
               children: [
-                _buildAppointmentList(['Đang chờ', 'Đã xác nhận']),
-                _buildAppointmentList(['Đã hoàn thành', 'Đã hủy']),
+                _buildAppointmentList([1, 2]), // Pending, Confirmed
+                _buildAppointmentList([3, 4]), // Rejected, Cancelled
               ],
             ),
             Obx(() => controller.isLoading.value
@@ -52,10 +54,12 @@ class Appointment extends StatelessWidget {
     );
   }
 
-  Widget _buildAppointmentList(List<String> statusFilter) {
+  // Build appointment list based on status filter
+  Widget _buildAppointmentList(List<int> statusFilter) {
     return Obx(() {
-      final filteredAppointments = controller.appointments.values
-          .where((appointment) => statusFilter.contains(appointment['status']))
+      final filteredAppointments = controller.appointments
+          .where((appointment) =>
+              statusFilter.contains(appointment.status.value.index + 1))
           .toList();
 
       if (filteredAppointments.isEmpty) {
@@ -91,11 +95,40 @@ class Appointment extends StatelessWidget {
     });
   }
 
-  Widget _buildAppointmentCard(Map<String, dynamic> appointment) {
-    final status = appointment['status'] ?? 'Không xác định';
-    final isCompleted = status == 'Đã hoàn thành';
-    final isCancelled = status == 'Đã hủy';
-    final isActive = status == 'Đang chờ' || status == 'Đã xác nhận';
+  // Get icon for empty state
+  IconData _getEmptyIcon(int status) {
+    switch (status) {
+      case 1:
+      case 2:
+        return Icons.event_available;
+      case 3:
+      case 4:
+        return Icons.history;
+      default:
+        return Icons.event_note;
+    }
+  }
+
+  // Get message for empty state
+  String _getEmptyMessage(int status) {
+    switch (status) {
+      case 1:
+      case 2:
+        return 'Bạn chưa có lịch hẹn nào sắp tới\nHãy đặt lịch khám bệnh mới!';
+      case 3:
+      case 4:
+        return 'Bạn chưa có lịch sử khám bệnh nào\nSau khi khám hoặc huỷ lịch, thông tin sẽ hiển thị tại đây';
+      default:
+        return 'Không có dữ liệu';
+    }
+  }
+
+  // Build appointment card
+  Widget _buildAppointmentCard(Appointment appointment) {
+    final status = appointment.status.value.index + 1;
+    final isCompleted = status == 3;
+    final isCancelled = status == 4;
+    final isActive = status == 1 || status == 2;
 
     return Card(
       elevation: 4,
@@ -121,7 +154,13 @@ class Appointment extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(Map<String, dynamic> appointment) {
+  // Build header with pre-loaded hospital/clinic/vaccination center name
+  Widget _buildHeader(Appointment appointment) {
+    String placeName = appointment.hospitalName ??
+        appointment.clinicName ??
+        appointment.vaccinationCenterName ??
+        'Chưa có thông tin';
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -130,19 +169,10 @@ class Appointment extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                appointment['hospitalName'] ?? 'Phòng khám chưa xác định',
+                placeName,
                 style:
                     const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Mã lịch: #${appointment['id']?.toString().padLeft(6, '0') ?? '000000'}',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade600,
-                  fontWeight: FontWeight.w500,
-                ),
               ),
             ],
           ),
@@ -150,11 +180,11 @@ class Appointment extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: _getStatusColor(appointment['status']),
+            color: _getStatusColor(appointment.status.value),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Text(
-            appointment['status'] ?? 'Không xác định',
+            _getStatusText(appointment.status.value),
             style: const TextStyle(
               color: Colors.white,
               fontSize: 12,
@@ -166,60 +196,155 @@ class Appointment extends StatelessWidget {
     );
   }
 
-  Widget _buildDetails(Map<String, dynamic> appointment) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildDetailRow(Icons.person, 'Bác sĩ',
-              appointment['doctorName'] ?? 'Chưa xác định'),
-          const SizedBox(height: 8),
-          _buildDetailRow(Icons.local_hospital, 'Khoa',
-              appointment['department'] ?? 'Nội tổng quát'),
-          const SizedBox(height: 8),
-          _buildDetailRow(Icons.access_time, 'Thời gian',
-              '${appointment['date'] ?? '--/--/----'} - ${appointment['time'] ?? '--:--'}'),
-          if (appointment['notes'] != null) ...[
-            const SizedBox(height: 8),
-            _buildDetailRow(Icons.note, 'Ghi chú', appointment['notes']),
-          ],
-        ],
-      ),
-    );
+  // Get status text
+  String _getStatusText(AppointmentStatus status) {
+    switch (status) {
+      case AppointmentStatus.pending:
+        return 'Đang chờ';
+      case AppointmentStatus.confirmed:
+        return 'Đã xác nhận';
+      case AppointmentStatus.rejected:
+        return 'Đã từ chối';
+      case AppointmentStatus.cancelled:
+        return 'Đã hủy';
+      default:
+        return 'Chưa xác định';
+    }
   }
 
-  Widget _buildDetailRow(IconData icon, String label, String value) {
-    return Row(
+  // Get status color
+  Color _getStatusColor(AppointmentStatus status) {
+    switch (status) {
+      case AppointmentStatus.pending:
+        return Colors.orange;
+      case AppointmentStatus.confirmed:
+        return Colors.green;
+      case AppointmentStatus.rejected:
+        return Colors.red;
+      case AppointmentStatus.cancelled:
+        return Colors.blue;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  // Build details section with pre-loaded doctor name and specialization
+  Widget _buildDetails(Appointment appointment) {
+    // Lấy ngày hiện tại làm mặc định nếu không có
+    DateTime now = DateTime.now();
+    String defaultDay =
+        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+
+    // Tách và định dạng dateTime một cách linh hoạt
+    String? date = appointment.dateTime;
+    String? dayPart = defaultDay; // Mặc định là ngày hiện tại
+    String? timePart = 'Chưa xác định giờ';
+
+    if (date != null) {
+      // Kiểm tra nếu có ngày và giờ (ví dụ: "2025-07-01 8:30" hoặc "2025-07-01 8h30")
+      if (date.contains(' ')) {
+        final parts = date.split(' ');
+        dayPart = parts[0]; // Ví dụ: "2025-07-01"
+        String? timeRaw = parts[1]; // Ví dụ: "8:30" hoặc "8h30"
+        if (timeRaw != null) {
+          timePart = _formatTime(timeRaw); // Định dạng giờ
+        }
+      } else {
+        // Nếu chỉ có giờ (ví dụ: "8:30" hoặc "8h30")
+        timePart = _formatTime(date);
+      }
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 16, color: Colors.grey.shade600),
-        const SizedBox(width: 8),
-        Text(
-          '$label: ',
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.grey.shade700,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        Expanded(
-          child: Text(
-            value,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.black87,
+        // Hiển thị ngày khám
+        Row(
+          children: [
+            Icon(Icons.calendar_today, size: 16, color: Colors.grey.shade600),
+            const SizedBox(width: 8),
+            Text(
+              'Ngày khám: $dayPart',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade700,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-          ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        // Hiển thị giờ khám
+        Row(
+          children: [
+            Icon(Icons.access_time, size: 16, color: Colors.grey.shade600),
+            const SizedBox(width: 8),
+            Text(
+              'Giờ khám: $timePart',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade700,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        // Hiển thị chuyên khoa
+        Row(
+          children: [
+            Icon(Icons.medical_services, size: 16, color: Colors.grey.shade600),
+            const SizedBox(width: 8),
+            Text(
+              'Chuyên khoa: ${appointment.specializationName ?? 'Chưa xác định chuyên khoa'}',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade700,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        // Hiển thị tên bác sĩ
+        Row(
+          children: [
+            Icon(Icons.person, size: 16, color: Colors.grey.shade600),
+            const SizedBox(width: 8),
+            Text(
+              'Bác sĩ: ${appointment.doctorName ?? 'Chưa xác định bác sĩ'}',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade700,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
       ],
     );
   }
 
-  Widget _buildCompletedInfo(Map<String, dynamic> appointment) {
+  String _formatTime(String timeRaw) {
+    String timePart = 'Chưa xác định giờ';
+
+    timeRaw = timeRaw.replaceAll('h', ':');
+    if (timeRaw.contains(':')) {
+      final timeComponents = timeRaw.split(':');
+      int hour = int.tryParse(timeComponents[0]) ?? 0;
+      int minute = int.tryParse(timeComponents[1]) ?? 0;
+      if (hour >= 0 && minute >= 0 && minute < 60) {
+        String period = hour >= 12 ? 'PM' : 'AM';
+        hour = hour > 12 ? hour - 12 : hour;
+        hour = hour == 0 ? 12 : hour; // Đảm bảo 0h là 12AM
+        timePart = '$hour:${minute.toString().padLeft(2, '0')} $period';
+      }
+    }
+    return timePart;
+  }
+
+  // Build completed info
+  Widget _buildCompletedInfo(Appointment appointment) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -227,160 +352,66 @@ class Appointment extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Colors.blue.shade200),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            children: [
-              Icon(Icons.check_circle, size: 16, color: Colors.blue.shade600),
-              const SizedBox(width: 8),
-              Text(
-                'Đã khám xong',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.blue.shade700,
-                ),
-              ),
-            ],
+          Icon(Icons.check_circle, color: Colors.blue.shade600, size: 20),
+          const SizedBox(width: 8),
+          Text(
+            'Đã hoàn thành khám bệnh',
+            style: TextStyle(
+              color: Colors.blue.shade700,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-          if (appointment['completedDate'] != null) ...[
-            const SizedBox(height: 4),
-            Text(
-              'Ngày khám: ${appointment['completedDate']}',
-              style: TextStyle(fontSize: 12, color: Colors.blue.shade600),
-            ),
-          ],
-          if (appointment['diagnosis'] != null) ...[
-            const SizedBox(height: 4),
-            Text(
-              'Chẩn đoán: ${appointment['diagnosis']}',
-              style: TextStyle(fontSize: 12, color: Colors.blue.shade600),
-            ),
-          ],
         ],
       ),
     );
   }
 
-  Widget _buildActions(Map<String, dynamic> appointment) {
-    final status = appointment['status'] ?? 'Không xác định';
-    final isCompleted = status == 'Đã hoàn thành';
-    final isCancelled = status == 'Đã hủy';
-    final isActive = status == 'Đang chờ' || status == 'Đã xác nhận';
+  // Build action buttons
+  Widget _buildActions(Appointment appointment) {
+    final status = appointment.status.value.index + 1;
+    final canCancel = status == 1 || status == 2; // Pending or Confirmed
+    final canView = true;
 
     return Row(
       children: [
-        Expanded(
-          child: OutlinedButton.icon(
-            onPressed: () =>
-                controller.viewAppointmentDetail(appointment['id']),
-            style: OutlinedButton.styleFrom(
-              side: BorderSide(color: AppColor.fourthMain, width: 1.5),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              padding: const EdgeInsets.symmetric(vertical: 12),
-            ),
-            icon:
-                Icon(Icons.info_outline, size: 16, color: AppColor.fourthMain),
-            label: Text(
-              'Chi tiết',
-              style: TextStyle(
-                color: AppColor.fourthMain,
-                fontWeight: FontWeight.w500,
+        if (canView) ...[
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: () {
+                final index = controller.appointments.indexOf(appointment);
+                controller.viewAppointmentDetail(index);
+              },
+              icon: const Icon(Icons.visibility, size: 16),
+              label: const Text('Xem chi tiết'),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                side: BorderSide(color: Colors.blue.shade300),
+                foregroundColor: Colors.blue.shade700,
               ),
             ),
           ),
-        ),
-        if (isActive) ...[
+        ],
+        if (canCancel) ...[
           const SizedBox(width: 12),
           Expanded(
             child: ElevatedButton.icon(
-              onPressed: () => controller.cancelAppointment(appointment['id']),
+              onPressed: () {
+                final index = controller.appointments.indexOf(appointment);
+                controller.cancelAppointment(index);
+              },
+              icon: const Icon(Icons.cancel, size: 16),
+              label: const Text('Hủy lịch'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColor.fourthMain,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-              icon: const Icon(Icons.cancel_outlined,
-                  size: 16, color: Colors.white),
-              label: const Text(
-                'Hủy lịch',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w500,
-                ),
+                backgroundColor: Colors.red.shade600,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 8),
               ),
             ),
           ),
-        ] else if (isCompleted) ...[
-          const SizedBox(width: 12),
-          Expanded(
-            child: ElevatedButton.icon(
-              onPressed: () => controller.viewMedicalRecord(appointment['id']),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColor.fourthMain,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-              icon: const Icon(Icons.assignment, size: 16, color: Colors.white),
-              label: const Text(
-                'Hồ sơ',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ),
-        ]
+        ],
       ],
     );
-  }
-
-  Color _getStatusColor(String? status) {
-    switch (status) {
-      case 'Đã xác nhận':
-        return Colors.green;
-      case 'Đã hủy':
-        return Colors.red;
-      case 'Đã hoàn thành':
-        return Colors.blue;
-      case 'Đang chờ':
-        return Colors.orange;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  IconData _getEmptyIcon(String status) {
-    switch (status) {
-      case 'Đang chờ':
-      case 'Đã xác nhận':
-        return Icons.event_available;
-      case 'Đã hoàn thành':
-      case 'Đã hủy':
-        return Icons.history;
-      default:
-        return Icons.event_note;
-    }
-  }
-
-  String _getEmptyMessage(String status) {
-    switch (status) {
-      case 'Đang chờ':
-      case 'Đã xác nhận':
-        return 'Bạn chưa có lịch hẹn nào sắp tới\nHãy đặt lịch khám bệnh mới!';
-      case 'Đã hoàn thành':
-      case 'Đã hủy':
-        return 'Bạn chưa có lịch sử khám bệnh nào\nSau khi khám hoặc huỷ lịch, thông tin sẽ hiển thị tại đây';
-      default:
-        return 'Không có dữ liệu';
-    }
   }
 }

@@ -111,34 +111,46 @@ class LoginController extends GetxController {
     if (!validateForm()) return;
     isLoading.value = true;
     try {
+      print(
+          "Sending login request with: { 'account': '${account.text.trim()}', 'password': '${password.text.trim()}' }");
       final user = await Auth.login(
         account: account.text.trim(),
         password: password.text.trim(),
       );
-      print("Kết quả Auth.login trả về: $user (${user.runtimeType})");
+      print(
+          "Kết quả Auth.login trả về: $user (${user?.runtimeType ?? 'null'})");
       if (user != null) {
         saveCredentials();
         await saveUserToPrefs(user);
         final prefs = await SharedPreferences.getInstance();
         print("user_data sau khi lưu: ${prefs.getString('user_data')}");
-
         if (user.premissionId == 2) {
           Get.offAllNamed(Routes.dashboarddoctor);
         } else {
           Get.offAllNamed(Routes.dashboard);
         }
       } else {
-        print("User NULL, không lưu được");
+        print("User NULL, không lưu được. Kiểm tra log backend.");
         Get.snackbar(
           "Lỗi",
-          "Tài khoản hoặc mật khẩu không đúng",
+          "Tài khoản hoặc mật khẩu không đúng. Vui lòng thử lại.",
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red[300],
           colorText: Colors.white,
         );
       }
     } catch (e, stack) {
-      print("Lỗi login: $e\n$stack");
+      print("Lỗi login chi tiết: $e\nStack trace: $stack");
+      String errorMessage = e.toString().contains('400')
+          ? e.toString().replaceFirst('Exception: Lỗi 400: ', '')
+          : "Đã xảy ra lỗi khi đăng nhập: $e";
+      Get.snackbar(
+        "Lỗi",
+        errorMessage,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red[300],
+        colorText: Colors.white,
+      );
     } finally {
       isLoading.value = false;
     }
