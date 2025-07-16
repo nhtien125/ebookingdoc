@@ -10,7 +10,6 @@ class BuildFeaturedDoctors extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Không tạo mới controller ở đây, chỉ dùng Get.find nếu đã put ở trên
     final controller = Get.find<HomeController>();
 
     return Container(
@@ -25,7 +24,6 @@ class BuildFeaturedDoctors extends StatelessWidget {
             onViewMore: () => controller.viewAllDoctors(),
           ),
           const SizedBox(height: 12),
-          // Sử dụng Obx để widget tự update khi dữ liệu đổi
           Obx(() {
             if (controller.isLoading.value) {
               return const Center(child: CircularProgressIndicator());
@@ -34,7 +32,7 @@ class BuildFeaturedDoctors extends StatelessWidget {
               return const Center(child: Text('Không có dữ liệu'));
             }
             return SizedBox(
-              height: 150, // Cho cao lên chút đẹp hơn
+              height: 150,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),

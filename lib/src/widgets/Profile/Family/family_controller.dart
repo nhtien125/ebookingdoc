@@ -1,9 +1,9 @@
 import 'package:ebookingdoc/src/constants/services/patient_service.dart';
 import 'package:ebookingdoc/src/shared_preferences.dart';
 import 'package:get/get.dart';
-import 'package:flutter/material.dart';
 import 'package:ebookingdoc/src/data/model/patient_model.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter/material.dart';
 
 class FamilyController extends GetxController {
   var familyMembers = <Patient>[].obs;
@@ -52,6 +52,10 @@ class FamilyController extends GetxController {
   }
 
   Future<void> addMember(BuildContext context) async {
+    // Thông thường sẽ chuyển tới màn "Thêm thành viên", ví dụ:
+    // final added = await Get.toNamed(Routes.addFamilyMember);
+    // if (added == true) await loadFamilyMembers();
+    // Ở đây chỉ load lại list cho demo:
     await loadFamilyMembers();
   }
 

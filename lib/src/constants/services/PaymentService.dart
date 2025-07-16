@@ -32,4 +32,17 @@ class PaymentService {
     }
     return [];
   }
+
+  Future<List<Payment>> getByAppointmentId(String appointmentId) async {
+    try {
+      final response = await APICaller.getInstance().get('api/payment/getByAppointmentId/$appointmentId');
+      if (response != null && response['code'] == 200) {
+        List list = response['data'];
+        return list.map((e) => Payment.fromJson(e)).toList();
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+    return [];
+  }
 }

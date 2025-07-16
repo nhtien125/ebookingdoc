@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:ebookingdoc/src/widgets/controller/home_controller.dart';
 
-final controller = Get.put(HomeController());
+// Đảm bảo bạn có DoctorDisplay trong project!
+
+final controller = Get.find<HomeController>();
 
 class DoctorCard extends StatelessWidget {
   final DoctorDisplay doctor;
@@ -15,8 +18,9 @@ class DoctorCard extends StatelessWidget {
       onTap: () => controller.viewDoctorDetails(doctor.doctor.uuid),
       child: Container(
         margin: const EdgeInsets.only(right: 12),
+        width: 110, // fix width card cho ổn định khi scroll nhanh
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center, // Căn giữa nội dung
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Container(
               width: 80,
@@ -30,12 +34,16 @@ class DoctorCard extends StatelessWidget {
                     blurRadius: 3,
                   ),
                 ],
-                image: DecorationImage(
-                  image: doctor.doctor.image != null
-                      ? NetworkImage(doctor.doctor.image!)
-                      : const AssetImage('assets/images/default_doctor.jpg') as ImageProvider,
-                  fit: BoxFit.cover,
-                ),
+              ),
+              child: ClipOval(
+                child: doctor.user?.image != null && doctor.user!.image!.isNotEmpty
+                  ? CachedNetworkImage(
+                      imageUrl: doctor.user!.image!,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => const CircularProgressIndicator(strokeWidth: 2),
+                      errorWidget: (context, url, error) => Image.asset('assets/images/default_doctor.jpg'),
+                    )
+                  : Image.asset('assets/images/default_doctor.jpg', fit: BoxFit.cover),
               ),
             ),
             const SizedBox(height: 8),
@@ -62,25 +70,6 @@ class DoctorCard extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class DoctorList extends StatelessWidget {
-  final List<DoctorDisplay> doctors;
-
-  const DoctorList({super.key, required this.doctors});
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: doctors.map((doctor) => Flexible(
-          flex: 1, 
-          child: DoctorCard(doctor: doctor),
-        )).toList(),
       ),
     );
   }

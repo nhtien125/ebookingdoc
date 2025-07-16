@@ -1,32 +1,11 @@
-import 'package:ebookingdoc/src/widgets/custom_component/AccountPasswordFields.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ebookingdoc/src/widgets/controller/login_controller.dart';
+import 'package:ebookingdoc/src/widgets/custom_component/AccountPasswordFields.dart';
 
-class Login extends StatefulWidget {
-  const Login({super.key});
-
-  @override
-  State<Login> createState() => _LoginState();
-}
-
-class _LoginState extends State<Login> {
-  late final LoginController controller;
-
-  @override
-  void initState() {
-    super.initState();
-    // Create and assign the controller instance
-    controller = Get.put(LoginController());
-  }
-
-  @override
-  void dispose() {
-    controller.account.dispose();
-    controller.password.dispose();
-    Get.delete<LoginController>(); // Clean up the controller instance
-    super.dispose();
-  }
+class Login extends StatelessWidget {
+  Login({super.key});
+  final controller = Get.put(LoginController());
 
   @override
   Widget build(BuildContext context) {
@@ -120,6 +99,7 @@ class _LoginState extends State<Login> {
                             accountError: controller.accountError,
                             passwordError: controller.passwordError,
                             hidePassword: controller.hidePassword,
+                            // Không cần các tham số xác nhận mật khẩu khi đăng nhập
                           ),
                           const SizedBox(height: 18),
                           Row(
@@ -130,7 +110,7 @@ class _LoginState extends State<Login> {
                                   Obx(() => Checkbox(
                                         value: controller.rememberMe.value,
                                         onChanged: (value) => controller
-                                            .rememberMe.value = value ?? false,
+                                            .rememberMe.value = value!,
                                         activeColor: Colors.blue[800],
                                       )),
                                   const Text("Ghi nhớ"),
@@ -169,10 +149,9 @@ class _LoginState extends State<Login> {
                                       : const Text(
                                           "ĐĂNG NHẬP",
                                           style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
-                                          ),
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                               color: Colors.white,),
                                         ),
                                 )),
                           ),

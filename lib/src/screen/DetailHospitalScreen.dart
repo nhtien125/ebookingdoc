@@ -219,7 +219,7 @@ class DetailHospitalScreen extends StatelessWidget {
                     onPressed: () {
                       Get.delete<AppointmentScreenController>();
                       if (hospital != null) {
-                        Get.offAllNamed(
+                        Get.toNamed(
                           Routes.appointmentScreen,
                           arguments: {
                             'hospital': hospital.toJson(),
@@ -227,7 +227,7 @@ class DetailHospitalScreen extends StatelessWidget {
                           },
                         );
                       } else if (clinic != null) {
-                        Get.offAllNamed(
+                        Get.toNamed(
                           Routes.appointmentScreen,
                           arguments: {
                             'clinic': clinic.toJson(),
@@ -235,7 +235,7 @@ class DetailHospitalScreen extends StatelessWidget {
                           },
                         );
                       } else if (vaccinationCenter != null) {
-                        Get.offAllNamed(
+                        Get.toNamed(
                           Routes.appointmentScreen,
                           arguments: {
                             'vaccination_center': vaccinationCenter.toJson(),

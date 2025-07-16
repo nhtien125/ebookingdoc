@@ -74,6 +74,17 @@ class Register extends StatelessWidget {
                                               ? null
                                               : controller.usernameError.value,
                                       prefixIcon: const Icon(Icons.person),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: BorderSide(color: Colors.grey.shade300),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: BorderSide(color: Colors.blue.shade800),
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(height: 12),
@@ -86,6 +97,17 @@ class Register extends StatelessWidget {
                                               ? null
                                               : controller.emailError.value,
                                       prefixIcon: const Icon(Icons.email),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: BorderSide(color: Colors.grey.shade300),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: BorderSide(color: Colors.blue.shade800),
+                                      ),
                                     ),
                                     keyboardType: TextInputType.emailAddress,
                                   ),
@@ -109,6 +131,17 @@ class Register extends StatelessWidget {
                                               !controller.hidePassword.value;
                                         },
                                       ),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: BorderSide(color: Colors.grey.shade300),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: BorderSide(color: Colors.blue.shade800),
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(height: 12),
@@ -123,7 +156,7 @@ class Register extends StatelessWidget {
                                           ? null
                                           : controller
                                               .confirmPasswordError.value,
-                                      prefixIcon: Icon(Icons.lock_outline),
+                                      prefixIcon: const Icon(Icons.lock_outline),
                                       suffixIcon: IconButton(
                                         icon: Icon(
                                             controller.hideConfirmPassword.value
@@ -134,6 +167,17 @@ class Register extends StatelessWidget {
                                               !controller
                                                   .hideConfirmPassword.value;
                                         },
+                                      ),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: BorderSide(color: Colors.grey.shade300),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: BorderSide(color: Colors.blue.shade800),
                                       ),
                                     ),
                                   ),
@@ -157,15 +201,23 @@ class Register extends StatelessWidget {
                                         ),
                                       ),
                                       Obx(() => DropdownButtonFormField<int>(
-                                            value:
-                                                controller.selectedRole.value,
+                                            value: controller.selectedRole.value,
                                             decoration: InputDecoration(
-                                              hintText: "Bạn là",
+                                              hintText: "Chọn vai trò",
                                               prefixIcon:
                                                   const Icon(Icons.account_circle),
-                                              border: InputBorder.none,
-                                              enabledBorder: InputBorder.none,
-                                              focusedBorder: InputBorder.none,
+                                              border: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                                borderSide: BorderSide(color: Colors.grey.shade300),
+                                              ),
+                                              enabledBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                                borderSide: BorderSide(color: Colors.grey.shade300),
+                                              ),
+                                              focusedBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                                borderSide: BorderSide(color: Colors.blue.shade800),
+                                              ),
                                               filled: true,
                                               fillColor: Colors.grey[100],
                                               contentPadding:
@@ -175,16 +227,17 @@ class Register extends StatelessWidget {
                                             ),
                                             items: const [
                                               DropdownMenuItem(
-                                                  value: 1,
+                                                  value: 2,
                                                   child: Text("Bác sĩ")),
                                               DropdownMenuItem(
-                                                  value: 2,
+                                                  value: 3,
                                                   child: Text("Người dùng")),
                                             ],
                                             onChanged: (value) {
-                                              if (value != null)
+                                              if (value != null) {
                                                 controller.selectedRole.value =
                                                     value;
+                                              }
                                             },
                                           ))
                                     ],
@@ -201,9 +254,11 @@ class Register extends StatelessWidget {
                                       : controller.register,
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.blue[800],
+                                    foregroundColor: Colors.white,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(14),
                                     ),
+                                    elevation: 2,
                                   ),
                                   child: controller.isLoading.value
                                       ? const CircularProgressIndicator(

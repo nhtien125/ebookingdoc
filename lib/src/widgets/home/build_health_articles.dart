@@ -3,15 +3,15 @@ import 'package:ebookingdoc/src/widgets/controller/home_controller.dart';
 import 'package:ebookingdoc/src/widgets/custom_component/article_card.dart';
 import 'package:ebookingdoc/src/widgets/custom_component/section_header.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart'; // Đúng import
-
-final controller = Get.put(HomeController());
+import 'package:get/get.dart';
 
 class BuildHealthArticles extends StatelessWidget {
   const BuildHealthArticles({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<HomeController>();
+
     return Container(
       color: Colors.white,
       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -24,24 +24,26 @@ class BuildHealthArticles extends StatelessWidget {
             onViewMore: () => controller.viewAllArticles(),
           ),
           const SizedBox(height: 12),
-          Obx(() => SizedBox(
-                height: 265,
-                child: controller.article.isEmpty
-                    ? const Center(child: Text('Không có dữ liệu'))
-                    : ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: controller.article.length,
-                        itemBuilder: (context, index) {
-                          final article = controller.article[index];
-                          return ArticleCard(
-                            article: article, // đổi facility => article
-                         onTap: () => Get.to(() => ArticleDetail(article: article)),
-
-                          );
-                        },
-                      ),
-              )),
+          Obx(() {
+            if (controller.article.isEmpty) {
+              return const Center(child: Text('Không có dữ liệu'));
+            }
+            return SizedBox(
+              height: 265,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: controller.article.length,
+                itemBuilder: (context, index) {
+                  final article = controller.article[index];
+                  return ArticleCard(
+                    article: article,
+                    onTap: () => Get.to(() => ArticleDetail(article: article)),
+                  );
+                },
+              ),
+            );
+          }),
         ],
       ),
     );

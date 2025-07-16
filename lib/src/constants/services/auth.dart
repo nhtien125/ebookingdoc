@@ -12,12 +12,10 @@ class Auth {
     if (!isRun) {
       return null;
     }
-    await Utils.saveStringWithKey(Constant.ACCESS_TOKEN, '');
-    await Utils.saveStringWithKey(Constant.REFRESH_TOKEN, '');
     await Utils.saveStringWithKey(Constant.USERNAME, '');
     await Utils.saveStringWithKey(Constant.PASSWORD, '');
     if (Get.currentRoute != Routes.login) {
-      Get.offAllNamed(Routes.login);
+      Get.toNamed(Routes.login);
     }
   }
 
@@ -54,12 +52,6 @@ class Auth {
           response is Map &&
           response['code'] == 200 &&
           response['data'] != null) {
-        GlobalValue.getInstance()
-            .setToken('Bearer ${response['data']['access_token']}');
-        Utils.saveStringWithKey(
-            Constant.ACCESS_TOKEN, response['data']['access_token']);
-        Utils.saveStringWithKey(
-            Constant.REFRESH_TOKEN, response['data']['refresh_token']);
         Utils.saveStringWithKey(Constant.NAME, response['data']['name'] ?? '');
         Utils.saveStringWithKey(
             Constant.AVATAR, response['data']['avatar'] ?? '');
@@ -98,12 +90,20 @@ class Auth {
     try {
       var response =
           await APICaller.getInstance().post('api/auth/register', body: param);
-      if (response != null && response['code'] == 200) {
-        return true;
+      if (response == null || response is! Map<String, dynamic>) {
+        return "Không nhận được phản hồi từ server";
       }
-      return response?['message'] ?? "Đăng ký thất bại";
+
+      if (response['code'] == 200) {
+        final data = response['data'] as Map<String, dynamic>?;
+        if (data != null && data['uuid'] != null) {
+          return data['uuid'] as String; // Return uuid
+        }
+        return "Dữ liệu phản hồi không hợp lệ";
+      }
+      return response['message'] ?? "Đăng ký thất bại";
     } catch (e) {
-      return e.toString();
+      return "Lỗi hệ thống: ${e.toString().split('\n')[0]}";
     }
   }
 
@@ -115,7 +115,6 @@ class Auth {
     required String phone,
     required String email,
     required int premissionId,
-    String? accessToken,
   }) async {
     final param = {
       'name': name,
@@ -130,9 +129,6 @@ class Auth {
       final response = await APICaller.getInstance().put(
         'api/auth/update/$uuid',
         body: param,
-        headers: accessToken != null
-            ? {'Authorization': 'Bearer $accessToken'}
-            : null,
       );
 
       print('Update user response: $response');

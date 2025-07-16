@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:ebookingdoc/src/constants/app_page.dart';
 import 'package:ebookingdoc/src/constants/services/Doctorservice.dart';
-import 'package:ebookingdoc/src/constants/services/api_caller.dart';
 import 'package:ebookingdoc/src/constants/services/specialization_service.dart';
 import 'package:ebookingdoc/src/data/model/doctor_model.dart';
 import 'package:ebookingdoc/src/data/model/specialization_model.dart';
@@ -15,7 +14,7 @@ class DoctorHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final DoctorHomeController controller = Get.put(DoctorHomeController());
+    Get.put(DoctorHomeController());
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8FA),
       body: SingleChildScrollView(
@@ -35,21 +34,23 @@ class DoctorHome extends StatelessWidget {
     );
   }
 }
+
 class _HeaderSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final DoctorHomeController controller = Get.find<DoctorHomeController>();
 
     return Obx(() {
-      final user = controller.user.value; 
-      final specialization = controller.specialization.value; 
+      final user = controller.user.value;
+      final specialization = controller.specialization.value;
 
       if (user == null) {
         return const Center(child: Text('Không tìm thấy thông tin người dùng'));
       }
 
       return Container(
-        padding: const EdgeInsets.only(top: 40, left: 22, right: 22, bottom: 24),
+        padding:
+            const EdgeInsets.only(top: 40, left: 22, right: 22, bottom: 24),
         width: double.infinity,
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -107,7 +108,6 @@ class _HeaderSection extends StatelessWidget {
     });
   }
 }
-
 
 class DoctorHomeController extends GetxController {
   final isLoading = false.obs;
@@ -180,11 +180,7 @@ class DoctorHomeController extends GetxController {
 
         if (fetchedSpecialization != null) {
           // Kiểm tra xem fetchedSpecialization có thuộc tính name không, và log tên chuyên khoa
-          if (fetchedSpecialization.name != null) {
-            print('Specialization Name: ${fetchedSpecialization.name}');
-          } else {
-            print('Specialization does not have a name');
-          }
+          print('Specialization Name: ${fetchedSpecialization.name}');
 
           specialization.value = fetchedSpecialization; // Cập nhật chuyên khoa
           // Log khi chuyên khoa được cập nhật
@@ -253,11 +249,10 @@ class _QuickStatsSection extends StatelessWidget {
               color: Colors.redAccent,
               onTap: () {
                 print('Đã click Lịch hôm nay');
-                Get.toNamed(Routes.confirmschedule);
+                Get.to(Routes.confirmschedule);
               },
             ),
           ),
-      
         ],
       ),
     );
@@ -422,7 +417,7 @@ class _ManageSection extends StatelessWidget {
               title: const Text("Đăng xuất",
                   style: TextStyle(
                       fontWeight: FontWeight.bold, color: Colors.red)),
-              onTap: () => Get.offAllNamed('/login'),
+              onTap: () => Get.toNamed('/login'),
             ),
           ),
         ],

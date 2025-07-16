@@ -1,12 +1,17 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:ebookingdoc/src/Global/app_color.dart';
 import 'package:ebookingdoc/src/data/model/clinic_model.dart';
 import 'package:ebookingdoc/src/data/model/hospital_model.dart';
 import 'package:ebookingdoc/src/data/model/vaccination_center_model.dart';
+import 'package:ebookingdoc/src/data/model/doctor_model.dart';
 import 'package:ebookingdoc/src/widgets/controller/excellent_doctor_controller.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
-import '../../data/model/doctor_model.dart';
+// Constants for styling
+const _kCardBorderRadius = 12.0;
+const _kButtonPadding = EdgeInsets.symmetric(horizontal: 16, vertical: 8);
+const _kCardPadding = EdgeInsets.all(12);
+const _kImageSize = 80.0;
 
 class ExcellentDoctor extends StatelessWidget {
   final controller = Get.put(ExcellentDoctorController());
@@ -16,67 +21,68 @@ class ExcellentDoctor extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final args = Get.arguments;
-    if (args != null) {
-      if (args['hospitals'] == true) {
-        controller.topTabIndex.value = 1; // tab Bệnh viện
-      } else if (args['clinics'] == true) {
-        controller.topTabIndex.value = 2; // tab Phòng khám
-      } else if (args['vaccines'] == true) {
-        controller.topTabIndex.value = 3; // tab Tiêm chủng
-      } else {
-        controller.topTabIndex.value = 0; // tab Bác sĩ (mặc định)
-      }
-    }
+    _initializeTabFromArgs();
     return PopScope(
       canPop: true,
       child: Scaffold(
         backgroundColor: AppColor.fivethMain,
         resizeToAvoidBottomInset: false,
-        extendBody: true,
-        appBar: AppBar(
-          backgroundColor: AppColor.fourthMain,
-          iconTheme: const IconThemeData(color: Colors.white),
-          elevation: 0,
-          title: Container(
-            height: 40,
-            decoration: BoxDecoration(
-              color: AppColor.main,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: const [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 4,
-                  offset: Offset(0, 2),
-                ),
-              ],
-            ),
-            child: TextField(
-              controller: searchController,
-              decoration: InputDecoration(
-                hintText: 'Tìm kiếm bác sĩ, chuyên khoa, bệnh viện...',
-                hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
-                prefixIcon: Icon(Icons.search, color: AppColor.fourthMain),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-              ),
-              onChanged: controller.search,
-            ),
+        appBar: _buildAppBar(),
+        body: RefreshIndicator(
+          onRefresh: controller.fetchData,
+          child: Column(
+            children: [
+              _buildTopTabs(),
+              Expanded(child: _buildTabContent()),
+              _buildPaginationControls(),
+            ],
           ),
         ),
-        body: Column(
-          children: [
-            _buildTopTabs(),
-            Expanded(child: _buildTabContent()),
+      ),
+    );
+  }
+
+  void _initializeTabFromArgs() {
+    final args = Get.arguments;
+    controller.topTabIndex.value = switch (args) {
+      {'hospitals': true} => 1,
+      {'clinics': true} => 2,
+      {'vaccines': true} => 3,
+      _ => 0,
+    };
+  }
+
+  AppBar _buildAppBar() {
+    return AppBar(
+      backgroundColor: AppColor.fourthMain,
+      iconTheme: const IconThemeData(color: Colors.white),
+      elevation: 0,
+      title: Container(
+        height: 40,
+        decoration: BoxDecoration(
+          color: AppColor.main,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: const [
+            BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
           ],
+        ),
+        child: TextField(
+          controller: searchController,
+          decoration: InputDecoration(
+            hintText: 'Tìm kiếm bác sĩ, chuyên khoa, bệnh viện...',
+            hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+            prefixIcon: Icon(Icons.search, color: AppColor.fourthMain),
+            border: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          ),
+          onChanged: controller.search,
         ),
       ),
     );
   }
 
   Widget _buildTopTabs() {
-    final tabs = ['Bác sĩ', 'Bệnh viện', 'Phòng khám', 'Trung tâm tiêm chủng'];
-
+    const tabs = ['Bác sĩ', 'Bệnh viện', 'Phòng khám', 'Trung tâm tiêm chủng'];
     return Obx(() => SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
@@ -88,22 +94,16 @@ class ExcellentDoctor extends StatelessWidget {
                 child: GestureDetector(
                   onTap: () => controller.changeTab(index),
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
-                      color: isSelected
-                          ? AppColor.fourthMain
-                          : AppColor.main, // Nền màu xanh khi chọn
+                      color: isSelected ? AppColor.fourthMain : AppColor.main,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                          color: AppColor.fourthMain), // Viền màu xanh
+                      border: Border.all(color: AppColor.fourthMain),
                     ),
                     child: Text(
                       tabs[index],
                       style: TextStyle(
-                        color: isSelected
-                            ? Colors.white
-                            : AppColor.fourthMain, // Chữ trắng khi chọn
+                        color: isSelected ? Colors.white : AppColor.fourthMain,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -118,94 +118,84 @@ class ExcellentDoctor extends StatelessWidget {
   Widget _buildTabContent() {
     return Obx(() {
       if (controller.isLoading.value) {
-        return const Center(
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-          ),
-        );
+        return _buildSkeletonList();
       }
-
-      switch (controller.topTabIndex.value) {
-        case 0:
-          return _buildDoctorsContent();
-        case 1:
-          return _buildHospitalsContent();
-        case 2:
-          return _buildClinicsContent();
-        case 3:
-          return _buildVaccinationContent();
-        default:
-          return Container();
+      if (controller.hasError.value) {
+        return _buildErrorWidget();
       }
+      return switch (controller.topTabIndex.value) {
+        0 => _buildList(controller.doctors, _buildDoctorCard, 'Không tìm thấy bác sĩ nào'),
+        1 => _buildList(controller.hospitals, _buildHospitalCard, 'Không tìm thấy bệnh viện nào'),
+        2 => _buildList(controller.clinics, _buildClinicCard, 'Không tìm thấy phòng khám nào'),
+        3 => _buildList(controller.vaccinationCenters, _buildVaccinationCard, 'Không tìm thấy trung tâm tiêm chủng nào'),
+        _ => Container(),
+      };
     });
   }
 
-  Widget _buildDoctorsContent() {
-    if (controller.doctors.isEmpty) {
-      return _buildEmptyState('Không tìm thấy bác sĩ nào');
-    }
-
+  Widget _buildSkeletonList() {
     return ListView.builder(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      itemCount: controller.doctors.length,
-      itemBuilder: (context, index) {
-        return _buildDoctorCard(controller.doctors[index]);
-      },
+      itemCount: 5,
+      itemBuilder: (context, index) => Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: Card(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(_kCardBorderRadius)),
+          elevation: 3,
+          child: Padding(
+            padding: _kCardPadding,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: _kImageSize,
+                  height: _kImageSize,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(width: 150, height: 16, color: Colors.grey[300]),
+                      const SizedBox(height: 8),
+                      Container(width: 100, height: 14, color: Colors.grey[300]),
+                      const SizedBox(height: 8),
+                      Container(width: 120, height: 14, color: Colors.grey[300]),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 
-  Widget _buildHospitalsContent() {
-    if (controller.hospitals.isEmpty) {
-      return _buildEmptyState('Không tìm thấy bệnh viện nào');
-    }
-
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      itemCount: controller.hospitals.length,
-      itemBuilder: (context, index) {
-        return _buildHospitalCard(controller.hospitals[index]);
-      },
-    );
-  }
-
-  Widget _buildClinicsContent() {
-    if (controller.clinics.isEmpty) {
-      return _buildEmptyState('Không tìm thấy phòng khám nào');
-    }
-
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      itemCount: controller.clinics.length,
-      itemBuilder: (context, index) {
-        return _buildClinicCard(controller.clinics[index]);
-      },
-    );
-  }
-
-  Widget _buildVaccinationContent() {
-    if (controller.vaccinationCenters.isEmpty) {
-      return _buildEmptyState('Không tìm thấy trung tâm tiêm chủng nào');
-    }
-
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      itemCount: controller.vaccinationCenters.length,
-      itemBuilder: (context, index) {
-        return _buildVaccinationCard(controller.vaccinationCenters[index]);
-      },
-    );
-  }
-
-  Widget _buildEmptyState(String message) {
+  Widget _buildErrorWidget() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            message,
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
+          const Text(
+            'Không thể tải dữ liệu. Vui lòng thử lại.',
+            style: TextStyle(fontSize: 16, color: Colors.grey),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: controller.fetchData,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColor.fourthMain,
+              padding: _kButtonPadding,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text(
+              'Thử lại',
+              style: TextStyle(color: AppColor.main),
             ),
           ),
         ],
@@ -213,50 +203,41 @@ class ExcellentDoctor extends StatelessWidget {
     );
   }
 
-  Widget _buildDoctorCard(Doctor doctor) {
-    final controller = Get.find<ExcellentDoctorController>();
-    final name = controller.doctorNames[doctor.userId ?? doctor.uuid] ??
-        'Bác sĩ không xác định';
-    final specialty =
-        controller.doctorSpecialties[doctor.userId ?? doctor.uuid] ??
-            'Chưa có chuyên khoa';
-    final clinic = controller.doctorClinics[doctor.userId ?? doctor.uuid] ??
-        'Không có phòng khám';
+  Widget _buildList<T>(List<T> items, Widget Function(T) builder, String emptyMessage) {
+    if (items.isEmpty) {
+      return Center(
+        child: Text(
+          emptyMessage,
+          style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+        ),
+      );
+    }
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      itemCount: items.length,
+      itemBuilder: (context, index) => builder(items[index]),
+    );
+  }
 
+  Widget _buildDoctorCard(Doctor doctor) {
+    final name = controller.doctorNames[doctor.userId ?? doctor.uuid] ?? 'Bác sĩ không xác định';
+    final specialty = controller.doctorSpecialties[doctor.userId ?? doctor.uuid] ?? 'Chưa có chuyên khoa';
+    final image = controller.imageDoctor[doctor.userId ?? doctor.uuid] ?? 'assets/images/default_doctor.jpg';
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(_kCardBorderRadius)),
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () => controller.viewDoctorDetails(doctor.uuid),
+        borderRadius: BorderRadius.circular(_kCardBorderRadius),
+        onTap: () => controller.viewDoctorDetails(doctor.uuid ?? ''),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: _kCardPadding,
           child: Column(
             children: [
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: const Color(0xFF3366FF).withOpacity(0.2),
-                        width: 1,
-                      ),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
-                        doctor.image ?? '',
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Icon(Icons.person,
-                            size: 36, color: Colors.grey[400]),
-                      ),
-                    ),
-                  ),
+                  _buildImage(image, Icons.person),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
@@ -275,16 +256,14 @@ class ExcellentDoctor extends StatelessWidget {
                         const SizedBox(height: 6),
                         Text(
                           'Chuyên khoa: $specialty',
-                          style:
-                              TextStyle(color: Colors.grey[600], fontSize: 13),
+                          style: TextStyle(color: Colors.grey[600], fontSize: 13),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 6),
                         Text(
                           'Kinh nghiệm: ${doctor.experience ?? 0} năm',
-                          style:
-                              TextStyle(color: Colors.grey[600], fontSize: 13),
+                          style: TextStyle(color: Colors.grey[600], fontSize: 13),
                         ),
                       ],
                     ),
@@ -292,41 +271,10 @@ class ExcellentDoctor extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  OutlinedButton(
-                    onPressed: () => controller.viewDoctorDetails(doctor.uuid),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)),
-                      side: BorderSide(color: AppColor.fourthMain),
-                    ),
-                    child: Text(
-                      "Xem chi tiết",
-                      style:
-                          TextStyle(fontSize: 14, color: AppColor.fourthMain),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: () =>
-                        controller.bookDoctorAppointment(doctor, 'doctor'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColor.fourthMain,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)),
-                    ),
-                    child: Text(
-                      'Đặt lịch ngay',
-                      style: TextStyle(fontSize: 14, color: AppColor.main),
-                    ),
-                  ),
-                ],
+              _buildActionButtons(
+                onDetails: () => controller.viewDoctorDetails(doctor.uuid ?? ''),
+                onBook: () => controller.bookDoctorAppointment(doctor, 'doctor'),
+                bookText: 'Đặt lịch ngay',
               ),
             ],
           ),
@@ -336,423 +284,222 @@ class ExcellentDoctor extends StatelessWidget {
   }
 
   Widget _buildHospitalCard(Hospital hospital) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        elevation: 3,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () => controller.viewHospitalDetails(hospital),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Hình ảnh
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
-                        hospital.image ?? '',
-                        width: 80,
-                        height: 80,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          width: 80,
-                          height: 80,
-                          color: Colors.grey[300],
-                          child: const Icon(Icons.medical_services,
-                              color: Colors.white),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-
-                    // Thông tin bệnh viện
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            hospital.name,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 8),
-
-                          // Địa chỉ
-                          Row(
-                            children: [
-                              const Icon(Icons.location_on,
-                                  size: 16, color: Colors.grey),
-                              const SizedBox(width: 4),
-                              Expanded(
-                                child: Text(
-                                  hospital.address,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.grey[700],
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-
-                          // Đánh giá
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-
-                // Nút bấm
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    OutlinedButton(
-                      onPressed: () => controller.viewHospitalDetails(hospital),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        side: BorderSide(color: AppColor.fourthMain),
-                      ),
-                      child: Text(
-                        "Xem chi tiết",
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: AppColor.fourthMain,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    ElevatedButton(
-                      onPressed: () {
-                        print(
-                            'DEBUG | Button pressed hospital: ${hospital.toJson()}');
-                        controller.bookHospitalAppointment(
-                            hospital, 'hospital');
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColor.fourthMain,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: Text(
-                        "Đặt lịch khám",
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: AppColor.main,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+    return _buildCard(
+      imageUrl: hospital.image,
+      title: hospital.name ?? 'Bệnh viện không xác định',
+      subtitle: hospital.address ?? 'Không có địa chỉ',
+      onDetails: () => controller.viewHospitalDetails(hospital),
+      onBook: () => controller.bookHospitalAppointment(hospital, 'hospital'),
+      bookText: 'Đặt lịch khám',
     );
   }
 
   Widget _buildClinicCard(Clinic clinic) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+    return _buildCard(
+      imageUrl: clinic.image,
+      title: clinic.name ?? 'Phòng khám không xác định',
+      subtitle: clinic.address ?? 'Không có địa chỉ',
+      onDetails: () => controller.viewClinicDetails(clinic),
+      onBook: () => controller.bookClinicAppointment(clinic, 'clinic'),
+      bookText: 'Đặt lịch khám',
+    );
+  }
+
+  Widget _buildVaccinationCard(VaccinationCenter vaccina) {
+    return _buildCard(
+      imageUrl: vaccina.image,
+      title: vaccina.name ?? 'Trung tâm không xác định',
+      subtitle: vaccina.address ?? 'Không có địa chỉ',
+      extra: Text(
+        vaccina.status == 'open' ? 'Đang mở' : 'Đã đóng',
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+          color: vaccina.status == 'open' ? Colors.green : Colors.red,
         ),
-        elevation: 4,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () => controller.viewClinicDetails(clinic),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Hình ảnh
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.network(
-                    clinic.image ?? '',
-                    width: 80,
-                    height: 80,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      width: 80,
-                      height: 80,
-                      color: Colors.grey[300],
-                      child: const Icon(Icons.medical_services,
-                          color: Colors.white),
+      ),
+      onDetails: () => controller.viewVaccinaDetails(vaccina),
+      onBook: () => controller.bookVaccinationAppointment(vaccina, 'vaccination'),
+      bookText: 'Đặt lịch tiêm',
+    );
+  }
+
+  Widget _buildCard({
+    required String? imageUrl,
+    required String title,
+    required String subtitle,
+    Widget? extra,
+    required VoidCallback onDetails,
+    required VoidCallback onBook,
+    required String bookText,
+  }) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(_kCardBorderRadius)),
+      elevation: 3,
+      margin: const EdgeInsets.only(bottom: 16),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(_kCardBorderRadius),
+        onTap: onDetails,
+        child: Padding(
+          padding: _kCardPadding,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildImage(imageUrl, Icons.medical_services),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Icon(Icons.location_on, size: 16, color: Colors.grey),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                subtitle,
+                                style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (extra != null) ...[
+                          const SizedBox(height: 8),
+                          extra,
+                        ],
+                      ],
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-
-                // Thông tin phòng khám và nút bấm
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        clinic.name,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          const Icon(Icons.location_on,
-                              size: 16, color: Colors.grey),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              clinic.address,
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey[700],
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          OutlinedButton(
-                            onPressed: () =>
-                                controller.viewClinicDetails(clinic),
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 6),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              side: BorderSide(color: AppColor.fourthMain),
-                            ),
-                            child: Text(
-                              "Xem chi tiết",
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: AppColor.fourthMain,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          ElevatedButton(
-                            onPressed: () {
-                              print(
-                                  'DEBUG | Button pressed hospital: ${clinic.toJson()}');
-                              controller.bookClinicAppointment(
-                                  clinic, 'hospital');
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColor.fourthMain,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 6),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: Text(
-                              "Đặt lịch khám",
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: AppColor.main,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              _buildActionButtons(onDetails: onDetails, onBook: onBook, bookText: bookText),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildVaccinationCard(VaccinationCenter vaccina) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        elevation: 3,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () => controller.viewVaccinaDetails(vaccina),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Hình ảnh
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child:
-                          (vaccina.image != null && vaccina.image!.isNotEmpty)
-                              ? Image.network(
-                                  vaccina.image!,
-                                  width: 80,
-                                  height: 80,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      width: 80,
-                                      height: 80,
-                                      color: Colors.grey[300],
-                                      child: const Icon(Icons.medical_services,
-                                          color: Colors.white),
-                                    );
-                                  },
-                                )
-                              : Container(
-                                  width: 80,
-                                  height: 80,
-                                  color: Colors.grey[300],
-                                  child: const Icon(Icons.medical_services,
-                                      color: Colors.white),
-                                ),
-                    ),
-                    const SizedBox(width: 12),
-
-                    // Thông tin trung tâm tiêm chủng
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Tên trung tâm
-                          Text(
-                            vaccina.name,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 8),
-
-                          // Địa chỉ
-                          Row(
-                            children: [
-                              const Icon(Icons.location_on,
-                                  size: 16, color: Colors.grey),
-                              const SizedBox(width: 4),
-                              Expanded(
-                                child: Text(
-                                  vaccina.address,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.grey[700],
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-
-                          Text(
-                            (vaccina.status == "open") ? "Đang mở" : "Đã đóng",
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: (vaccina.status == "open")
-                                  ? Colors.green
-                                  : Colors.red,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    OutlinedButton(
-                      onPressed: () => controller.viewVaccinaDetails(vaccina),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        side: BorderSide(color: AppColor.fourthMain),
-                      ),
-                      child: Text(
-                        "Xem chi tiết",
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: AppColor.fourthMain,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    ElevatedButton(
-                      onPressed: () => controller.bookVaccinationAppointment(
-                          vaccina, 'vaccination'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColor.fourthMain,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: Text(
-                        "Đặt lịch tiêm",
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: AppColor.main,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
+  Widget _buildImage(String? imageUrl, IconData fallbackIcon) {
+    return Container(
+      width: _kImageSize,
+      height: _kImageSize,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFF3366FF).withOpacity(0.2)),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: imageUrl != null && imageUrl.isNotEmpty
+            ? Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return const Center(child: CircularProgressIndicator());
+                },
+                errorBuilder: (context, error, stackTrace) =>
+                    Icon(fallbackIcon, size: 36, color: Colors.grey[400]),
+              )
+            : Icon(fallbackIcon, size: 36, color: Colors.grey[400]),
       ),
     );
+  }
+
+  Widget _buildActionButtons({
+    required VoidCallback onDetails,
+    required VoidCallback onBook,
+    required String bookText,
+  }) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        OutlinedButton(
+          onPressed: onDetails,
+          style: OutlinedButton.styleFrom(
+            padding: _kButtonPadding,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            side: BorderSide(color: AppColor.fourthMain),
+          ),
+          child: Text(
+            'Xem chi tiết',
+            style: TextStyle(fontSize: 14, color: AppColor.fourthMain),
+          ),
+        ),
+        const SizedBox(width: 8),
+        ElevatedButton(
+          onPressed: onBook,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColor.fourthMain,
+            padding: _kButtonPadding,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+          child: Text(
+            bookText,
+            style: TextStyle(fontSize: 14, color: AppColor.main),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPaginationControls() {
+    return Obx(() {
+      final tabIndex = controller.topTabIndex.value;
+      final current = controller.currentPage[tabIndex] ?? 1;
+      final total = controller.totalPages[tabIndex] ?? 1;
+
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: current > 1 ? controller.previousPage : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColor.fourthMain,
+                padding: _kButtonPadding,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: Text(
+                'Trước',
+                style: TextStyle(color: AppColor.main),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Text(
+              'Trang $current / $total',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(width: 16),
+            ElevatedButton(
+              onPressed: current < total ? controller.nextPage : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColor.fourthMain,
+                padding: _kButtonPadding,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: Text(
+                'Sau',
+                style: TextStyle(color: AppColor.main),
+              ),
+            ),
+          ],
+        ),
+      );
+    });
   }
 }

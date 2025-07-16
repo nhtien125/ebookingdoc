@@ -129,7 +129,6 @@ class PersonalController extends GetxController {
         phone: phoneController.text,
         email: emailController.text,
         premissionId: oldUser?.premissionId ?? 3,
-        accessToken: null,
       );
 
       if (kDebugMode) {

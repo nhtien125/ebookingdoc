@@ -54,15 +54,10 @@ class DoctorWorkScheduleController extends GetxController {
     try {
       final result = await scheduleService.getSchedulesByDoctorId(doctorId);
       print('[fetchSchedulesByDoctorId] API result: $result');
-      if (result != null) {
-        schedules.value = result;
-        print(
-            '[fetchSchedulesByDoctorId] Đã gán schedules: ${result.map((e) => e.uuid).toList()}');
-      } else {
-        schedules.clear();
-        print('[fetchSchedulesByDoctorId] Không có schedule nào.');
-      }
-    } catch (e) {
+      schedules.value = result;
+      print(
+          '[fetchSchedulesByDoctorId] Đã gán schedules: ${result.map((e) => e.uuid).toList()}');
+        } catch (e) {
       print('[fetchSchedulesByDoctorId] Error: $e');
       schedules.clear();
     } finally {

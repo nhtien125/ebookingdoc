@@ -2,7 +2,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class PayOSService {
-  static const String baseUrl = 'http://192.168.1.29:3210';
+  static const String baseUrl = 'http://192.168.1.17:3210';
 
   Future<Map<String, dynamic>?> createPaymentLink({
     required int amount,

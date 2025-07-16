@@ -15,7 +15,7 @@ class ArticleService {
         }
       }
     } catch (e) {
-      print('Lỗi khi gọi API: $e');
+      print('Lỗi khi gọi AP I: $e');
     }
     return [];
   }

@@ -1,7 +1,8 @@
+import 'dart:developer' as dev; // Thêm để log
 import 'package:flutter/material.dart';
 import 'package:ebookingdoc/src/data/model/article_model.dart';
 import 'package:ebookingdoc/src/constants/services/ArticleService.dart';
-import 'article_detail.dart'; // Nhớ import file chi tiết này
+import 'article_detail.dart';
 
 class News extends StatefulWidget {
   const News({Key? key}) : super(key: key);
@@ -14,7 +15,12 @@ class _NewsState extends State<News> {
   List<Article> _allArticles = [];
   List<Article> _filteredArticles = [];
   bool _isSearching = false;
+  bool _isLoading = true; 
+  bool _isLoadingMore = false;
   final TextEditingController _searchController = TextEditingController();
+  int _currentPage = 1;
+  int _limit = 2; 
+  bool _hasMoreData = true; 
 
   @override
   void initState() {
@@ -22,12 +28,57 @@ class _NewsState extends State<News> {
     _fetchArticles();
   }
 
-  Future<void> _fetchArticles() async {
-    final articles = await ArticleService().getAllArticles();
-    setState(() {
-      _allArticles = articles;
-      _filteredArticles = articles;
-    });
+  Future<void> _fetchArticles({bool isRefresh = false}) async {
+    if (isRefresh || _allArticles.isEmpty) {
+      setState(() {
+        _isLoading = true;
+        _currentPage = 1;
+        _allArticles.clear();
+        _filteredArticles.clear();
+      });
+
+      try {
+        final articles = await ArticleService().getAllArticles();
+        dev.log('Số lượng bài viết từ API: ${articles.length}'); // Log tổng số
+        setState(() {
+          _allArticles = articles;
+          _hasMoreData = articles.length > _limit; // Kiểm tra nếu còn đủ để phân trang
+          _filteredArticles = _allArticles.sublist(0, _limit < articles.length ? _limit : articles.length);
+          _isLoading = false;
+        });
+      } catch (e) {
+        dev.log('Lỗi tải bài viết: $e');
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi tải bài viết: $e')),
+        );
+      }
+    } else if (_isLoadingMore) {
+      return; // Ngăn chặn gọi đồng thời
+    }
+
+    if (!_isLoading && _hasMoreData) {
+      setState(() => _isLoadingMore = true);
+      final start = (_currentPage - 1) * _limit;
+      final end = start + _limit;
+      dev.log('Tải thêm: start=$start, end=$end, total=${_allArticles.length}');
+      if (end <= _allArticles.length) {
+        await Future.delayed(const Duration(milliseconds: 500)); // Simulate network delay
+        setState(() {
+          _filteredArticles.addAll(_allArticles.sublist(start, end));
+          _currentPage++;
+          _hasMoreData = end < _allArticles.length;
+          _isLoadingMore = false;
+        });
+      } else {
+        await Future.delayed(const Duration(milliseconds: 500)); // Simulate network delay
+        setState(() {
+          _filteredArticles.addAll(_allArticles.sublist(start));
+          _hasMoreData = false;
+          _isLoadingMore = false;
+        });
+      }
+    }
   }
 
   void _searchArticles(String query) {
@@ -38,6 +89,8 @@ class _NewsState extends State<News> {
         final searchLower = query.toLowerCase();
         return title.contains(searchLower) || content.contains(searchLower);
       }).toList();
+      _currentPage = 1; // Reset page khi tìm kiếm
+      _hasMoreData = _filteredArticles.length > _limit;
     });
   }
 
@@ -46,9 +99,15 @@ class _NewsState extends State<News> {
       _isSearching = !_isSearching;
       if (!_isSearching) {
         _searchController.clear();
-        _filteredArticles = _allArticles;
+        _filteredArticles = _allArticles.sublist(0, _limit < _allArticles.length ? _limit : _allArticles.length);
+        _currentPage = 1;
+        _hasMoreData = _allArticles.length > _limit;
       }
     });
+  }
+
+  Future<void> _refreshArticles() async {
+    await _fetchArticles(isRefresh: true);
   }
 
   @override
@@ -73,17 +132,60 @@ class _NewsState extends State<News> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: _filteredArticles.isEmpty
-            ? const Center(child: Text('Không tìm thấy bài viết phù hợp'))
-            : ListView.builder(
-                itemCount: _filteredArticles.length,
-                itemBuilder: (context, index) {
-                  final article = _filteredArticles[index];
-                  return _buildArticleCard(article, context);
-                },
-              ),
+      body: RefreshIndicator(
+        onRefresh: _refreshArticles,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _filteredArticles.isEmpty
+                  ? const Center(child: Text('Không tìm thấy bài viết phù hợp'))
+                  : NotificationListener<ScrollNotification>(
+                      onNotification: (notification) {
+                        if (notification is ScrollEndNotification &&
+                            notification.metrics.pixels >=
+                                notification.metrics.maxScrollExtent - 200 &&
+                            _hasMoreData &&
+                            !_isLoadingMore) {
+                          _fetchArticles();
+                        }
+                        return false;
+                      },
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: ListView.builder(
+                              itemCount: _filteredArticles.length + (_hasMoreData ? 1 : 0),
+                              itemExtent: 350, // Đặt chiều cao cố định để tối ưu
+                              itemBuilder: (context, index) {
+                                if (index == _filteredArticles.length) {
+                                  return _buildLoadMore();
+                                }
+                                final article = _filteredArticles[index];
+                                return _buildArticleCard(article, context);
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoadMore() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Center(
+        child: _isLoadingMore
+            ? const CircularProgressIndicator()
+            : _hasMoreData
+                ? OutlinedButton(
+                    onPressed: _fetchArticles,
+                    child: const Text('Tải thêm'),
+                  )
+                : const Text('Đã tải hết'),
       ),
     );
   }
@@ -159,8 +261,7 @@ class _NewsState extends State<News> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                ArticleDetail(article: article),
+                            builder: (context) => ArticleDetail(article: article),
                           ),
                         );
                       },

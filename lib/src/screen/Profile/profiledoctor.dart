@@ -138,11 +138,7 @@ class ProfileDoctor extends StatelessWidget {
                     onTap: () => controller.doctorinformation(),
                   ),
                   const SizedBox(height: 16),
-                  buildMenuItem(
-                    icon: Icons.calendar_today_outlined,
-                    title: 'Danh sách bệnh nhân',
-                    onTap: () => controller.PatientListPage(),
-                  ),
+                 
                   const SizedBox(height: 16),
                   buildMenuItem(
                       icon: Icons.logout_outlined,

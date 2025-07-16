@@ -7,6 +7,9 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 
+// Thêm dòng này:
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
+
 Future<void> main() async {
   await dotenv.load(fileName: "assets/.env");
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
@@ -56,6 +59,9 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         initialRoute: AppPage.initialRoute,
         getPages: AppPage.routes,
+        navigatorObservers: [
+          routeObserver, // <-- ĐÂY LÀ QUAN TRỌNG NHẤT!
+        ],
       ),
     );
   }

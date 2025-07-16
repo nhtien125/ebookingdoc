@@ -1,20 +1,31 @@
 import 'package:ebookingdoc/src/Global/app_color.dart';
-import 'package:ebookingdoc/src/constants/app_page.dart';
 import 'package:ebookingdoc/src/widgets/Profile/Family/family_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class Family extends StatelessWidget {
+class Family extends StatefulWidget {
   Family({super.key});
+  @override
+  _FamilyState createState() => _FamilyState();
+}
 
+class _FamilyState extends State<Family> {
   final FamilyController controller = Get.put(FamilyController());
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    controller.loadFamilyMembers();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Thành viên gia đình',
-            style: TextStyle(color: AppColor.main, fontWeight: FontWeight.bold)),
+        title: Text(
+          'Thành viên gia đình',
+          style: TextStyle(color: AppColor.main, fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
         backgroundColor: AppColor.fourthMain,
         elevation: 1,
@@ -65,6 +76,10 @@ class Family extends StatelessWidget {
                                 ),
                               ],
                             ),
+                            trailing: IconButton(
+                              icon: Icon(Icons.delete, color: Colors.red),
+                              onPressed: () => controller.confirmDeleteMember(context, index),
+                            ),
                           ),
                         );
                       },
@@ -86,7 +101,7 @@ class Family extends StatelessWidget {
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () => Get.toNamed(Routes.patient),
+                onPressed: () => controller.addMember(context),
                 icon: const Icon(Icons.add, size: 20),
                 label: const Text(
                   'Thêm thành viên',

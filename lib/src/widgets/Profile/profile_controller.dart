@@ -38,7 +38,8 @@ class ProfileController extends GetxController {
   appointmentHistory() {
     Get.toNamed(Routes.appointment);
   }
-  PatientListPage (){
+
+  PatientListPage() {
     Get.toNamed(Routes.patientlist);
   }
 
@@ -51,8 +52,9 @@ class ProfileController extends GetxController {
   }
 
   logout() {
-    Get.offAllNamed(Routes.login);
+    Get.toNamed(Routes.login);
   }
+
   paymentHistory() {
     Get.toNamed(Routes.paymentHistory);
   }

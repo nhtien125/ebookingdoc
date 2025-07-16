@@ -1,57 +1,45 @@
-import 'package:ebookingdoc/src/Global/app_color.dart';
-import 'package:ebookingdoc/src/widgets/controller/excellent_doctor_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:ebookingdoc/src/Global/app_color.dart';
+import 'package:ebookingdoc/src/data/model/doctor_model.dart';
+import 'package:ebookingdoc/src/widgets/controller/excellent_doctor_controller.dart';
 
-final controller = Get.put(ExcellentDoctorController());
+const _kCardBorderRadius = 12.0;
+const _kButtonPadding = EdgeInsets.symmetric(horizontal: 16, vertical: 8);
+const _kCardPadding = EdgeInsets.all(12);
+const _kImageSize = 80.0;
 
-// ignore: camel_case_types
-class buildDoctorCard extends StatelessWidget {
-  const buildDoctorCard({super.key});
+class BuildDoctorCard extends StatelessWidget {
+  final Doctor doctor;
+
+  const BuildDoctorCard({super.key, required this.doctor});
 
   @override
-  Widget build(dynamic doctor) {
+  Widget build(BuildContext context) {
+    final controller = Get.find<ExcellentDoctorController>();
+    final name = controller.doctorNames[doctor.userId ?? doctor.uuid] ?? 'Bác sĩ không xác định';
+    final specialty = controller.doctorSpecialties[doctor.userId ?? doctor.uuid] ?? 'Chưa có chuyên khoa';
+
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(_kCardBorderRadius)),
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () => controller.viewDoctorDetails(doctor.id),
+        borderRadius: BorderRadius.circular(_kCardBorderRadius),
+        onTap: () {
+          if (doctor.uuid == null || doctor.uuid!.isEmpty) {
+            Get.snackbar('Lỗi', 'ID bác sĩ không hợp lệ', snackPosition: SnackPosition.BOTTOM);
+            return;
+          }
+          controller.viewDoctorDetails(doctor.uuid!);
+        },
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: _kCardPadding,
           child: Column(
             children: [
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: const Color(0xFF3366FF).withOpacity(0.2),
-                        width: 1,
-                      ),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.asset(
-                        doctor.imageUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: Colors.grey[100],
-                            child: Icon(Icons.person,
-                                size: 36, color: Colors.grey[400]),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
@@ -60,8 +48,7 @@ class buildDoctorCard extends StatelessWidget {
                         Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 2),
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFE6F0FF),
                                 borderRadius: BorderRadius.circular(4),
@@ -78,7 +65,7 @@ class buildDoctorCard extends StatelessWidget {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                doctor.name,
+                                name,
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 18,
@@ -90,47 +77,30 @@ class buildDoctorCard extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 8),
-
-                        // Chuyên khoa
                         Text(
-                          doctor.specialty,
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 13,
-                          ),
+                          specialty,
+                          style: TextStyle(color: Colors.grey[600], fontSize: 13),
                         ),
                         const SizedBox(height: 6),
-
-                        // Kinh nghiệm
                         Text(
-                          doctor.experience,
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 13,
-                          ),
+                          'Kinh nghiệm: ${doctor.experience ?? 0} năm',
+                          style: TextStyle(color: Colors.grey[600], fontSize: 13),
                         ),
                         const SizedBox(height: 8),
-
-                        // Đánh giá và trạng thái (giống card phòng khám)
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: AppColor.fourthMain.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                '${doctor.rating ?? 5} ★',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColor.fourthMain,
-                                ),
-                              ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColor.fourthMain.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            '${doctor.rating ?? 5} ★',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: AppColor.fourthMain,
                             ),
-                          ],
+                          ),
                         ),
                       ],
                     ),
@@ -138,60 +108,87 @@ class buildDoctorCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 12),
-
-              // Nút bấm - giống card phòng khám
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  OutlinedButton(
-                      onPressed: () => controller.viewDoctorDetails(doctor.id),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        side: BorderSide(color: AppColor.fourthMain),
-                      ),
-                      child: GestureDetector(
-                        onTap: () => controller.viewDoctorDetails(doctor.id),
-                        child: Text(
-                          "Xem chi tiết",
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: AppColor.fourthMain,
-                          ),
-                        ),
-                      )),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                      onPressed: () {
-                        controller.bookAppointment(doctor, 'doctor');
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColor.fourthMain,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: GestureDetector(
-                        onTap: () => controller.viewAllDoctors(),
-                        child: Text(
-                          'Đặt lịch ngay',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: AppColor.main,
-                          ),
-                        ),
-                      )),
-                ],
-              ),
+              _buildActionButtons(controller),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildImage(String? imageUrl) {
+    return Container(
+      width: _kImageSize,
+      height: _kImageSize,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFF3366FF).withOpacity(0.2)),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: imageUrl != null && imageUrl.isNotEmpty
+            ? Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return const Center(child: CircularProgressIndicator());
+                },
+                errorBuilder: (context, error, stackTrace) => Container(
+                  color: Colors.grey[100],
+                  child: Icon(Icons.person, size: 36, color: Colors.grey[400]),
+                ),
+              )
+            : Container(
+                color: Colors.grey[100],
+                child: Icon(Icons.person, size: 36, color: Colors.grey[400]),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildActionButtons(ExcellentDoctorController controller) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        OutlinedButton(
+          onPressed: () {
+            if (doctor.uuid == null || doctor.uuid!.isEmpty) {
+              Get.snackbar('Lỗi', 'ID bác sĩ không hợp lệ', snackPosition: SnackPosition.BOTTOM);
+              return;
+            }
+            controller.viewDoctorDetails(doctor.uuid!);
+          },
+          style: OutlinedButton.styleFrom(
+            padding: _kButtonPadding,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            side: BorderSide(color: AppColor.fourthMain),
+          ),
+          child: Text(
+            'Xem chi tiết',
+            style: TextStyle(fontSize: 14, color: AppColor.fourthMain),
+          ),
+        ),
+        const SizedBox(width: 8),
+        ElevatedButton(
+          onPressed: () {
+            if (doctor.uuid == null || doctor.uuid!.isEmpty) {
+              Get.snackbar('Lỗi', 'ID bác sĩ không hợp lệ', snackPosition: SnackPosition.BOTTOM);
+              return;
+            }
+            controller.bookDoctorAppointment(doctor, 'doctor');
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColor.fourthMain,
+            padding: _kButtonPadding,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+          child: Text(
+            'Đặt lịch ngay',
+            style: TextStyle(fontSize: 14, color: AppColor.main),
+          ),
+        ),
+      ],
     );
   }
 }

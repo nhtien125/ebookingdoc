@@ -1,3 +1,4 @@
+import 'dart:developer' as dev; // Thêm để log
 import 'package:ebookingdoc/src/data/model/specialization_model.dart';
 import 'package:ebookingdoc/src/widgets/controller/appointment_controller.dart';
 import 'package:flutter/material.dart';
@@ -5,8 +6,21 @@ import 'package:get/get.dart';
 import 'package:ebookingdoc/src/Global/app_color.dart';
 import 'package:ebookingdoc/src/data/model/appointment_model.dart';
 
-class AppointmentPage extends StatelessWidget {
-  final controller = Get.put(AppointmentController());
+class AppointmentPage extends StatefulWidget {
+  const AppointmentPage({Key? key}) : super(key: key);
+
+  @override
+  State<AppointmentPage> createState() => _AppointmentPageState();
+}
+
+class _AppointmentPageState extends State<AppointmentPage> {
+  final AppointmentController controller = Get.put(AppointmentController());
+
+  @override
+  void initState() {
+    super.initState();
+    controller.loadAllData(); // Tải lại dữ liệu mỗi khi vào trang
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,6 +50,13 @@ class AppointmentPage extends StatelessWidget {
               Tab(text: 'Lịch sử'),
             ],
           ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: () => controller.loadAllData(),
+              color: Colors.white,
+            ),
+          ],
         ),
         body: Stack(
           children: [
@@ -54,13 +75,16 @@ class AppointmentPage extends StatelessWidget {
     );
   }
 
-  // Build appointment list based on status filter
   Widget _buildAppointmentList(List<int> statusFilter) {
     return Obx(() {
       final filteredAppointments = controller.appointments
           .where((appointment) =>
               statusFilter.contains(appointment.status.value.index + 1))
           .toList();
+
+      // Log để kiểm tra số lượng
+      dev.log(
+          'Số lượng lịch hẹn trong ${statusFilter.first == 1 ? "Sắp tới" : "Lịch sử"}: ${filteredAppointments.length}');
 
       if (filteredAppointments.isEmpty) {
         return Center(
@@ -83,10 +107,10 @@ class AppointmentPage extends StatelessWidget {
         );
       }
 
-      return ListView.separated(
+      return ListView.builder(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         itemCount: filteredAppointments.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 12),
+        itemExtent: 150, // Đặt chiều cao cố định cho mỗi mục để tối ưu
         itemBuilder: (context, index) {
           final appointment = filteredAppointments[index];
           return _buildAppointmentCard(appointment);
@@ -95,7 +119,6 @@ class AppointmentPage extends StatelessWidget {
     });
   }
 
-  // Get icon for empty state
   IconData _getEmptyIcon(int status) {
     switch (status) {
       case 1:
@@ -109,7 +132,6 @@ class AppointmentPage extends StatelessWidget {
     }
   }
 
-  // Get message for empty state
   String _getEmptyMessage(int status) {
     switch (status) {
       case 1:
@@ -123,7 +145,6 @@ class AppointmentPage extends StatelessWidget {
     }
   }
 
-  // Build appointment card
   Widget _buildAppointmentCard(Appointment appointment) {
     final status = appointment.status.value.index + 1;
     final isCompleted = status == 3;
@@ -154,7 +175,6 @@ class AppointmentPage extends StatelessWidget {
     );
   }
 
-  // Build header with pre-loaded hospital/clinic/vaccination center name
   Widget _buildHeader(Appointment appointment) {
     String placeName = appointment.hospitalName ??
         appointment.clinicName ??
@@ -196,7 +216,6 @@ class AppointmentPage extends StatelessWidget {
     );
   }
 
-  // Get status text
   String _getStatusText(AppointmentStatus status) {
     switch (status) {
       case AppointmentStatus.pending:
@@ -212,7 +231,6 @@ class AppointmentPage extends StatelessWidget {
     }
   }
 
-  // Get status color
   Color _getStatusColor(AppointmentStatus status) {
     switch (status) {
       case AppointmentStatus.pending:
@@ -228,29 +246,22 @@ class AppointmentPage extends StatelessWidget {
     }
   }
 
-  // Build details section with pre-loaded doctor name and specialization
   Widget _buildDetails(Appointment appointment) {
-    // Lấy ngày hiện tại làm mặc định nếu không có
     DateTime now = DateTime.now();
     String defaultDay =
         '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
 
-    // Tách và định dạng dateTime một cách linh hoạt
     String? date = appointment.dateTime;
-    String? dayPart = defaultDay; // Mặc định là ngày hiện tại
+    String? dayPart = defaultDay;
     String? timePart = 'Chưa xác định giờ';
 
     if (date != null) {
-      // Kiểm tra nếu có ngày và giờ (ví dụ: "2025-07-01 8:30" hoặc "2025-07-01 8h30")
       if (date.contains(' ')) {
         final parts = date.split(' ');
-        dayPart = parts[0]; // Ví dụ: "2025-07-01"
-        String? timeRaw = parts[1]; // Ví dụ: "8:30" hoặc "8h30"
-        if (timeRaw != null) {
-          timePart = _formatTime(timeRaw); // Định dạng giờ
-        }
+        dayPart = parts[0];
+        String? timeRaw = parts[1];
+        timePart = _formatTime(timeRaw);
       } else {
-        // Nếu chỉ có giờ (ví dụ: "8:30" hoặc "8h30")
         timePart = _formatTime(date);
       }
     }
@@ -258,7 +269,6 @@ class AppointmentPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Hiển thị ngày khám
         Row(
           children: [
             Icon(Icons.calendar_today, size: 16, color: Colors.grey.shade600),
@@ -274,7 +284,6 @@ class AppointmentPage extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 8),
-        // Hiển thị giờ khám
         Row(
           children: [
             Icon(Icons.access_time, size: 16, color: Colors.grey.shade600),
@@ -290,7 +299,6 @@ class AppointmentPage extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 8),
-        // Hiển thị chuyên khoa
         Row(
           children: [
             Icon(Icons.medical_services, size: 16, color: Colors.grey.shade600),
@@ -306,7 +314,6 @@ class AppointmentPage extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 8),
-        // Hiển thị tên bác sĩ
         Row(
           children: [
             Icon(Icons.person, size: 16, color: Colors.grey.shade600),
@@ -336,14 +343,13 @@ class AppointmentPage extends StatelessWidget {
       if (hour >= 0 && minute >= 0 && minute < 60) {
         String period = hour >= 12 ? 'PM' : 'AM';
         hour = hour > 12 ? hour - 12 : hour;
-        hour = hour == 0 ? 12 : hour; // Đảm bảo 0h là 12AM
+        hour = hour == 0 ? 12 : hour;
         timePart = '$hour:${minute.toString().padLeft(2, '0')} $period';
       }
     }
     return timePart;
   }
 
-  // Build completed info
   Widget _buildCompletedInfo(Appointment appointment) {
     return Container(
       padding: const EdgeInsets.all(12),
@@ -368,7 +374,6 @@ class AppointmentPage extends StatelessWidget {
     );
   }
 
-  // Build action buttons
   Widget _buildActions(Appointment appointment) {
     final status = appointment.status.value.index + 1;
     final canCancel = status == 1 || status == 2; // Pending or Confirmed

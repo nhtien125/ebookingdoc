@@ -64,9 +64,9 @@ class LoginController extends GetxController {
     return null;
   }
 
-  bool isValidEmail(String text) => RegExp(
-          r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$")
-      .hasMatch(text);
+  bool isValidEmail(String text) =>
+      RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$")
+          .hasMatch(text);
 
   bool isValidUsername(String text) => text.length >= 4;
   bool isValidPassword(String pwd) => pwd.length >= 6 && pwd.length <= 20;
@@ -106,7 +106,6 @@ class LoginController extends GetxController {
     return valid;
   }
 
-  // Hàm đăng nhập
   Future<void> login() async {
     if (!validateForm()) return;
     isLoading.value = true;
@@ -120,14 +119,24 @@ class LoginController extends GetxController {
       print(
           "Kết quả Auth.login trả về: $user (${user?.runtimeType ?? 'null'})");
       if (user != null) {
+        if (user.status == 2) {
+          Get.snackbar(
+            "Lỗi",
+            "Tài khoản đã bị khóa",
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.red[300],
+            colorText: Colors.white,
+          );
+          return;
+        }
         saveCredentials();
         await saveUserToPrefs(user);
         final prefs = await SharedPreferences.getInstance();
         print("user_data sau khi lưu: ${prefs.getString('user_data')}");
         if (user.premissionId == 2) {
-          Get.offAllNamed(Routes.dashboarddoctor);
+          Get.toNamed(Routes.dashboarddoctor);
         } else {
-          Get.offAllNamed(Routes.dashboard);
+          Get.toNamed(Routes.dashboard);
         }
       } else {
         print("User NULL, không lưu được. Kiểm tra log backend.");
@@ -165,13 +174,13 @@ class LoginController extends GetxController {
   void forgotPassword() {
     accountError.value = '';
     passwordError.value = '';
+    // Uncomment and implement navigation if needed
     // Get.toNamed('/forgotPassword');
   }
 
   @override
   void onClose() {
-    account.dispose();
-    password.dispose();
+    // No disposal here; handled by the widget's dispose method
     super.onClose();
   }
 }

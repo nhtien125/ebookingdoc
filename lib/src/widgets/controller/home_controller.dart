@@ -1,4 +1,3 @@
-import 'package:ebookingdoc/src/Global/app_color.dart';
 import 'package:ebookingdoc/src/constants/app_page.dart';
 import 'package:ebookingdoc/src/constants/services/ArticleService.dart';
 import 'package:ebookingdoc/src/constants/services/Doctorservice.dart';
@@ -6,7 +5,6 @@ import 'package:ebookingdoc/src/constants/services/HospitalService.dart';
 import 'package:ebookingdoc/src/constants/services/MedicalService.dart';
 import 'package:ebookingdoc/src/constants/services/clinic_service.dart';
 import 'package:ebookingdoc/src/constants/services/user_service.dart';
-import 'package:ebookingdoc/src/data/model/appointment_model.dart';
 import 'package:ebookingdoc/src/data/model/article_model.dart';
 import 'package:ebookingdoc/src/data/model/clinic_model.dart';
 import 'package:ebookingdoc/src/data/model/doctor_model.dart';
@@ -16,7 +14,6 @@ import 'package:ebookingdoc/src/data/model/specialization_model.dart';
 import 'package:ebookingdoc/src/constants/services/specialization_service.dart';
 import 'package:ebookingdoc/src/data/model/userModel.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
 class DoctorDisplay {
@@ -49,8 +46,6 @@ class HomeController extends GetxController {
   final UserService _userService = UserService();
   final SpecializationService _specService = SpecializationService();
 
-
-
   @override
   void onInit() {
     super.onInit();
@@ -73,7 +68,7 @@ class HomeController extends GetxController {
     isLoading.value = true;
     featuredDoctors.clear();
 
-    List<Doctor> doctors = await _doctorService.getAllDoctors();
+    List<Doctor> doctors = await _doctorService.getDoctorsByStatus(0);
     print('[DEBUG] Số lượng bác sĩ từ API: ${doctors.length}');
 
     for (var doc in doctors) {
@@ -142,8 +137,6 @@ class HomeController extends GetxController {
     article.addAll(result);
   }
 
-
-
   Future<void> refreshData() => loadAllData();
 
   void changeTabIndex(int index) {
@@ -171,11 +164,11 @@ class HomeController extends GetxController {
   }
 
   void viewHospitalDetails(String hospitalId) {
-    Get.offAllNamed(Routes.appointmentScreen);
+    Get.toNamed(Routes.appointmentScreen);
   }
 
   void viewClinicDetails(String clinicId) {
-    Get.offAllNamed(Routes.appointmentScreen);
+    Get.toNamed(Routes.appointmentScreen);
   }
 
   void viewArticleDetails(String articleId) {

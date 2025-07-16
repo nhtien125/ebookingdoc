@@ -1,6 +1,6 @@
-// lib/widgets/home/facility_card.dart
 import 'package:ebookingdoc/src/Global/app_color.dart';
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class FacilityCard extends StatelessWidget {
   final dynamic facility;
@@ -43,25 +43,28 @@ class FacilityCard extends StatelessWidget {
                 topRight: Radius.circular(12),
               ),
               child: facility.image != null && facility.image.isNotEmpty
-                  ? Image.network(
-                      facility.image,
+                  ? CachedNetworkImage(
+                      imageUrl: facility.image,
                       width: double.infinity,
                       height: 90,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
+                      placeholder: (context, url) => Container(
+                        color: Colors.grey[200],
+                        height: 90,
+                        child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                      ),
+                      errorWidget: (context, url, error) => Container(
                         width: double.infinity,
                         height: 90,
                         color: Colors.grey[300],
-                        child: const Icon(Icons.image,
-                            size: 36, color: Colors.white70),
+                        child: const Icon(Icons.image, size: 36, color: Colors.white70),
                       ),
                     )
                   : Container(
                       width: double.infinity,
                       height: 90,
                       color: Colors.grey[300],
-                      child: const Icon(Icons.image,
-                          size: 36, color: Colors.white70),
+                      child: const Icon(Icons.image, size: 36, color: Colors.white70),
                     ),
             ),
             // Nội dung
@@ -71,7 +74,7 @@ class FacilityCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    facility.name,
+                    facility.name ?? '',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -83,12 +86,11 @@ class FacilityCard extends StatelessWidget {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.location_on,
-                          size: 14, color: Colors.grey),
+                      const Icon(Icons.location_on, size: 14, color: Colors.grey),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
-                          facility.address,
+                          facility.address ?? '',
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(

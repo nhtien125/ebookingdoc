@@ -5,13 +5,13 @@ import 'package:ebookingdoc/src/widgets/custom_component/section_header.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-final controller = Get.put(HomeController());
-
 class BuildNearestClinics extends StatelessWidget {
   const BuildNearestClinics({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<HomeController>(); 
+
     return Container(
       color: Colors.white,
       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -24,35 +24,36 @@ class BuildNearestClinics extends StatelessWidget {
             onViewMore: () => controller.viewAllClinics(),
           ),
           const SizedBox(height: 12),
-          Obx(() => SizedBox(
-                height: 265,
-                child: controller.clinics.isEmpty
-                    ? const Center(child: Text('Không có dữ liệu'))
-                    : ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: controller.clinics.length,
-                        itemBuilder: (context, index) {
-                          final clinic = controller.clinics[index];
-                          return FacilityCard(
-                            facility: clinic,
-                            onTap: () {
-                              // Truyền ID hoặc UUID vào arguments
-                              Get.offAllNamed(
-                                Routes.appointmentScreen,
-                                arguments: {
-                                  'clinic': clinic.toJson(),
-                                  'selectedPlaceType': 'clinic',
-                                  'clinicId': clinic
-                                      .uuid, // Truyền `clinic.uuid` như ID
-                                },
-                              );
-                            },
-                            buttonText: 'Đặt khám',
-                          );
+          Obx(() {
+            if (controller.clinics.isEmpty) {
+              return const Center(child: Text('Không có dữ liệu'));
+            }
+            return SizedBox(
+              height: 265,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: controller.clinics.length,
+                itemBuilder: (context, index) {
+                  final clinic = controller.clinics[index];
+                  return FacilityCard(
+                    facility: clinic,
+                    onTap: () {
+                      Get.toNamed(
+                        Routes.appointmentScreen,
+                        arguments: {
+                          'clinic': clinic.toJson(),
+                          'selectedPlaceType': 'clinic',
+                          'clinicId': clinic.uuid,
                         },
-                      ),
-              )),
+                      );
+                    },
+                    buttonText: 'Đặt khám',
+                  );
+                },
+              ),
+            );
+          }),
         ],
       ),
     );

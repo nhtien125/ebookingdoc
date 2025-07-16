@@ -127,6 +127,7 @@ class PatientController extends GetxController {
           dobController.clear();
           phoneController.clear();
           addressController.clear();
+          Get.back(); // Quay về màn hình trước đó
         } else {
           Get.snackbar('Lỗi', 'Không thể lưu thông tin',
               snackPosition: SnackPosition.BOTTOM);

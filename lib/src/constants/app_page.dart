@@ -20,6 +20,7 @@ import 'package:ebookingdoc/src/screen/Profile/profile.dart';
 import 'package:ebookingdoc/src/screen/dashboard.dart';
 import 'package:ebookingdoc/src/screen/Register/register.dart';
 import 'package:ebookingdoc/src/screen/doctor_work_schedule_page.dart';
+import 'package:ebookingdoc/src/screen/doctorregistration.dart';
 import 'package:ebookingdoc/src/screen/patientlistpage.dart';
 import 'package:ebookingdoc/src/screen/payment_history_screen.dart';
 import 'package:get/get.dart';
@@ -57,6 +58,7 @@ class AppPage {
     GetPage(name: Routes.patientlist, page: () => PatientListPage()),
     GetPage(name: Routes.detailhospital, page: () => DetailHospitalScreen()),
     GetPage(name: Routes.paymentHistory, page: () => PaymentHistoryScreen()),
-    GetPage(name: Routes.patient, page: () => Patient())
+    GetPage(name: Routes.patient, page: () => Patient()),
+    GetPage(name: Routes.doctorRegistration, page: () => DoctorRegistrationScreen()),
   ];
 }

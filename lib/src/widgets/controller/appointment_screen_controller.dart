@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:math';
-
 import 'package:ebookingdoc/src/constants/app_page.dart';
 import 'package:ebookingdoc/src/constants/services/PayOSService.dart';
 import 'package:ebookingdoc/src/constants/services/PaymentService.dart';
@@ -11,7 +10,6 @@ import 'package:ebookingdoc/src/constants/services/vaccination_center_service.da
 import 'package:ebookingdoc/src/data/model/clinic_model.dart';
 import 'package:ebookingdoc/src/data/model/vaccination_center_model.dart';
 import 'package:ebookingdoc/src/screen/PayOSWebViewScreen.dart';
-import 'package:ebookingdoc/src/shared_preferences.dart';
 import 'package:get/get.dart';
 import 'package:ebookingdoc/src/constants/services/Doctorservice.dart';
 import 'package:ebookingdoc/src/constants/services/HospitalService.dart';
@@ -47,14 +45,11 @@ class AppointmentScreenController extends GetxController {
   final Rxn<Clinic> selectedClinic = Rxn<Clinic>();
 
   // Vaccination Center
-  final VaccinationCenterService vaccinationCenterService =
-      VaccinationCenterService();
-  final RxList<VaccinationCenter> vaccinationCenters =
-      <VaccinationCenter>[].obs;
-  final Rxn<VaccinationCenter> selectedVaccinationCenter =
-      Rxn<VaccinationCenter>();
+  final VaccinationCenterService vaccinationCenterService = VaccinationCenterService();
+  final RxList<VaccinationCenter> vaccinationCenters = <VaccinationCenter>[].obs;
+  final Rxn<VaccinationCenter> selectedVaccinationCenter = Rxn<VaccinationCenter>();
 
-  //
+  // Health Status
   final healthStatus = ''.obs;
   final healthStatusController = TextEditingController();
 
@@ -68,6 +63,7 @@ class AppointmentScreenController extends GetxController {
   // Medical Service
   final MedicalServiceService _medicalServiceService = MedicalServiceService();
   final RxList<MedicalServiceModel> medical = <MedicalServiceModel>[].obs;
+
   // Schedule
   final ScheduleService _scheduleService = ScheduleService();
   final AppointmentService _appointmentService = AppointmentService();
@@ -87,16 +83,13 @@ class AppointmentScreenController extends GetxController {
   final RxBool isLoadingPatients = false.obs;
   final Rxn<Patient> selectedPatient = Rxn<Patient>();
 
-  List<MedicalServiceModel> get servicesForSelectedDepartment =>
-      medical.toList();
-
+  List<MedicalServiceModel> get servicesForSelectedDepartment => medical.toList();
   final appointmentConfirmed = false.obs;
   final paymentCompleted = false.obs;
   final selectedPaymentMethod = 'cash'.obs;
   final Rxn<Specialization> selectedDepartment = Rxn<Specialization>();
   final Rxn<MedicalServiceModel> selectedService = Rxn<MedicalServiceModel>();
   final PayOSService _payosService = PayOSService();
-
   final timeSlots = <String>[].obs;
 
   void selectDepartment(Specialization specialization) {
@@ -111,100 +104,103 @@ class AppointmentScreenController extends GetxController {
   @override
   Future<void> onInit() async {
     super.onInit();
-    final args = Get.arguments;
-    final userId = args['userId'] ?? args['user_id'];
-    print('DEBUG | Nhận userId: $userId');
-    healthStatusController.text = healthStatus.value;
-    healthStatusController.addListener(() {
-      healthStatus.value = healthStatusController.text;
-    });
-    await fetchHospitalFromApi();
-    await fetchDoctors();
-    await fetchMedicalService();
-    await fetchSpecializations();
-    await loadFamilyMembers();
-    await fetchClinicFromApi();
-    await fetchVaccinationCenterFromApi();
+    loadAllData();
+  }
 
-    if (args != null) {
-      if (args['selectedPlaceType'] != null) {
-        selectedPlaceType.value = args['selectedPlaceType'];
-        print('DEBUG | Nhận selectedPlaceType: ${selectedPlaceType.value}');
-      }
-      if (args['doctor'] != null) {
-        final doc = Doctor.fromJson(args['doctor']);
-        final user = await _userService.getUserById(doc.userId!);
-        final specialization =
-            await _specService.getById(doc.specializationId!);
-        if (user != null && specialization != null) {
-          var doctorDisplay = DoctorDisplay(
-            doctor: doc,
-            user: user,
-            specialization: specialization,
-          );
-          selectedDoctor.value = doctorDisplay;
-          await fetchSchedulesByDoctorId(doc.uuid);
+  Future<void> loadAllData() async {
+    isLoading.value = true;
+    await Future.wait([
+      Future(() async {
+        final args = Get.arguments;
+        final userId = args['userId'] ?? args['user_id'];
+        print('DEBUG | Nhận userId: $userId');
+        healthStatusController.text = healthStatus.value;
+        healthStatusController.addListener(() {
+          healthStatus.value = healthStatusController.text;
+        });
+        await fetchHospitalFromApi();
+        await fetchDoctors();
+        await fetchMedicalService();
+        await fetchSpecializations();
+        await loadFamilyMembers();
+        await fetchClinicFromApi();
+        await fetchVaccinationCenterFromApi();
+
+        if (args != null) {
+          if (args['selectedPlaceType'] != null) {
+            selectedPlaceType.value = args['selectedPlaceType'];
+            print('DEBUG | Nhận selectedPlaceType: ${selectedPlaceType.value}');
+          }
+          if (args['doctor'] != null) {
+            final doc = Doctor.fromJson(args['doctor']);
+            final user = await _userService.getUserById(doc.userId!);
+            final specialization = await _specService.getById(doc.specializationId!);
+            if (user != null && specialization != null) {
+              var doctorDisplay = DoctorDisplay(
+                doctor: doc,
+                user: user,
+                specialization: specialization,
+              );
+              selectedDoctor.value = doctorDisplay;
+              await fetchSchedulesByDoctorId(doc.uuid);
+            }
+          }
+          if (args['hospital'] != null) {
+            print('DEBUG | Nhận hospital: ${args['hospital']}');
+            selectedHospital.value = Hospital.fromJson(args['hospital']);
+            print('DEBUG | selectedHospital: ${selectedHospital.value?.name}');
+          } else if (args['doctor'] != null) {
+            if (hospitals.isNotEmpty) {
+              final doctorHospitalId = Doctor.fromJson(args['doctor']).hospitalId;
+              final found = hospitals.firstWhereOrNull((h) => h.uuid == doctorHospitalId);
+              if (found != null) selectedHospital.value = found;
+            }
+          }
+          if (args['clinic'] != null) {
+            print('DEBUG | Nhận clinic: ${args['clinic']}');
+            selectedClinic.value = Clinic.fromJson(args['clinic']);
+            print('DEBUG | selectedClinic: ${selectedClinic.value?.name}');
+          } else if (args['doctor'] != null) {
+            if (hospitals.isNotEmpty) {
+              final doctorHospitalId = Doctor.fromJson(args['doctor']).hospitalId;
+              final found = hospitals.firstWhereOrNull((h) => h.uuid == doctorHospitalId);
+              if (found != null) selectedHospital.value = found;
+            }
+          }
+          if (args['vaccination_center'] != null) {
+            selectedVaccinationCenter.value = VaccinationCenter.fromJson(args['vaccination_center']);
+          }
+          if (args['specialization'] != null) {
+            selectedDepartment.value = Specialization.fromJson(args['specialization']);
+          } else if (args['doctor'] != null) {
+            if (specializations.isNotEmpty) {
+              final doctorSpecId = Doctor.fromJson(args['doctor']).specializationId;
+              final found = specializations.firstWhereOrNull((s) => s.uuid == doctorSpecId);
+              if (found != null) selectedDepartment.value = found;
+            }
+          }
+          if (args['date'] != null) {
+            selectedDate.value = args['date'] as DateTime?;
+            _updateAvailableDatesAndSlots();
+          }
+          if (args['schedule'] != null) {
+            if (args['schedule'] is Schedule) {
+              selectedSchedule.value = args['schedule'] as Schedule;
+            } else if (args['schedule'] is Map<String, dynamic>) {
+              selectedSchedule.value = Schedule.fromJson(args['schedule']);
+            }
+            if (selectedSchedule.value != null) {
+              final start = selectedSchedule.value!.startTime?.substring(0, 5) ?? '';
+              final end = selectedSchedule.value!.endTime?.substring(0, 5) ?? '';
+              selectedTimeSlot.value = '$start - $end';
+            }
+          } else if (args['slot'] != null) {
+            selectedTimeSlot.value = args['slot'];
+          }
         }
-      }
-      if (args['hospital'] != null) {
-        print('DEBUG | Nhận hospital: ${args['hospital']}');
-        selectedHospital.value = Hospital.fromJson(args['hospital']);
-        print('DEBUG | selectedHospital: ${selectedHospital.value?.name}');
-      } else if (args['doctor'] != null) {
-        if (hospitals.isNotEmpty) {
-          final doctorHospitalId = Doctor.fromJson(args['doctor']).hospitalId;
-          final found =
-              hospitals.firstWhereOrNull((h) => h.uuid == doctorHospitalId);
-          if (found != null) selectedHospital.value = found;
-        }
-      }
-      if (args['clinic'] != null) {
-        print('DEBUG | Nhận clinic: ${args['clinic']}');
-        selectedClinic.value = Clinic.fromJson(args['clinic']);
-        print('DEBUG | selectedClinic: ${selectedClinic.value?.name}');
-      } else if (args['doctor'] != null) {
-        if (hospitals.isNotEmpty) {
-          final doctorHospitalId = Doctor.fromJson(args['doctor']).hospitalId;
-          final found =
-              hospitals.firstWhereOrNull((h) => h.uuid == doctorHospitalId);
-          if (found != null) selectedHospital.value = found;
-        }
-      }
-      if (args['vaccination_center'] != null) {
-        selectedVaccinationCenter.value =
-            VaccinationCenter.fromJson(args['vaccination_center']);
-      }
-      if (args['specialization'] != null) {
-        selectedDepartment.value =
-            Specialization.fromJson(args['specialization']);
-      } else if (args['doctor'] != null) {
-        if (specializations.isNotEmpty) {
-          final doctorSpecId = Doctor.fromJson(args['doctor']).specializationId;
-          final found =
-              specializations.firstWhereOrNull((s) => s.uuid == doctorSpecId);
-          if (found != null) selectedDepartment.value = found;
-        }
-      }
-      if (args['date'] != null) {
-        selectedDate.value = args['date'] as DateTime?;
-        _updateAvailableDatesAndSlots();
-      }
-      if (args['schedule'] != null) {
-        if (args['schedule'] is Schedule) {
-          selectedSchedule.value = args['schedule'] as Schedule;
-        } else if (args['schedule'] is Map<String, dynamic>) {
-          selectedSchedule.value = Schedule.fromJson(args['schedule']);
-        }
-        if (selectedSchedule.value != null) {
-          final start =
-              selectedSchedule.value!.startTime?.substring(0, 5) ?? '';
-          final end = selectedSchedule.value!.endTime?.substring(0, 5) ?? '';
-          selectedTimeSlot.value = '$start - $end';
-        }
-      } else if (args['slot'] != null) {
-        selectedTimeSlot.value = args['slot'];
-      }
-    }
+      })
+    ]);
+    isLoading.value = false;
   }
 
   // ========================== HOSPITAL ==========================
@@ -233,7 +229,7 @@ class AppointmentScreenController extends GetxController {
         selectedClinic.value = clinics.first;
       }
     } catch (e) {
-      print('Lỗi khi lấy danh sách bệnh viện: $e');
+      print('Lỗi khi lấy danh sách phòng khám: $e');
       clinics.clear();
     } finally {
       isLoading.value = false;
@@ -245,12 +241,11 @@ class AppointmentScreenController extends GetxController {
       isLoading.value = true;
       final result = await vaccinationCenterService.getAllVaccinationCenters();
       vaccinationCenters.assignAll(result.cast<VaccinationCenter>());
-      if (vaccinationCenters.isNotEmpty &&
-          selectedVaccinationCenter.value == null) {
+      if (vaccinationCenters.isNotEmpty && selectedVaccinationCenter.value == null) {
         selectedVaccinationCenter.value = vaccinationCenters.first;
       }
     } catch (e) {
-      print('Lỗi khi lấy danh sách bệnh viện: $e');
+      print('Lỗi khi lấy danh sách trung tâm tiêm chủng: $e');
       vaccinationCenters.clear();
     } finally {
       isLoading.value = false;
@@ -287,9 +282,7 @@ class AppointmentScreenController extends GetxController {
     isLoading.value = true;
     medical.clear();
     try {
-      List<MedicalServiceModel> result =
-          (await _medicalServiceService.getAllMedicalServices())
-              .cast<MedicalServiceModel>();
+      List<MedicalServiceModel> result = (await _medicalServiceService.getAllMedicalServices()).cast<MedicalServiceModel>();
       medical.addAll(result);
     } catch (e) {
       print('Lỗi khi lấy danh sách dịch vụ: $e');
@@ -303,10 +296,9 @@ class AppointmentScreenController extends GetxController {
     isLoading.value = true;
     featuredDoctors.clear();
     try {
-      List<Doctor> doctorsList = await _doctorService.getAllDoctors();
+      List<Doctor> doctorsList = await _doctorService.getDoctorsByStatus(0);
       for (var doc in doctorsList) {
-        if ((doc.userId == null || doc.userId!.isEmpty) ||
-            (doc.specializationId == null || doc.specializationId!.isEmpty))
+        if ((doc.userId == null || doc.userId!.isEmpty) || (doc.specializationId == null || doc.specializationId!.isEmpty))
           continue;
         final userFuture = _userService.getUserById(doc.userId!);
         final specFuture = _specService.getById(doc.specializationId!);
@@ -344,8 +336,9 @@ class AppointmentScreenController extends GetxController {
       final doctor = await _doctorService.getDoctorById(uuid);
       if (doctor != null) {
         selectedDoctor.value = doctor as DoctorDisplay?;
-        if (doctors.indexWhere((d) => d.userId == doctor.uuid) == -1)
-          doctors.add(doctor as Doctor);
+        if (doctors.indexWhere((d) => d.userId == doctor.uuid) == -1) {
+          doctors.add(doctor);
+        }
         await fetchSchedulesByDoctorId(doctor.uuid);
       }
     } finally {
@@ -379,7 +372,7 @@ class AppointmentScreenController extends GetxController {
       final userId = await getUserIdFromPrefs();
       if (userId != null) {
         final list = await _patientService.getPatientsByUserId(userId);
-        patients.assignAll(list); // Cập nhật danh sách phản ứng
+        patients.assignAll(list);
       } else {
         patients.clear();
       }
@@ -498,15 +491,39 @@ class AppointmentScreenController extends GetxController {
 
   // ========================== STEPPER, VALIDATION ==========================
   void nextStep() {
-    if (currentStep.value < 4) currentStep.value++;
+    if (currentStep.value == 1 && !isStep1Complete()) {
+      Get.snackbar('Lỗi', 'Vui lòng hoàn thành tất cả thông tin ở bước 1',
+          backgroundColor: Colors.red, colorText: Colors.white);
+      return;
+    }
+    if (currentStep.value == 2 && !isStep2Complete()) {
+      Get.snackbar('Lỗi', 'Vui lòng chọn một hồ sơ bệnh nhân',
+          backgroundColor: Colors.red, colorText: Colors.white);
+      return;
+    }
+    if (currentStep.value < 4) {
+      currentStep.value++;
+      print('DEBUG | Moved to step ${currentStep.value}');
+    }
   }
 
   void previousStep() {
-    if (currentStep.value > 1) currentStep.value--;
+    if (currentStep.value > 1) {
+      currentStep.value--;
+      print('DEBUG | Moved to step ${currentStep.value}');
+    }
   }
 
   void goToStep(int step) {
-    if (step >= 1 && step <= 4) currentStep.value = step;
+    if (step >= 1 && step <= 4) {
+      if (step == 1 || (step == 2 && isStep1Complete()) || (step == 3 && isStep2Complete())) {
+        currentStep.value = step;
+        print('DEBUG | Jumped to step $step');
+      } else {
+        Get.snackbar('Lỗi', 'Vui lòng hoàn thành các bước trước đó',
+            backgroundColor: Colors.red, colorText: Colors.white);
+      }
+    }
   }
 
   bool isStep1Complete() {
@@ -522,27 +539,6 @@ class AppointmentScreenController extends GetxController {
           selectedDate.value != null &&
           selectedTimeSlot.value != null;
     }
-  }
-
-  void resetData() {
-    selectedPlaceType.value = 'hospital'; // Reset to default place type
-    selectedHospital.value = null;
-    selectedClinic.value = null;
-    selectedVaccinationCenter.value = null;
-    selectedDepartment.value = null;
-    selectedDoctor.value = null;
-    selectedService.value = null;
-    selectedDate.value = null;
-    selectedTimeSlot.value = null;
-    selectedSchedule.value = null;
-    selectedPatient.value = null;
-    healthStatus.value = '';
-    healthStatusController.clear();
-    selectedPaymentMethod.value = 'cash'; // Reset to default
-    currentStep.value = 1; // Return to first step
-    selectedDateIndex.value = 0;
-    selectedTimeIndex.value = -1;
-    timeSlots.clear(); // Clear time slots as they depend on selections
   }
 
   bool isStep2Complete() {
@@ -581,7 +577,7 @@ class AppointmentScreenController extends GetxController {
   void completePayment() {
     if (selectedPaymentMethod.value == 'online') {
     } else {
-      Get.toNamed(Routes.dashboard);
+      Get.offAllNamed(Routes.dashboard);
     }
   }
 
@@ -590,11 +586,9 @@ class AppointmentScreenController extends GetxController {
     if (selectedDate.value != null && selectedSchedule.value != null) {
       final date = selectedDate.value!;
       final startTime = selectedSchedule.value?.startTime ?? '09:00:00';
-      dateStr =
-          '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} $startTime';
+      dateStr = '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} $startTime';
     } else if (selectedDate.value != null) {
-      dateStr =
-          '${selectedDate.value!.year.toString().padLeft(4, '0')}-${selectedDate.value!.month.toString().padLeft(2, '0')}-${selectedDate.value!.day.toString().padLeft(2, '0')} 09:00:00';
+      dateStr = '${selectedDate.value!.year.toString().padLeft(4, '0')}-${selectedDate.value!.month.toString().padLeft(2, '0')}-${selectedDate.value!.day.toString().padLeft(2, '0')} 09:00:00';
     }
     Map<String, dynamic> data = {};
     if (selectedPlaceType.value == 'vaccination') {
@@ -653,7 +647,9 @@ class AppointmentScreenController extends GetxController {
       print('Appointment ID: ${appointment.uuid}');
       return appointment.uuid;
     } else {
-      Get.snackbar('Lỗi', 'Đặt lịch thất bại!');
+      Get.snackbar( 'Khung giờ khám này đã được đặt lịch. Vui lòng chọn khung giờ khác!',
+          'Vui lòng chọn khung giờ khác.',
+          backgroundColor: Colors.red, colorText: Colors.white);
       return null;
     }
   }
@@ -673,7 +669,7 @@ class AppointmentScreenController extends GetxController {
       "status": 1,
       "payment_time": DateTime.now().toIso8601String(),
     });
-    if (paymentResult.isNotEmpty && paymentResult.first.uuid != null) {
+    if (paymentResult.isNotEmpty) {
       final paymentId = paymentResult.first.uuid;
       final patient = selectedPatient.value;
       final amount = selectedService.value?.price?.toInt() ?? 0;
@@ -696,8 +692,7 @@ class AppointmentScreenController extends GetxController {
         payment_id: paymentId,
       );
       if (paymentLinkResult != null) {
-        final paymentLink =
-            paymentLinkResult['paymentLink'] ?? paymentLinkResult;
+        final paymentLink = paymentLinkResult['paymentLink'] ?? paymentLinkResult;
         Get.to(() => PayOSWebViewScreen(
               url: paymentLink,
               paymentId: paymentId,
@@ -733,4 +728,5 @@ class AppointmentScreenController extends GetxController {
     });
     return result.isNotEmpty;
   }
+  
 }

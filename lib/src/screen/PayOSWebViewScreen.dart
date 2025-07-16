@@ -76,7 +76,7 @@ class _PayOSWebViewScreenState extends State<PayOSWebViewScreen> {
        Future.delayed(const Duration(seconds: 1), () {
         if (Navigator.canPop(context)) {
     
-          Get.toNamed(Routes.dashboard);
+          Get.offAllNamed(Routes.dashboard);
         }
       });
     } else {

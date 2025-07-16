@@ -1,13 +1,62 @@
+import 'package:ebookingdoc/main.dart';
+import 'package:ebookingdoc/src/data/model/schedule_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:ebookingdoc/src/widgets/controller/detail_doctor_controller.dart';
+import 'package:ebookingdoc/src/Global/app_color.dart';
 import 'package:ebookingdoc/src/data/model/review_model.dart';
+import 'package:ebookingdoc/src/widgets/controller/detail_doctor_controller.dart';
 
-class DetailDoctor extends StatelessWidget {
-  DetailDoctor({super.key});
-  final controller = Get.put(DetailDoctorController());
+// Constants for styling (aligned with BuildDoctorCard and ExcellentDoctor)
+const _kCardBorderRadius = 12.0;
+const _kButtonPadding = EdgeInsets.symmetric(horizontal: 16, vertical: 8);
+const _kCardPadding = EdgeInsets.all(12);
+
+class DetailDoctor extends StatefulWidget {
+  const DetailDoctor({super.key});
+
+  @override
+  State<DetailDoctor> createState() => _DetailDoctorState();
+}
+
+class _DetailDoctorState extends State<DetailDoctor> with RouteAware {
+  late final DetailDoctorController controller;
+  String? doctorId;
+
+  @override
+  void initState() {
+    super.initState();
+    doctorId = Get.arguments as String? ?? '';
+    if (doctorId == null || doctorId!.isEmpty) {
+      Get.snackbar('Lỗi', 'Không tìm thấy ID bác sĩ',
+          snackPosition: SnackPosition.BOTTOM);
+    }
+    controller = Get.put(DetailDoctorController(), tag: doctorId);
+    controller.loadAllData(doctorId!);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (route is PageRoute) {
+      routeObserver.subscribe(this, route);
+    }
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    if (doctorId != null && doctorId!.isNotEmpty) {
+      controller.loadAllData(doctorId!);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +64,7 @@ class DetailDoctor extends StatelessWidget {
       backgroundColor: Colors.grey[100],
       body: SafeArea(
         child: Obx(() {
-          if (controller.doctor.value == null) {
+          if (controller.isLoading.value || controller.doctor.value == null) {
             return const Center(child: CircularProgressIndicator());
           }
           return CustomScrollView(
@@ -45,32 +94,43 @@ class DetailDoctor extends StatelessWidget {
     return SliverAppBar(
       expandedHeight: 250,
       pinned: true,
-      backgroundColor: Colors.blue[700],
+      backgroundColor: AppColor.fourthMain,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back, color: Colors.white),
         onPressed: Get.back,
       ),
       flexibleSpace: FlexibleSpaceBar(
-        background: Obx(
-          () {
-            final doctor = controller.doctor.value!;
-            if (doctor.image != null && doctor.image!.isNotEmpty) {
-              return doctor.image!.startsWith('http')
-                  ? Image.network(doctor.image!, fit: BoxFit.cover)
-                  : Image.asset(doctor.image!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _buildPlaceholderAvatar());
-            }
-            return _buildPlaceholderAvatar();
-          },
-        ),
+        background: Obx(() {
+          final doctor = controller.doctor.value!;
+          return _buildImage(
+              controller.imageDoctor[doctor.userId ?? doctor.uuid] ??
+                  'assets/images/default_doctor.jpg');
+        }),
       ),
+    );
+  }
+
+  Widget _buildImage(String? imageUrl) {
+    return Container(
+      color: AppColor.fourthMain.withOpacity(0.2),
+      child: imageUrl != null && imageUrl.isNotEmpty
+          ? Image.network(
+              imageUrl,
+              fit: BoxFit.cover,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return const Center(child: CircularProgressIndicator());
+              },
+              errorBuilder: (context, error, stackTrace) =>
+                  _buildPlaceholderAvatar(),
+            )
+          : _buildPlaceholderAvatar(),
     );
   }
 
   Widget _buildPlaceholderAvatar() {
     return Container(
-      color: Colors.blue[900],
+      color: AppColor.fourthMain.withOpacity(0.5),
       child: const Center(
           child: Icon(Icons.person, size: 120, color: Colors.white)),
     );
@@ -78,18 +138,17 @@ class DetailDoctor extends StatelessWidget {
 
   Widget _buildDoctorInfo() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: _kCardPadding,
       color: Colors.white,
       child: Obx(() {
-        if (controller.doctor.value == null) {
-          return const Center(child: Text('Không tìm thấy thông tin bác sĩ'));
-        }
         final doctor = controller.doctor.value!;
         final doctorKey = doctor.userId ?? doctor.uuid ?? '';
         final doctorName =
             controller.doctorNames[doctorKey] ?? 'Bác sĩ không xác định';
         final specialization =
             controller.doctorSpecialties[doctorKey] ?? 'Chưa có chuyên khoa';
+        final image = controller.imageDoctor[doctorKey] ??
+            'assets/images/default_doctor.jpg';
         final avgRating = controller.getAverageRating();
         final reviewCount = controller.getReviewCount();
         return Column(
@@ -102,7 +161,7 @@ class DetailDoctor extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               specialization,
-              style: TextStyle(fontSize: 18, color: Colors.blue[700]),
+              style: TextStyle(fontSize: 18, color: AppColor.fourthMain),
             ),
             const SizedBox(height: 12),
             Row(
@@ -151,7 +210,7 @@ class DetailDoctor extends StatelessWidget {
   Widget _buildStatItem(IconData icon, String value, String label) {
     return Column(
       children: [
-        Icon(icon, color: Colors.blue[700], size: 28),
+        Icon(icon, color: AppColor.fourthMain, size: 28),
         const SizedBox(height: 4),
         Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
         Text(label, style: const TextStyle(fontSize: 12)),
@@ -161,7 +220,7 @@ class DetailDoctor extends StatelessWidget {
 
   Widget _buildAboutDoctor() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: _kCardPadding,
       margin: const EdgeInsets.only(bottom: 8),
       color: Colors.white,
       child: Obx(() {
@@ -169,18 +228,21 @@ class DetailDoctor extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Giới thiệu",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              "Giới thiệu",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
-            Text(doctor.introduce ?? '',
-                style: const TextStyle(fontSize: 14, height: 1.5)),
+            Text(
+              doctor.introduce ?? 'Không có thông tin giới thiệu',
+              style: const TextStyle(fontSize: 14, height: 1.5),
+            ),
           ],
         );
       }),
     );
   }
 
-// ...existing code...
   Widget _buildAvailableDates() {
     final dates = controller.schedules
         .map((s) => DateTime.parse(s.workDate))
@@ -190,7 +252,7 @@ class DetailDoctor extends StatelessWidget {
 
     if (dates.isEmpty) {
       return const Padding(
-        padding: EdgeInsets.all(16),
+        padding: _kCardPadding,
         child: Text("Không có ngày khám hợp lệ",
             style: TextStyle(color: Colors.grey)),
       );
@@ -200,7 +262,7 @@ class DetailDoctor extends StatelessWidget {
       height: 100,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 32), // Thêm dòng này!
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: dates.length,
         itemBuilder: (context, index) {
           final date = dates[index];
@@ -212,24 +274,25 @@ class DetailDoctor extends StatelessWidget {
           return Obx(() {
             final isSelected = index == controller.selectedDateIndex.value;
             return GestureDetector(
-              onTap: () => controller.selectedDateIndex.value = index,
+              onTap: () => controller.selectDate(index),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 180),
                 width: 70,
                 margin: const EdgeInsets.only(right: 12),
                 decoration: BoxDecoration(
-                  color: isSelected ? Colors.blue[700] : Colors.white,
-                  borderRadius: BorderRadius.circular(12),
+                  color: isSelected ? AppColor.fourthMain : Colors.white,
+                  borderRadius: BorderRadius.circular(_kCardBorderRadius),
                   border: Border.all(
-                    color: isSelected ? Colors.blue[700]! : Colors.grey[300]!,
+                    color: isSelected ? AppColor.fourthMain : Colors.grey[300]!,
                     width: 2,
                   ),
                   boxShadow: isSelected
                       ? [
                           BoxShadow(
-                              color: Colors.blue.withOpacity(0.18),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2))
+                            color: AppColor.fourthMain.withOpacity(0.18),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
                         ]
                       : [],
                 ),
@@ -258,14 +321,16 @@ class DetailDoctor extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: isSelected ? Colors.white : Colors.blue[700],
+                          color:
+                              isSelected ? Colors.white : AppColor.fourthMain,
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
                           'Hôm nay',
                           style: TextStyle(
                             fontSize: 10,
-                            color: isSelected ? Colors.blue[700] : Colors.white,
+                            color:
+                                isSelected ? AppColor.fourthMain : Colors.white,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -281,30 +346,55 @@ class DetailDoctor extends StatelessWidget {
   }
 
   Widget _buildAvailableSlots() {
-    // Lấy danh sách ngày duy nhất từ schedules
     final dates = controller.schedules
         .map((s) => DateTime.parse(s.workDate))
         .toSet()
         .toList()
       ..sort();
 
-    if (controller.selectedDateIndex.value < 0 ||
+    if (dates.isEmpty ||
+        controller.selectedDateIndex.value < 0 ||
         controller.selectedDateIndex.value >= dates.length) {
-      return const Center(child: Text('Vui lòng chọn ngày'));
+      return const Padding(
+        padding: _kCardPadding,
+        child: Text('Vui lòng chọn ngày hoặc không có lịch khám',
+            style: TextStyle(color: Colors.grey)),
+      );
     }
 
     final selectedDate = dates[controller.selectedDateIndex.value];
-
-    // Lấy các schedule theo ngày đã chọn
-    final slots = controller.schedules.where((s) {
+    final allSlots = controller.schedules.where((s) {
       final d = DateTime.parse(s.workDate);
       return d.year == selectedDate.year &&
           d.month == selectedDate.month &&
           d.day == selectedDate.day;
     }).toList();
 
-    if (slots.isEmpty) {
-      return const Center(child: Text('Không có khung giờ trống'));
+    // Remove duplicates based on start time and end time
+    final uniqueSlots = <Schedule>[];
+    final seenTimes = <String>{};
+
+    for (final slot in allSlots) {
+      final timeKey = '${slot.startTime}-${slot.endTime}';
+      if (!seenTimes.contains(timeKey)) {
+        seenTimes.add(timeKey);
+        uniqueSlots.add(slot);
+      }
+    }
+
+    // Sort slots by start time
+    uniqueSlots.sort((a, b) {
+      final timeA = a.startTime ?? '';
+      final timeB = b.startTime ?? '';
+      return timeA.compareTo(timeB);
+    });
+
+    if (uniqueSlots.isEmpty) {
+      return const Padding(
+        padding: _kCardPadding,
+        child: Text('Không có khung giờ trống',
+            style: TextStyle(color: Colors.grey)),
+      );
     }
 
     return GridView.builder(
@@ -313,42 +403,43 @@ class DetailDoctor extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3,
-        childAspectRatio: 2.5, // Tăng nhẹ để cân đối hơn
+        childAspectRatio: 2.5,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
       ),
-      itemCount: slots.length,
+      itemCount: uniqueSlots.length,
       itemBuilder: (context, index) {
         return Obx(() {
           final isSelected = index == controller.selectedTimeIndex.value;
-          final slot = slots[index];
-          // Định dạng thời gian, bỏ giây
+          final slot = uniqueSlots[index];
           final startTime = slot.startTime?.substring(0, 5) ?? '';
           final endTime = slot.endTime?.substring(0, 5) ?? '';
           return GestureDetector(
             onTap: () => controller.selectTime(index),
             child: AnimatedContainer(
-              duration: const Duration(
-                  milliseconds: 200), // Tăng thời gian để mượt hơn
+              duration: const Duration(milliseconds: 200),
               margin: const EdgeInsets.all(4),
               decoration: BoxDecoration(
                 gradient: isSelected
                     ? LinearGradient(
-                        colors: [Colors.blue[700]!, Colors.blue[900]!],
+                        colors: [
+                          AppColor.fourthMain,
+                          AppColor.fourthMain.withOpacity(0.8)
+                        ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       )
                     : null,
                 color: isSelected ? null : Colors.white,
-                borderRadius: BorderRadius.circular(16), // Bo góc mượt hơn
+                borderRadius: BorderRadius.circular(_kCardBorderRadius),
                 border: Border.all(
-                  color: isSelected ? Colors.blue[700]! : Colors.grey[300]!,
+                  color: isSelected ? AppColor.fourthMain : Colors.grey[300]!,
                   width: 1.5,
                 ),
                 boxShadow: isSelected
                     ? [
                         BoxShadow(
-                          color: Colors.blue.withOpacity(0.3),
+                          color: AppColor.fourthMain.withOpacity(0.3),
                           spreadRadius: 1,
                           blurRadius: 10,
                           offset: const Offset(0, 4),
@@ -383,7 +474,8 @@ class DetailDoctor extends StatelessWidget {
 
   Widget _buildReviewsSection() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: _kCardPadding,
+      margin: const EdgeInsets.only(bottom: 8),
       decoration: _buildCardDecoration(),
       child: Obx(() {
         final reviews = controller.reviews;
@@ -392,25 +484,28 @@ class DetailDoctor extends StatelessWidget {
           children: [
             Row(
               children: [
-                _buildSectionHeader(Icons.reviews, "Đánh giá"),
+                _buildSectionHeader(
+                    Icons.reviews, "Đánh giá (${reviews.length})"),
                 const Spacer(),
-                TextButton(
-                  onPressed: _showAllReviews,
-                  child: const Text(
-                    "Xem thêm",
-                    style: TextStyle(
-                      color: Colors.blue,
-                      fontWeight: FontWeight.w600,
+                if (reviews.length > 3)
+                  TextButton(
+                    onPressed: _showAllReviews,
+                    child: const Text(
+                      "Xem thêm",
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
             const SizedBox(height: 16),
             if (reviews.isEmpty)
               const Center(
-                  child: Text("Chưa có đánh giá nào",
-                      style: TextStyle(color: Colors.grey)))
+                child: Text("Chưa có đánh giá nào",
+                    style: TextStyle(color: Colors.grey)),
+              )
             else
               Column(children: reviews.take(3).map(_buildReviewItem).toList()),
           ],
@@ -421,12 +516,8 @@ class DetailDoctor extends StatelessWidget {
 
   Widget _buildReviewItem(Review review) {
     ImageProvider? avatarProvider;
-    if (review.patientAvatar != null && review.patientAvatar.isNotEmpty) {
-      if (review.patientAvatar.startsWith('http')) {
-        avatarProvider = NetworkImage(review.patientAvatar);
-      } else {
-        avatarProvider = AssetImage(review.patientAvatar);
-      }
+    if (review.patientAvatar.isNotEmpty) {
+      avatarProvider = NetworkImage(review.patientAvatar);
     }
 
     return Container(
@@ -434,7 +525,7 @@ class DetailDoctor extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(_kCardBorderRadius),
         border: Border.all(color: Colors.grey[200]!),
       ),
       child: Column(
@@ -444,7 +535,7 @@ class DetailDoctor extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 20,
-                backgroundColor: Colors.blue[100],
+                backgroundColor: AppColor.fourthMain.withOpacity(0.2),
                 backgroundImage: avatarProvider,
                 child: avatarProvider == null
                     ? const Icon(Icons.person, color: Colors.white)
@@ -454,8 +545,10 @@ class DetailDoctor extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(review.patientName,
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text(
+                    review.patientName,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   const SizedBox(height: 4),
                   RatingBarIndicator(
                     rating: review.stars.toDouble(),
@@ -474,7 +567,10 @@ class DetailDoctor extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          Text(review.comment ?? '', style: const TextStyle(height: 1.5)),
+          Text(
+            review.comment ?? '',
+            style: const TextStyle(height: 1.5),
+          ),
         ],
       ),
     );
@@ -484,48 +580,58 @@ class DetailDoctor extends StatelessWidget {
     Get.bottomSheet(
       Container(
         height: Get.height * 0.8,
-        padding: const EdgeInsets.all(16),
+        padding: _kCardPadding,
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
-        child: Obx(() {
-          final reviews = controller.reviews;
-          return Column(
-            children: [
-              const Text(
-                "Tất cả đánh giá",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: ListView.builder(
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "Tất cả đánh giá",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Get.back(),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: Obx(() {
+                final reviews = controller.reviews;
+                return ListView.builder(
                   itemCount: reviews.length,
                   itemBuilder: (_, index) => _buildReviewItem(reviews[index]),
-                ),
-              ),
-            ],
-          );
-        }),
+                );
+              }),
+            ),
+          ],
+        ),
       ),
+      isScrollControlled: true,
     );
   }
 
   Widget _buildBookAppointmentButton() {
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: _kCardPadding,
       child: Obx(() {
         final isEnabled = controller.selectedTimeIndex.value != -1;
         return ElevatedButton(
           onPressed: isEnabled ? () => controller.bookAppointment() : null,
           style: ElevatedButton.styleFrom(
-            backgroundColor: isEnabled ? Colors.blue[700] : Colors.transparent,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 16),
+            backgroundColor: isEnabled ? AppColor.fourthMain : Colors.grey[400],
+            foregroundColor: AppColor.main,
+            padding: _kButtonPadding,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(_kCardBorderRadius),
               side: BorderSide(
-                  color: isEnabled ? Colors.blue[700]! : Colors.grey[400]!),
+                  color: isEnabled ? AppColor.fourthMain : Colors.grey[400]!),
             ),
             elevation: isEnabled ? 3 : 0,
           ),
@@ -548,10 +654,12 @@ class DetailDoctor extends StatelessWidget {
   Widget _buildSectionHeader(IconData icon, String title) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: Colors.blue),
+        Icon(icon, size: 20, color: AppColor.fourthMain),
         const SizedBox(width: 8),
-        Text(title,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        Text(
+          title,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
       ],
     );
   }
@@ -559,7 +667,7 @@ class DetailDoctor extends StatelessWidget {
   BoxDecoration _buildCardDecoration() {
     return BoxDecoration(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(_kCardBorderRadius),
       boxShadow: [
         BoxShadow(
           color: Colors.grey.withOpacity(0.1),
@@ -568,14 +676,6 @@ class DetailDoctor extends StatelessWidget {
           offset: const Offset(0, 2),
         ),
       ],
-    );
-  }
-
-  BoxShadow _buildBoxShadow() {
-    return BoxShadow(
-      color: Colors.blue.withOpacity(0.2),
-      spreadRadius: 1,
-      blurRadius: 5,
     );
   }
 }

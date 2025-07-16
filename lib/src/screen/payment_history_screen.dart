@@ -3,9 +3,22 @@ import 'package:ebookingdoc/src/data/model/payment_model.dart';
 import 'package:ebookingdoc/src/widgets/controller/payment_history_controller.dart';
 import 'package:get/get.dart';
 
-class PaymentHistoryScreen extends StatelessWidget {
+class PaymentHistoryScreen extends StatefulWidget {
+  const PaymentHistoryScreen({Key? key}) : super(key: key);
+
+  @override
+  State<PaymentHistoryScreen> createState() => _PaymentHistoryScreenState();
+}
+
+class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
   final PaymentHistoryController controller =
-      Get.put(PaymentHistoryController());
+      Get.put(PaymentHistoryController(), permanent: false);
+
+  @override
+  void initState() {
+    super.initState();
+    controller.fetchPayemtFromApi(); // Luôn fetch lại khi vào màn
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,19 +38,16 @@ class PaymentHistoryScreen extends StatelessWidget {
         ),
         body: Obx(() {
           if (controller.isLoading.value) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }
           if (controller.payment.isEmpty) {
-            return Center(child: Text("Không có dữ liệu thanh toán."));
+            return const Center(child: Text("Không có dữ liệu thanh toán."));
           }
           return TabBarView(
             children: [
-              _buildPaymentList(
-                  controller.getPaymentByMethod(controller.payment, 'cash')),
-              _buildPaymentList(
-                  controller.getPaymentByMethod(controller.payment, 'online')),
-              _buildPaymentList(
-                  controller.getCancelledPayments(controller.payment)),
+              _buildPaymentList(controller.getPaymentByMethod(controller.payment, 'cash')),
+              _buildPaymentList(controller.getPaymentByMethod(controller.payment, 'online')),
+              _buildPaymentList(controller.getCancelledPayments(controller.payment)),
             ],
           );
         }),
@@ -46,6 +56,9 @@ class PaymentHistoryScreen extends StatelessWidget {
   }
 
   Widget _buildPaymentList(List<Payment> payments) {
+    if (payments.isEmpty) {
+      return const Center(child: Text("Không có dữ liệu."));
+    }
     return ListView.builder(
       itemCount: payments.length,
       itemBuilder: (context, index) {
@@ -71,12 +84,11 @@ class PaymentHistoryScreen extends StatelessWidget {
       color: Colors.white,
       shadowColor: Colors.black.withOpacity(0.1),
       child: ListTile(
-        contentPadding:
-            const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+        contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
         leading: CircleAvatar(
           backgroundColor: statusColor.withOpacity(0.15),
           child: Icon(
-            payment.status == 2 ? Icons.check : Icons.cancel,
+            payment.status == 2 ? Icons.cancel : Icons.check,
             color: statusColor,
             size: 30,
           ),
@@ -84,7 +96,7 @@ class PaymentHistoryScreen extends StatelessWidget {
         ),
         title: Text(
           'Số tiền: ${payment.amount} VNĐ',
-          style: TextStyle(
+          style: const TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 18,
             color: Colors.black87,
@@ -96,7 +108,7 @@ class PaymentHistoryScreen extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               'Phương thức: ${controller.getPaymentMethodText(payment.paymentMethod)}',
-              style: TextStyle(fontSize: 14, color: Colors.blueGrey),
+              style: const TextStyle(fontSize: 14, color: Colors.blueGrey),
             ),
             const SizedBox(height: 4),
             Text(
@@ -111,14 +123,14 @@ class PaymentHistoryScreen extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 'Ngày thanh toán: ${payment.paymentTime?.toLocal()}',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
             ],
           ],
         ),
-        trailing: Icon(Icons.arrow_forward_ios, size: 18, color: Colors.blue),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 18, color: Colors.blue),
         onTap: () {
-          // Tạo hành động khi nhấn vào khoản thanh toán (nếu cần)
+          // Xử lý khi bấm vào từng item (nếu cần)
         },
       ),
     );

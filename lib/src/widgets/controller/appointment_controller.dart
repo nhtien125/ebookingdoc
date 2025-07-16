@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:ebookingdoc/src/constants/services/Doctorservice.dart';
+import 'package:ebookingdoc/src/constants/services/PaymentService.dart';
 import 'package:ebookingdoc/src/constants/services/appointmentService.dart';
 import 'package:ebookingdoc/src/constants/services/api_caller.dart';
 import 'package:ebookingdoc/src/constants/services/clinic_service.dart';
@@ -19,79 +20,41 @@ class AppointmentController extends GetxController {
   final RxList<Appointment> appointments = <Appointment>[].obs;
   final AppointmentService _appointmentService = AppointmentService();
   final HospitalService _hospitalService = HospitalService();
-  final RxList<Hospital> hospital = <Hospital>[].obs;
   final ClinicService _clinicService = ClinicService();
-  final RxList<Clinic> clinic = <Clinic>[].obs;
-  final VaccinationCenterService _vaccinationCenterService =
-      VaccinationCenterService();
-  final RxList<VaccinationCenter> vaccinationcenter = <VaccinationCenter>[].obs;
+  final VaccinationCenterService _vaccinationCenterService = VaccinationCenterService();
   final DoctorService _doctorService = DoctorService();
+  final PaymentService _paymentService = PaymentService();
   var isLoading = false.obs;
   User? user;
 
   @override
   void onInit() {
     super.onInit();
-    featAppointments();
+    loadAllData();
   }
 
-  Future<void> featAppointments() async {
+  Future<void> loadAllData() async {
     isLoading.value = true;
+    try {
+      await fetchAppointments();
+    } catch (e) {
+      Get.snackbar(
+        'Lỗi',
+        'Không thể tải dữ liệu: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> fetchAppointments() async {
     appointments.clear();
 
     user = await getUserFromPrefs();
-    if (user != null) {
-      try {
-        List<Appointment> fetchedAppointments =
-            await _appointmentService.getByUserId(user!.uuid);
-        appointments.addAll(fetchedAppointments);
-
-        for (var appointment in appointments) {
-          if (appointment.hospitalId != null) {
-            var hospital =
-                await _hospitalService.getHospitalById(appointment.hospitalId!);
-            appointment.hospitalName =
-                hospital?.name ?? 'Chưa có thông tin bệnh viện';
-          }
-
-          if (appointment.clinicId != null) {
-            var clinic = await _clinicService.getById(appointment.clinicId!);
-            appointment.clinicName =
-                clinic?.name ?? 'Chưa có thông tin phòng khám';
-          }
-
-          if (appointment.vaccinationCenterId != null) {
-            var vaccinationCenter = await _vaccinationCenterService
-                .getById(appointment.vaccinationCenterId!);
-            appointment.vaccinationCenterName = vaccinationCenter?.name ??
-                'Chưa có thông tin trung tâm tiêm chủng';
-          }
-
-          if (appointment.doctorId != null) {
-            var doctor =
-                await _doctorService.getDoctorById(appointment.doctorId!);
-            if (doctor != null && doctor.userId != null) {
-              var user = await getUserById(doctor.userId!);
-              appointment.doctorName = user?.name ?? 'Chưa có thông tin bác sĩ';
-            }
-            if (doctor != null && doctor.specializationId != null) {
-              var specialization =
-                  await getspecializationId(doctor.specializationId!);
-              appointment.specializationName =
-                  specialization?.name ?? 'Chưa có thông tin chuyên khoa';
-            }
-          }
-        }
-      } catch (e) {
-        Get.snackbar(
-          'Lỗi',
-          'Không thể tải lịch hẹn: $e',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
-      }
-    } else {
+    if (user == null) {
       Get.snackbar(
         'Lỗi',
         'Không tìm thấy thông tin người dùng',
@@ -99,26 +62,74 @@ class AppointmentController extends GetxController {
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
+      return;
     }
 
-    isLoading.value = false;
+    try {
+      List<Appointment> fetchedAppointments = await _appointmentService.getByUserId(user!.uuid);
+      appointments.addAll(fetchedAppointments);
+
+      await Future.wait(appointments.map((appointment) async {
+        if (appointment.hospitalId != null) {
+          var hospital = await _hospitalService.getHospitalById(appointment.hospitalId!);
+          appointment.hospitalName = hospital?.name ?? 'Chưa có thông tin bệnh viện';
+        }
+        if (appointment.clinicId != null) {
+          var clinic = await _clinicService.getById(appointment.clinicId!);
+          appointment.clinicName = clinic?.name ?? 'Chưa có thông tin phòng khám';
+        }
+        if (appointment.vaccinationCenterId != null) {
+          var vaccinationCenter = await _vaccinationCenterService.getById(appointment.vaccinationCenterId!);
+          appointment.vaccinationCenterName = vaccinationCenter?.name ?? 'Chưa có thông tin trung tâm tiêm chủng';
+        }
+        if (appointment.doctorId != null) {
+          var doctor = await _doctorService.getDoctorById(appointment.doctorId!);
+          if (doctor != null && doctor.userId != null) {
+            var user = await getUserById(doctor.userId!);
+            appointment.doctorName = user?.name ?? 'Chưa có thông tin bác sĩ';
+          }
+          if (doctor != null && doctor.specializationId != null) {
+            var specialization = await getSpecializationById(doctor.specializationId!);
+            appointment.specializationName = specialization?.name ?? 'Chưa có thông tin chuyên khoa';
+          }
+        }
+      }));
+    } catch (e) {
+      Get.snackbar(
+        'Lỗi',
+        'Không thể tải lịch hẹn: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
   }
 
   Future<void> updateAppointmentStatus(String uuid, int status) async {
-    bool result = await _appointmentService.updateStatus(uuid, status);
-    if (result) {
-      Get.snackbar(
-        'Thành công',
-        'Cập nhật trạng thái thành công',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
-      featAppointments();
-    } else {
+    try {
+      bool result = await _appointmentService.updateStatus(uuid, status);
+      if (result) {
+        Get.snackbar(
+          'Thành công',
+          'Cập nhật trạng thái thành công',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+        await fetchAppointments();
+      } else {
+        Get.snackbar(
+          'Lỗi',
+          'Cập nhật trạng thái thất bại',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
       Get.snackbar(
         'Lỗi',
-        'Cập nhật trạng thái thất bại',
+        'Lỗi khi cập nhật trạng thái: $e',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
         colorText: Colors.white,
@@ -128,8 +139,7 @@ class AppointmentController extends GetxController {
 
   Future<User?> getUserById(String userId) async {
     try {
-      final response =
-          await APICaller.getInstance().get('api/auth/getById/$userId');
+      final response = await APICaller.getInstance().get('api/auth/getById/$userId');
       if (response != null && response['code'] == 200) {
         return User.fromJson(response['data']);
       }
@@ -139,10 +149,9 @@ class AppointmentController extends GetxController {
     return null;
   }
 
-  Future<Specialization?> getspecializationId(String specializationId) async {
+  Future<Specialization?> getSpecializationById(String specializationId) async {
     try {
-      final response = await APICaller.getInstance()
-          .get('api/specialization/getById/$specializationId');
+      final response = await APICaller.getInstance().get('api/specialization/getById/$specializationId');
       if (response != null && response['code'] == 200) {
         return Specialization.fromJson(response['data']);
       }
@@ -153,10 +162,14 @@ class AppointmentController extends GetxController {
   }
 
   Future<User?> getUserFromPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    final userJson = prefs.getString('user_data');
-    if (userJson != null) {
-      return User.fromJson(jsonDecode(userJson));
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userJson = prefs.getString('user_data');
+      if (userJson != null) {
+        return User.fromJson(jsonDecode(userJson));
+      }
+    } catch (e) {
+      print('Lỗi khi lấy thông tin người dùng từ SharedPreferences: $e');
     }
     return null;
   }
@@ -172,14 +185,20 @@ class AppointmentController extends GetxController {
       String? date = appointment.dateTime;
       String? dayPart = 'Chưa xác định ngày';
       String? timePart = 'Chưa xác định giờ';
+      String? paymentMethod = 'Không có thanh toán';
+      if (appointment.uuid.isNotEmpty) {
+        final paymentList = await _paymentService.getByAppointmentId(appointment.uuid);
+        if (paymentList.isNotEmpty) {
+          paymentMethod = paymentList.first.paymentMethod ?? 'Không có thanh toán';
+        }
+      }
+
       if (date != null) {
         if (date.contains(' ')) {
           final parts = date.split(' ');
           dayPart = parts[0];
           String? timeRaw = parts[1];
-          if (timeRaw != null) {
-            timePart = _formatTime(timeRaw);
-          }
+          timePart = _formatTime(timeRaw);
         } else {
           timePart = _formatTime(date);
           dayPart = DateTime.now().toIso8601String().split('T')[0];
@@ -188,7 +207,7 @@ class AppointmentController extends GetxController {
 
       Get.dialog(
         AlertDialog(
-          title: Text('Chi tiết lịch hẹn'),
+          title: const Text('Chi tiết lịch hẹn'),
           content: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -218,6 +237,7 @@ class AppointmentController extends GetxController {
                         'Chưa có thông tin chuyên khoa'),
                 _buildDetailItem('Ngày khám', dayPart),
                 _buildDetailItem('Giờ khám', timePart),
+                _buildDetailItem('Phương thức thanh toán', paymentMethod),
                 _buildDetailItem(
                     'Trạng thái', _getStatusText(appointment.status.value)),
                 if (appointment.status.value == AppointmentStatus.cancelled)
@@ -236,6 +256,61 @@ class AppointmentController extends GetxController {
     }
   }
 
+  void cancelAppointment(int appointmentIndex) async {
+    if (appointmentIndex < 0 || appointmentIndex >= appointments.length) {
+      return;
+    }
+
+    final appointment = appointments[appointmentIndex];
+
+    if (appointment.uuid.isNotEmpty) {
+      final paymentList = await _paymentService.getByAppointmentId(appointment.uuid);
+      if (paymentList.isNotEmpty) {
+        bool hasOnlinePayment = paymentList.any((payment) =>
+            payment.paymentMethod != null &&
+            payment.paymentMethod!.toLowerCase() == 'online');
+        
+        if (hasOnlinePayment) {
+          Get.dialog(
+            AlertDialog(
+              title: const Text('Không thể hủy lịch'),
+              content: const Text(
+                  'Lịch hẹn thanh toán online không thể hủy theo chính sách của hệ thống.'),
+              actions: [
+                TextButton(
+                  onPressed: () => Get.back(),
+                  child: const Text('Đóng'),
+                ),
+              ],
+            ),
+          );
+          return;
+        }
+      }
+    }
+
+    Get.dialog(
+      AlertDialog(
+        title: const Text('Xác nhận hủy lịch'),
+        content: const Text('Bạn có chắc chắn muốn hủy lịch hẹn này không?'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('Không'),
+          ),
+          TextButton(
+            onPressed: () async {
+              await updateAppointmentStatus(
+                  appointment.uuid, AppointmentStatus.cancelled.index);
+              Get.back();
+            },
+            child: const Text('Hủy lịch', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
   String _getStatusText(AppointmentStatus status) {
     switch (status) {
       case AppointmentStatus.pending:
@@ -249,60 +324,6 @@ class AppointmentController extends GetxController {
       default:
         return 'Chưa xác định';
     }
-  }
-
-  void cancelAppointment(int appointmentIndex) {
-    if (appointmentIndex < 0 || appointmentIndex >= appointments.length) {
-      return;
-    }
-
-    final appointment = appointments[appointmentIndex];
-    final now = DateTime.now();
-    final appointmentDateTime = DateTime.parse(appointment.dateTime ??
-        '${now.toIso8601String().split('T')[0]} ${now.hour}:00:00.000Z');
-    final timeDifference = appointmentDateTime.difference(now).inHours;
-
-    String refundPolicy = '';
-    if (timeDifference > 24) {
-      refundPolicy =
-          'Theo chính sách hủy lịch hẹn được áp dụng bởi hệ thống của chúng tôi, bạn sẽ được hoàn trả 80% tổng số tiền đã thanh toán nếu bạn thực hiện việc hủy lịch trước ít nhất 24 giờ so với thời gian đã được đặt lịch. Quy định này được thiết kế nhằm mang lại sự linh hoạt tối đa cho khách hàng, đồng thời đảm bảo rằng chúng tôi có thể sắp xếp lại lịch trình một cách hiệu quả để phục vụ các nhu cầu khác, đồng thời hỗ trợ bạn trong trường hợp cần điều chỉnh kế hoạch cá nhân một cách bất ngờ.';
-    } else {
-      refundPolicy =
-          'Theo chính sách hủy lịch hẹn được áp dụng bởi hệ thống của chúng tôi, không có khoản hoàn tiền nào được áp dụng nếu bạn hủy lịch sau 24 giờ trước thời gian đã đặt lịch. Quy định này được đưa ra để duy trì sự ổn định trong việc quản lý lịch trình, đảm bảo cam kết với các dịch vụ đã được lên kế hoạch trước đó, cũng như tránh những gián đoạn không đáng có đối với đội ngũ nhân sự và các khách hàng khác.';
-    }
-
-    Get.dialog(
-      AlertDialog(
-        title: const Text('Xác nhận hủy lịch'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Bạn có chắc chắn muốn hủy lịch hẹn này không?'),
-            const SizedBox(height: 10),
-            Text('Điều khoản hủy:',
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            Text(refundPolicy),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: const Text('Không'),
-          ),
-          TextButton(
-            onPressed: () {
-              if (appointment != null) {
-                updateAppointmentStatus(
-                    appointment.uuid, AppointmentStatus.cancelled.index);
-              }
-              Get.back();
-            },
-            child: const Text('Hủy lịch', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _buildDetailItem(String label, String? value) {
@@ -332,7 +353,8 @@ class AppointmentController extends GetxController {
     );
   }
 
-  String _formatTime(String timeRaw) {
+  String _formatTime(String? timeRaw) {
+    if (timeRaw == null) return 'Chưa xác định giờ';
     String timePart = 'Chưa xác định giờ';
     timeRaw = timeRaw.replaceAll('h', ':');
     if (timeRaw.contains(':')) {
@@ -347,5 +369,272 @@ class AppointmentController extends GetxController {
       }
     }
     return timePart;
+  }
+
+  IconData getEmptyIcon(int status) {
+    switch (status) {
+      case 1:
+      case 2:
+        return Icons.event_available;
+      case 3:
+      case 4:
+        return Icons.history;
+      default:
+        return Icons.event_note;
+    }
+  }
+
+  String getEmptyMessage(int status) {
+    switch (status) {
+      case 1:
+      case 2:
+        return 'Bạn chưa có lịch hẹn nào sắp tới\nHãy đặt lịch khám bệnh mới!';
+      case 3:
+      case 4:
+        return 'Bạn chưa có lịch sử khám bệnh nào\nSau khi khám hoặc huỷ lịch, thông tin sẽ hiển thị tại đây';
+      default:
+        return 'Không có dữ liệu';
+    }
+  }
+
+  Widget buildAppointmentCard(Appointment appointment, BuildContext context) {
+    final status = appointment.status.value.index + 1;
+    final isCompleted = status == 3;
+    final isCancelled = status == 4;
+    final isActive = status == 1 || status == 2;
+
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shadowColor: Colors.black.withOpacity(0.15),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            buildHeader(appointment),
+            const SizedBox(height: 12),
+            buildDetails(appointment),
+            if (isCompleted) ...[
+              const SizedBox(height: 12),
+              buildCompletedInfo(appointment),
+            ],
+            const SizedBox(height: 16),
+            buildActions(appointment, context),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildHeader(Appointment appointment) {
+    String placeName = appointment.hospitalName ??
+        appointment.clinicName ??
+        appointment.vaccinationCenterName ??
+        'Chưa có thông tin';
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                placeName,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: _getStatusColor(appointment.status.value),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Text(
+            _getStatusText(appointment.status.value),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Color _getStatusColor(AppointmentStatus status) {
+    switch (status) {
+      case AppointmentStatus.pending:
+        return Colors.orange;
+      case AppointmentStatus.confirmed:
+        return Colors.green;
+      case AppointmentStatus.rejected:
+        return Colors.red;
+      case AppointmentStatus.cancelled:
+        return Colors.blue;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  Widget buildDetails(Appointment appointment) {
+    DateTime now = DateTime.now();
+    String defaultDay =
+        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+
+    String? date = appointment.dateTime;
+    String? dayPart = defaultDay;
+    String? timePart = 'Chưa xác định giờ';
+
+    if (date != null) {
+      if (date.contains(' ')) {
+        final parts = date.split(' ');
+        dayPart = parts[0];
+        String? timeRaw = parts[1];
+        timePart = _formatTime(timeRaw);
+      } else {
+        timePart = _formatTime(date);
+      }
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.calendar_today, size: 16, color: Colors.grey.shade600),
+            const SizedBox(width: 8),
+            Text(
+              'Ngày khám: $dayPart',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade700,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Icon(Icons.access_time, size: 16, color: Colors.grey.shade600),
+            const SizedBox(width: 8),
+            Text(
+              'Giờ khám: $timePart',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade700,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Icon(Icons.medical_services, size: 16, color: Colors.grey.shade600),
+            const SizedBox(width: 8),
+            Text(
+              'Chuyên khoa: ${appointment.specializationName ?? 'Chưa xác định chuyên khoa'}',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade700,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Icon(Icons.person, size: 16, color: Colors.grey.shade600),
+            const SizedBox(width: 8),
+            Text(
+              'Bác sĩ: ${appointment.doctorName ?? 'Chưa xác định bác sĩ'}',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade700,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget buildCompletedInfo(Appointment appointment) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.blue.shade50,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.blue.shade200),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.check_circle, color: Colors.blue.shade600, size: 20),
+          const SizedBox(width: 8),
+          Text(
+            'Đã hoàn thành khám bệnh',
+            style: TextStyle(
+              color: Colors.blue.shade700,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildActions(Appointment appointment, BuildContext context) {
+    final status = appointment.status.value.index + 1;
+    final canCancel = status == 1 || status == 2; // Pending or Confirmed
+    final canView = true;
+
+    return Row(
+      children: [
+        if (canView) ...[
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: () {
+                final index = appointments.indexOf(appointment);
+                viewAppointmentDetail(index);
+              },
+              icon: const Icon(Icons.visibility, size: 16),
+              label: const Text('Xem chi tiết'),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                side: BorderSide(color: Colors.blue.shade300),
+                foregroundColor: Colors.blue.shade700,
+              ),
+            ),
+          ),
+        ],
+        if (canCancel) ...[
+          const SizedBox(width: 12),
+          Expanded(
+            child: ElevatedButton.icon(
+              onPressed: () {
+                final index = appointments.indexOf(appointment);
+                cancelAppointment(index);
+              },
+              icon: const Icon(Icons.cancel, size: 16),
+              label: const Text('Hủy lịch'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red.shade600,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
   }
 }
