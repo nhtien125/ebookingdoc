@@ -45,9 +45,12 @@ class AppointmentScreenController extends GetxController {
   final Rxn<Clinic> selectedClinic = Rxn<Clinic>();
 
   // Vaccination Center
-  final VaccinationCenterService vaccinationCenterService = VaccinationCenterService();
-  final RxList<VaccinationCenter> vaccinationCenters = <VaccinationCenter>[].obs;
-  final Rxn<VaccinationCenter> selectedVaccinationCenter = Rxn<VaccinationCenter>();
+  final VaccinationCenterService vaccinationCenterService =
+      VaccinationCenterService();
+  final RxList<VaccinationCenter> vaccinationCenters =
+      <VaccinationCenter>[].obs;
+  final Rxn<VaccinationCenter> selectedVaccinationCenter =
+      Rxn<VaccinationCenter>();
 
   // Health Status
   final healthStatus = ''.obs;
@@ -83,7 +86,8 @@ class AppointmentScreenController extends GetxController {
   final RxBool isLoadingPatients = false.obs;
   final Rxn<Patient> selectedPatient = Rxn<Patient>();
 
-  List<MedicalServiceModel> get servicesForSelectedDepartment => medical.toList();
+  List<MedicalServiceModel> get servicesForSelectedDepartment =>
+      medical.toList();
   final appointmentConfirmed = false.obs;
   final paymentCompleted = false.obs;
   final selectedPaymentMethod = 'cash'.obs;
@@ -134,7 +138,8 @@ class AppointmentScreenController extends GetxController {
           if (args['doctor'] != null) {
             final doc = Doctor.fromJson(args['doctor']);
             final user = await _userService.getUserById(doc.userId!);
-            final specialization = await _specService.getById(doc.specializationId!);
+            final specialization =
+                await _specService.getById(doc.specializationId!);
             if (user != null && specialization != null) {
               var doctorDisplay = DoctorDisplay(
                 doctor: doc,
@@ -151,8 +156,10 @@ class AppointmentScreenController extends GetxController {
             print('DEBUG | selectedHospital: ${selectedHospital.value?.name}');
           } else if (args['doctor'] != null) {
             if (hospitals.isNotEmpty) {
-              final doctorHospitalId = Doctor.fromJson(args['doctor']).hospitalId;
-              final found = hospitals.firstWhereOrNull((h) => h.uuid == doctorHospitalId);
+              final doctorHospitalId =
+                  Doctor.fromJson(args['doctor']).hospitalId;
+              final found =
+                  hospitals.firstWhereOrNull((h) => h.uuid == doctorHospitalId);
               if (found != null) selectedHospital.value = found;
             }
           }
@@ -162,20 +169,26 @@ class AppointmentScreenController extends GetxController {
             print('DEBUG | selectedClinic: ${selectedClinic.value?.name}');
           } else if (args['doctor'] != null) {
             if (hospitals.isNotEmpty) {
-              final doctorHospitalId = Doctor.fromJson(args['doctor']).hospitalId;
-              final found = hospitals.firstWhereOrNull((h) => h.uuid == doctorHospitalId);
+              final doctorHospitalId =
+                  Doctor.fromJson(args['doctor']).hospitalId;
+              final found =
+                  hospitals.firstWhereOrNull((h) => h.uuid == doctorHospitalId);
               if (found != null) selectedHospital.value = found;
             }
           }
           if (args['vaccination_center'] != null) {
-            selectedVaccinationCenter.value = VaccinationCenter.fromJson(args['vaccination_center']);
+            selectedVaccinationCenter.value =
+                VaccinationCenter.fromJson(args['vaccination_center']);
           }
           if (args['specialization'] != null) {
-            selectedDepartment.value = Specialization.fromJson(args['specialization']);
+            selectedDepartment.value =
+                Specialization.fromJson(args['specialization']);
           } else if (args['doctor'] != null) {
             if (specializations.isNotEmpty) {
-              final doctorSpecId = Doctor.fromJson(args['doctor']).specializationId;
-              final found = specializations.firstWhereOrNull((s) => s.uuid == doctorSpecId);
+              final doctorSpecId =
+                  Doctor.fromJson(args['doctor']).specializationId;
+              final found = specializations
+                  .firstWhereOrNull((s) => s.uuid == doctorSpecId);
               if (found != null) selectedDepartment.value = found;
             }
           }
@@ -190,8 +203,10 @@ class AppointmentScreenController extends GetxController {
               selectedSchedule.value = Schedule.fromJson(args['schedule']);
             }
             if (selectedSchedule.value != null) {
-              final start = selectedSchedule.value!.startTime?.substring(0, 5) ?? '';
-              final end = selectedSchedule.value!.endTime?.substring(0, 5) ?? '';
+              final start =
+                  selectedSchedule.value!.startTime?.substring(0, 5) ?? '';
+              final end =
+                  selectedSchedule.value!.endTime?.substring(0, 5) ?? '';
               selectedTimeSlot.value = '$start - $end';
             }
           } else if (args['slot'] != null) {
@@ -241,7 +256,8 @@ class AppointmentScreenController extends GetxController {
       isLoading.value = true;
       final result = await vaccinationCenterService.getAllVaccinationCenters();
       vaccinationCenters.assignAll(result.cast<VaccinationCenter>());
-      if (vaccinationCenters.isNotEmpty && selectedVaccinationCenter.value == null) {
+      if (vaccinationCenters.isNotEmpty &&
+          selectedVaccinationCenter.value == null) {
         selectedVaccinationCenter.value = vaccinationCenters.first;
       }
     } catch (e) {
@@ -282,7 +298,9 @@ class AppointmentScreenController extends GetxController {
     isLoading.value = true;
     medical.clear();
     try {
-      List<MedicalServiceModel> result = (await _medicalServiceService.getAllMedicalServices()).cast<MedicalServiceModel>();
+      List<MedicalServiceModel> result =
+          (await _medicalServiceService.getAllMedicalServices())
+              .cast<MedicalServiceModel>();
       medical.addAll(result);
     } catch (e) {
       print('Lỗi khi lấy danh sách dịch vụ: $e');
@@ -298,7 +316,8 @@ class AppointmentScreenController extends GetxController {
     try {
       List<Doctor> doctorsList = await _doctorService.getDoctorsByStatus(0);
       for (var doc in doctorsList) {
-        if ((doc.userId == null || doc.userId!.isEmpty) || (doc.specializationId == null || doc.specializationId!.isEmpty))
+        if ((doc.userId == null || doc.userId!.isEmpty) ||
+            (doc.specializationId == null || doc.specializationId!.isEmpty))
           continue;
         final userFuture = _userService.getUserById(doc.userId!);
         final specFuture = _specService.getById(doc.specializationId!);
@@ -516,7 +535,9 @@ class AppointmentScreenController extends GetxController {
 
   void goToStep(int step) {
     if (step >= 1 && step <= 4) {
-      if (step == 1 || (step == 2 && isStep1Complete()) || (step == 3 && isStep2Complete())) {
+      if (step == 1 ||
+          (step == 2 && isStep1Complete()) ||
+          (step == 3 && isStep2Complete())) {
         currentStep.value = step;
         print('DEBUG | Jumped to step $step');
       } else {
@@ -586,9 +607,11 @@ class AppointmentScreenController extends GetxController {
     if (selectedDate.value != null && selectedSchedule.value != null) {
       final date = selectedDate.value!;
       final startTime = selectedSchedule.value?.startTime ?? '09:00:00';
-      dateStr = '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} $startTime';
+      dateStr =
+          '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} $startTime';
     } else if (selectedDate.value != null) {
-      dateStr = '${selectedDate.value!.year.toString().padLeft(4, '0')}-${selectedDate.value!.month.toString().padLeft(2, '0')}-${selectedDate.value!.day.toString().padLeft(2, '0')} 09:00:00';
+      dateStr =
+          '${selectedDate.value!.year.toString().padLeft(4, '0')}-${selectedDate.value!.month.toString().padLeft(2, '0')}-${selectedDate.value!.day.toString().padLeft(2, '0')} 09:00:00';
     }
     Map<String, dynamic> data = {};
     if (selectedPlaceType.value == 'vaccination') {
@@ -647,9 +670,11 @@ class AppointmentScreenController extends GetxController {
       print('Appointment ID: ${appointment.uuid}');
       return appointment.uuid;
     } else {
-      Get.snackbar( 'Khung giờ khám này đã được đặt lịch. Vui lòng chọn khung giờ khác!',
+      Get.snackbar(
+          'Khung giờ khám này đã được đặt lịch. Vui lòng chọn khung giờ khác!',
           'Vui lòng chọn khung giờ khác.',
-          backgroundColor: Colors.red, colorText: Colors.white);
+          backgroundColor: Colors.red,
+          colorText: Colors.white);
       return null;
     }
   }
@@ -692,7 +717,8 @@ class AppointmentScreenController extends GetxController {
         payment_id: paymentId,
       );
       if (paymentLinkResult != null) {
-        final paymentLink = paymentLinkResult['paymentLink'] ?? paymentLinkResult;
+        final paymentLink =
+            paymentLinkResult['paymentLink'] ?? paymentLinkResult;
         Get.to(() => PayOSWebViewScreen(
               url: paymentLink,
               paymentId: paymentId,
@@ -709,9 +735,23 @@ class AppointmentScreenController extends GetxController {
   Future<String?> getUserIdFromPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     final userJson = prefs.getString('user_data');
+    print('DEBUG | userJson from SharedPreferences: $userJson');
+
     if (userJson != null) {
-      final user = User.fromJson(jsonDecode(userJson));
-      return user.uuid;
+      try {
+        final user = User.fromJson(jsonDecode(userJson));
+        print('DEBUG | Parsed User object: $user');
+        print('DEBUG | User UUID: ${user.uuid}');
+        return user.uuid;
+      } catch (e) {
+        print('DEBUG | Error parsing JSON: $e');
+        Get.snackbar('Error', 'Failed to parse user data: $e',
+            backgroundColor: Colors.red, colorText: Colors.white);
+        return null;
+      }
+    } else {
+      print(
+          'DEBUG | userJson is null - No user_data found in SharedPreferences');
     }
     return null;
   }
@@ -728,5 +768,4 @@ class AppointmentScreenController extends GetxController {
     });
     return result.isNotEmpty;
   }
-  
 }

@@ -31,30 +31,16 @@ class ConfirmScheduleController extends GetxController
     WidgetsBinding.instance.addObserver(this);
     tabController = TabController(
         length: tabs.length, vsync: Navigator.of(Get.context!).overlay!);
-    print(
-        'Khởi tạo ConfirmScheduleController, lấy doctorId và làm mới dữ liệu...');
-    loadDoctorIdAndFetch().then((_) {
-      if (doctorId != null) {
-        clearAndRefreshAppointments();
-      } else {
-        print('Lỗi: Không thể lấy doctorId từ SharedPreferences');
-        Get.snackbar(
-          'Lỗi',
-          'Không tìm thấy ID bác sĩ trong SharedPreferences',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
-      }
-    });
+    print('Khởi tạo ConfirmScheduleController, lấy doctorId và làm mới dữ liệu...');
+    initializeData();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.resumed) {
-      print('Ứng dụng vào foreground, làm mới dữ liệu...');
-      if (doctorId != null) {
+    if (state == AppLifecycleState.resumed && doctorId != null) {
+      print('Ứng dụng vào foreground, kiểm tra và làm mới dữ liệu...');
+      if (appointments.isEmpty) {
         fetchSchedulesByDoctorId(doctorId!);
       }
     }
@@ -67,14 +53,15 @@ class ConfirmScheduleController extends GetxController
     super.onClose();
   }
 
-  Future<void> loadDoctorIdAndFetch() async {
+  Future<void> initializeData() async {
     doctorId = await getDoctorIdFromPrefs();
-    if (doctorId != null) {
+    if (doctorId != null && appointments.isEmpty) {
       await fetchSchedulesByDoctorId(doctorId!);
-    } else {
+    } else if (doctorId == null) {
+      print('Lỗi: Không thể lấy doctorId từ SharedPreferences');
       Get.snackbar(
-        "Lỗi",
-        "Không tìm thấy ID bác sĩ!",
+        'Lỗi',
+        'Không tìm thấy ID bác sĩ trong SharedPreferences',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
         colorText: Colors.white,
@@ -93,9 +80,8 @@ class ConfirmScheduleController extends GetxController
   }
 
   void clearAndRefreshAppointments() {
-    appointments.clear(); // Xóa dữ liệu cũ
-    print('Đã xóa danh sách appointments cũ, chuẩn bị làm mới...');
     if (doctorId != null) {
+      appointments.clear();
       fetchSchedulesByDoctorId(doctorId!);
     } else {
       print('Lỗi: doctorId là null, không thể làm mới');
@@ -109,60 +95,9 @@ class ConfirmScheduleController extends GetxController
     }
   }
 
-  Future<void> fetchSchedulesByDoctorId(String doctorId) async {
-    isLoading.value = true;
-    try {
-      print('Bắt đầu fetchSchedulesByDoctorId với doctorId: $doctorId');
-      final result = await _appointmentService.getByDoctorId(doctorId);
-      print('Danh sách lịch hẹn lấy được từ API:');
-      for (final a in result) {
-        print(
-            'appointment: ${a.uuid}, patientId: ${a.patientId}, status: ${a.status.value} (int: ${appointmentStatusToInt(a.status.value)})');
-      }
-      appointments.assignAll(result);
-      print('Số lượng lịch hẹn Đã khám: ${doneAppointments.length}');
-
-      final ids = appointments
-          .map((a) => a.patientId)
-          .where((id) => id != null)
-          .toSet()
-          .toList();
-
-      print('Danh sách ids bệnh nhân cần fetch: $ids');
-
-      patient.clear();
-      for (final id in ids) {
-        if (id != null) {
-          print('Đang fetch patientId: $id');
-          final result = await _patientService.getPatientsById(id);
-          print(
-              'Kết quả fetch: ${result.map((e) => '${e.uuid}:${e.name}').join(', ')}');
-          if (result.isNotEmpty) {
-            patient.addAll(result);
-          }
-        }
-      }
-
-      print(
-          'List patient sau khi fetch: ${patient.map((e) => '${e.uuid}:${e.name}').join(', ')}');
-    } catch (e) {
-      print('Lỗi trong fetchSchedulesByDoctorId: $e');
-      Get.snackbar(
-        'Lỗi',
-        'Không thể lấy danh sách lịch hẹn: $e',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
   String? getPatientNameById(String? patientId) {
     print('DEBUG GET PATIENT NAME: patientId=$patientId');
-    print(
-        'List patient hiện tại: ${patient.map((e) => '${e.uuid}:${e.name}').join(', ')}');
+    print('List patient hiện tại: ${patient.map((e) => '${e.uuid}:${e.name}').join(', ')}');
 
     final p = patient.firstWhereOrNull((e) => e.uuid == patientId);
     if (p == null) {
@@ -174,37 +109,213 @@ class ConfirmScheduleController extends GetxController
     }
   }
 
-  Future<void> confirmAppointment(Appointment appt) async {
-    isLoading.value = true;
-    final oldStatus = appt.status.value;
-    appt.status.value = AppointmentStatus.confirmed;
-    try {
-      final success = await _appointmentService.updateStatus(
-        appt.uuid,
-        appointmentStatusToInt(AppointmentStatus.confirmed),
-      );
-      if (success) {
-        Get.snackbar(
-          "Xác nhận thành công",
-          "Đã xác nhận lịch cho ${getPatientNameById(appt.patientId) ?? ''}",
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: const Color(0xFF19C37D),
-          colorText: Colors.white,
-        );
-      } else {
-        appt.status.value = oldStatus;
-        Get.snackbar(
-          "Lỗi",
-          "Cập nhật trạng thái thất bại!",
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
+  // Thêm logging chi tiết trong controller để debug
+Future<void> confirmAppointment(Appointment appt) async {
+  print('=== CONFIRM APPOINTMENT DEBUG ===');
+  print('Appointment UUID: ${appt.uuid}');
+  print('Current status: ${appt.status.value} (${appointmentStatusToInt(appt.status.value)})');
+  print('Target status: ${AppointmentStatus.confirmed} (${appointmentStatusToInt(AppointmentStatus.confirmed)})');
+  
+  isLoading.value = true;
+  final oldStatus = appt.status.value;
+  appt.status.value = AppointmentStatus.confirmed;
+  
+  try {
+    final targetStatusInt = appointmentStatusToInt(AppointmentStatus.confirmed);
+    print('Calling API updateStatus with: UUID=${appt.uuid}, Status=$targetStatusInt');
+    
+    final success = await _appointmentService.updateStatus(
+      appt.uuid,
+      targetStatusInt,
+    );
+    
+    print('API updateStatus result: $success');
+    
+    if (success) {
+      // Verify the update immediately
+      print('Verifying update by refetching...');
+      if (doctorId != null) {
+        await fetchSchedulesByDoctorId(doctorId!);
+        
+        // Check if the appointment was actually updated
+        final updatedAppt = appointments.firstWhereOrNull((a) => a.uuid == appt.uuid);
+        if (updatedAppt != null) {
+          print('After refetch - Status: ${updatedAppt.status.value} (${appointmentStatusToInt(updatedAppt.status.value)})');
+        }
       }
-    } finally {
-      isLoading.value = false;
+      
+      Get.snackbar(
+        "Xác nhận thành công",
+        "Đã xác nhận lịch cho ${getPatientNameById(appt.patientId) ?? ''}",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFF19C37D),
+        colorText: Colors.white,
+      );
+    } else {
+      print('API returned false, reverting status');
+      appt.status.value = oldStatus;
+      Get.snackbar(
+        "Lỗi",
+        "Cập nhật trạng thái thất bại!",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     }
+  } catch (e) {
+    print('Exception in confirmAppointment: $e');
+    appt.status.value = oldStatus;
+    Get.snackbar(
+      "Lỗi",
+      "Cập nhật trạng thái thất bại: $e",
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.red,
+      colorText: Colors.white,
+    );
+  } finally {
+    isLoading.value = false;
   }
+  print('=== END CONFIRM APPOINTMENT DEBUG ===');
+}
+
+Future<void> markAsDone(Appointment appt) async {
+  print('=== MARK AS DONE DEBUG ===');
+  print('Appointment UUID: ${appt.uuid}');
+  print('Current status: ${appt.status.value} (${appointmentStatusToInt(appt.status.value)})');
+  print('Target status: ${AppointmentStatus.done} (${appointmentStatusToInt(AppointmentStatus.done)})');
+  
+  isLoading.value = true;
+  final oldStatus = appt.status.value;
+  appt.status.value = AppointmentStatus.done;
+  final statusInt = appointmentStatusToInt(AppointmentStatus.done);
+  
+  try {
+    final now = DateTime.now();
+    final apptDateTime = DateTime.parse(appt.dateTime!);
+    final timeDifference = now.difference(apptDateTime).inHours;
+
+    if (now.isBefore(apptDateTime) || timeDifference < 5) {
+      Get.snackbar(
+        "Lỗi",
+        "Chỉ có thể đánh dấu 'Đã khám' khi thời gian hiện tại lớn hơn lịch hẹn ít nhất 5 tiếng!",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      appt.status.value = oldStatus;
+      return;
+    }
+
+    print('Calling API updateStatus with: UUID=${appt.uuid}, Status=$statusInt');
+    final success = await _appointmentService.updateStatus(appt.uuid, statusInt);
+    print('API updateStatus result: $success');
+    
+    if (success) {
+      print('Success! Verifying update by refetching...');
+      
+      // Verify the update immediately
+      if (doctorId != null) {
+        await fetchSchedulesByDoctorId(doctorId!);
+        
+        // Check if the appointment was actually updated
+        final updatedAppt = appointments.firstWhereOrNull((a) => a.uuid == appt.uuid);
+        if (updatedAppt != null) {
+          print('After refetch - Status: ${updatedAppt.status.value} (${appointmentStatusToInt(updatedAppt.status.value)})');
+        }
+      }
+      
+      Get.snackbar(
+        "Hoàn thành khám",
+        "Đã đánh dấu lịch khám của ${getPatientNameById(appt.patientId) ?? ''} là hoàn thành",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.blue,
+        colorText: Colors.white,
+      );
+    } else {
+      print('API returned false, reverting status');
+      appt.status.value = oldStatus;
+      Get.snackbar(
+        "Lỗi",
+        "Cập nhật trạng thái thất bại!",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  } catch (e) {
+    print('Exception in markAsDone: $e');
+    appt.status.value = oldStatus;
+    Get.snackbar(
+      "Lỗi",
+      "Cập nhật trạng thái thất bại: $e",
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.red,
+      colorText: Colors.white,
+    );
+  } finally {
+    isLoading.value = false;
+  }
+  print('=== END MARK AS DONE DEBUG ===');
+}
+
+// Cải thiện hàm fetchSchedulesByDoctorId để debug rõ hơn
+Future<void> fetchSchedulesByDoctorId(String doctorId) async {
+  print('=== FETCH SCHEDULES DEBUG ===');
+  print('DoctorId: $doctorId');
+  
+  isLoading.value = true;
+  appointments.clear();
+  
+  try {
+    final result = await _appointmentService.getByDoctorId(doctorId);
+    print('Received ${result.length} appointments from API:');
+    
+    for (int i = 0; i < result.length; i++) {
+      final a = result[i];
+      print('[$i] UUID: ${a.uuid}, PatientId: ${a.patientId}, Status: ${a.status.value} (${appointmentStatusToInt(a.status.value)})');
+    }
+    
+    appointments.assignAll(result);
+    
+    // Debug status counts
+    print('Status counts:');
+    print('- Pending: ${pendingAppointments.length}');
+    print('- Confirmed: ${confirmedAppointments.length}');
+    print('- Done: ${doneAppointments.length}');
+    print('- Cancelled: ${cancelledAppointments.length}');
+    print('- Rejected: ${rejectedAppointments.length}');
+
+    // Fetch patient details...
+    final ids = appointments
+        .map((a) => a.patientId)
+        .where((id) => id != null)
+        .toSet()
+        .toList();
+
+    patient.clear();
+    for (final id in ids) {
+      if (id != null) {
+        final result = await _patientService.getPatientsById(id);
+        if (result.isNotEmpty) {
+          patient.addAll(result);
+        }
+      }
+    }
+    
+  } catch (e) {
+    print('Exception in fetchSchedulesByDoctorId: $e');
+    Get.snackbar(
+      'Lỗi',
+      'Không thể lấy danh sách lịch hẹn: $e',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.red,
+      colorText: Colors.white,
+    );
+  } finally {
+    isLoading.value = false;
+  }
+  print('=== END FETCH SCHEDULES DEBUG ===');
+}
 
   Future<void> rejectAppointment(Appointment appt) async {
     isLoading.value = true;
@@ -270,53 +381,13 @@ class ConfirmScheduleController extends GetxController
     }
   }
 
-  Future<void> markAsDone(Appointment appt) async {
-    isLoading.value = true;
-    final oldStatus = appt.status.value;
-    appt.status.value = AppointmentStatus.done;
-    final statusInt = appointmentStatusToInt(AppointmentStatus.done);
-    print(
-        'Đang đánh dấu lịch hẹn ${appt.uuid} là Đã khám, status = $statusInt');
-    try {
-      final success = await _appointmentService.updateStatus(
-        appt.uuid,
-        statusInt,
-      );
-      if (success) {
-        print(
-            'Cập nhật trạng thái thành công cho lịch hẹn ${appt.uuid}, status = $statusInt');
-        Get.snackbar(
-          "Hoàn thành khám",
-          "Đã đánh dấu lịch khám của ${getPatientNameById(appt.patientId) ?? ''} là hoàn thành",
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.blue,
-          colorText: Colors.white,
-        );
-      } else {
-        print(
-            'Cập nhật trạng thái thất bại cho lịch hẹn ${appt.uuid}, khôi phục status = ${appointmentStatusToInt(oldStatus)}');
-        appt.status.value = oldStatus;
-        Get.snackbar(
-          "Lỗi",
-          "Cập nhật trạng thái thất bại!",
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
-      }
-    } catch (e) {
-      print('Lỗi trong markAsDone cho lịch hẹn ${appt.uuid}: $e');
-      appt.status.value = oldStatus;
-      Get.snackbar(
-        "Lỗi",
-        "Cập nhật trạng thái thất bại: $e",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    } finally {
-      isLoading.value = false;
-    }
+
+  bool canMarkAsDone(Appointment appt) {
+    if (appt.dateTime == null) return false;
+    final now = DateTime.now();
+    final apptDateTime = DateTime.parse(appt.dateTime!);
+    final timeDifference = now.difference(apptDateTime).inHours;
+    return !now.isBefore(apptDateTime) && timeDifference >= 5;
   }
 
   List<Appointment> getTabAppointments(AppointmentStatus status) {

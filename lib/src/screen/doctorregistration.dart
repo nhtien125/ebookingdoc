@@ -27,12 +27,14 @@ class _DoctorRegistrationScreenState extends State<DoctorRegistrationScreen> {
   final HospitalService _hospitalService = HospitalService();
   final ClinicService _clinicService = ClinicService();
   final SpecializationService _specializationService = SpecializationService();
-  final DoctorService _doctorService = DoctorService(); // Add this line
+  final DoctorService _doctorService = DoctorService();
 
   // Selected values
   String? _selectedHospitalId;
   String? _selectedClinicId;
   String? _selectedSpecializationId;
+  bool _isHospitalSelected = false; // Track if hospital is selected
+  bool _isClinicSelected = false;  // Track if clinic is selected
 
   // Data lists
   List<Hospital> _hospitals = [];
@@ -43,7 +45,7 @@ class _DoctorRegistrationScreenState extends State<DoctorRegistrationScreen> {
   bool _isLoadingHospitals = true;
   bool _isLoadingClinics = true;
   bool _isLoadingSpecializations = true;
-  bool _isSubmitting = false; // Add this for submit loading state
+  bool _isSubmitting = false;
 
   String? _errorMessage;
   
@@ -64,7 +66,6 @@ class _DoctorRegistrationScreenState extends State<DoctorRegistrationScreen> {
       
       print('Received uuid: $_uuid');
     } else {
-      // If no arguments, show error and go back
       Get.snackbar(
         'Lỗi', 
         'Không tìm thấy thông tin user',
@@ -155,25 +156,22 @@ class _DoctorRegistrationScreenState extends State<DoctorRegistrationScreen> {
     });
 
     try {
-      // Prepare doctor data for API - API expects user_id not userId
       final doctorData = {
-        'user_id': _uuid!, // Changed from 'userId' to 'user_id'
-        'hospital_id': _selectedHospitalId, // Changed to snake_case
-        'clinic_id': _selectedClinicId, // Changed to snake_case
+        'user_id': _uuid!,
+        'hospital_id': _selectedHospitalId,
+        'clinic_id': _selectedClinicId,
         'doctor_type': null,
-        'specialization_id': _selectedSpecializationId!, // Changed to snake_case
+        'specialization_id': _selectedSpecializationId!,
         'license': _licenseController.text.trim(),
         'introduce': _introduceController.text.trim().isEmpty ? null : _introduceController.text.trim(),
         'experience': _experienceController.text.trim().isEmpty ? 0 : int.tryParse(_experienceController.text.trim()) ?? 0,
-        'patient_count': _patientCountController.text.trim().isEmpty ? 0 : int.tryParse(_patientCountController.text.trim()) ?? 0, // Changed to snake_case
+        'patient_count': _patientCountController.text.trim().isEmpty ? 0 : int.tryParse(_patientCountController.text.trim()) ?? 0,
       };
 
-      // Remove null values from the map
       doctorData.removeWhere((key, value) => value == null);
 
       print('Submitting doctor data: $doctorData');
 
-      // Call API
       final success = await _doctorService.registerDoctor(doctorData);
 
       if (success) {
@@ -188,7 +186,6 @@ class _DoctorRegistrationScreenState extends State<DoctorRegistrationScreen> {
           duration: const Duration(seconds: 3),
         );
 
-        // Navigate to login after a short delay
         await Future.delayed(const Duration(seconds: 2));
         Get.offAllNamed('/login');
       } else {
@@ -242,49 +239,69 @@ class _DoctorRegistrationScreenState extends State<DoctorRegistrationScreen> {
           child: ListView(
             children: [
               // Hospital Dropdown
-              DropdownButtonFormField<String>(
-                value: _selectedHospitalId,
-                decoration: const InputDecoration(
-                  labelText: 'Bệnh viện (Tùy chọn)',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.local_hospital),
+              if (!_isClinicSelected)
+                DropdownButtonFormField<String>(
+                  value: _isHospitalSelected && !_isLoadingHospitals && !_hospitals.any((h) => h.uuid == _selectedHospitalId) ? null : _selectedHospitalId,
+                  decoration: const InputDecoration(
+                    labelText: 'Bệnh viện (Tùy chọn)',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.local_hospital),
+                  ),
+                  items: _isLoadingHospitals
+                      ? [const DropdownMenuItem(value: null, child: Text('Đang tải...'))]
+                      : [
+                          const DropdownMenuItem(value: null, child: Text('Không chọn bệnh viện')),
+                          ..._hospitals.map((hospital) => DropdownMenuItem(
+                                value: hospital.uuid,
+                                child: Text(hospital.name ?? 'Không có tên'),
+                              )),
+                        ],
+                  onChanged: _isLoadingHospitals || _isSubmitting
+                      ? null
+                      : (value) {
+                          setState(() {
+                            _selectedHospitalId = value;
+                            _isHospitalSelected = value != null;
+                            if (_isHospitalSelected) {
+                              _selectedClinicId = null;
+                              _isClinicSelected = false;
+                            }
+                          });
+                        },
                 ),
-                items: _isLoadingHospitals
-                    ? [const DropdownMenuItem(value: null, child: Text('Đang tải...'))]
-                    : [
-                        const DropdownMenuItem(value: null, child: Text('Không chọn bệnh viện')),
-                        ..._hospitals.map((hospital) => DropdownMenuItem(
-                              value: hospital.uuid,
-                              child: Text(hospital.name ?? 'Không có tên'),
-                            )),
-                      ],
-                onChanged: _isLoadingHospitals || _isSubmitting
-                    ? null
-                    : (value) => setState(() => _selectedHospitalId = value),
-              ),
-              const SizedBox(height: 16),
+              if (!_isClinicSelected) const SizedBox(height: 16),
 
               // Clinic Dropdown
-              DropdownButtonFormField<String>(
-                value: _selectedClinicId,
-                decoration: const InputDecoration(
-                  labelText: 'Phòng khám (Tùy chọn)',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.business),
+              if (!_isHospitalSelected)
+                DropdownButtonFormField<String>(
+                  value: _isClinicSelected && !_isLoadingClinics && !_clinics.any((c) => c.uuid == _selectedClinicId) ? null : _selectedClinicId,
+                  decoration: const InputDecoration(
+                    labelText: 'Phòng khám (Tùy chọn)',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.business),
+                  ),
+                  items: _isLoadingClinics
+                      ? [const DropdownMenuItem(value: null, child: Text('Đang tải...'))]
+                      : [
+                          const DropdownMenuItem(value: null, child: Text('Không chọn phòng khám')),
+                          ..._clinics.map((clinic) => DropdownMenuItem(
+                                value: clinic.uuid,
+                                child: Text(clinic.name ?? 'Không có tên'),
+                              )),
+                        ],
+                  onChanged: _isLoadingClinics || _isSubmitting
+                      ? null
+                      : (value) {
+                          setState(() {
+                            _selectedClinicId = value;
+                            _isClinicSelected = value != null;
+                            if (_isClinicSelected) {
+                              _selectedHospitalId = null;
+                              _isHospitalSelected = false;
+                            }
+                          });
+                        },
                 ),
-                items: _isLoadingClinics
-                    ? [const DropdownMenuItem(value: null, child: Text('Đang tải...'))]
-                    : [
-                        const DropdownMenuItem(value: null, child: Text('Không chọn phòng khám')),
-                        ..._clinics.map((clinic) => DropdownMenuItem(
-                              value: clinic.uuid,
-                              child: Text(clinic.name ?? 'Không có tên'),
-                            )),
-                      ],
-                onChanged: _isLoadingClinics || _isSubmitting
-                    ? null
-                    : (value) => setState(() => _selectedClinicId = value),
-              ),
               const SizedBox(height: 16),
 
               // Specialization Dropdown

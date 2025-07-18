@@ -24,7 +24,8 @@ class ConfirmSchedulePage extends StatefulWidget {
 
 class _ConfirmSchedulePageState extends State<ConfirmSchedulePage>
     with SingleTickerProviderStateMixin {
-  final controller = Get.put(ConfirmScheduleController());
+  final ConfirmScheduleController controller = 
+      Get.put(ConfirmScheduleController());
   late TabController tabController;
 
   final List<Map<String, dynamic>> tabs = [
@@ -39,6 +40,10 @@ class _ConfirmSchedulePageState extends State<ConfirmSchedulePage>
   void initState() {
     super.initState();
     tabController = TabController(length: tabs.length, vsync: this);
+    // Chỉ làm mới dữ liệu nếu cần
+    if (controller.doctorId == null || controller.appointments.isEmpty) {
+      controller.initializeData(); // Sử dụng _initializeData thay vì loadDoctorIdAndFetch
+    }
   }
 
   List<Appointment> getTabAppointments(AppointmentStatus status) {
@@ -54,6 +59,12 @@ class _ConfirmSchedulePageState extends State<ConfirmSchedulePage>
       case AppointmentStatus.done:
         return controller.doneAppointments;
     }
+  }
+
+  @override
+  void dispose() {
+    tabController.dispose();
+    super.dispose();
   }
 
   @override
@@ -302,7 +313,9 @@ class _ConfirmSchedulePageState extends State<ConfirmSchedulePage>
                                   label: const Text("Đã khám",
                                       style: TextStyle(
                                           fontWeight: FontWeight.w600)),
-                                  onPressed: () => controller.markAsDone(appt),
+                                  onPressed: controller.canMarkAsDone(appt)
+                                      ? () => controller.markAsDone(appt)
+                                      : null, // Vô hiệu hóa khi không thỏa mãn
                                 ),
                               ],
                             ),

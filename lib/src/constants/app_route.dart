@@ -27,6 +27,7 @@ abstract class Routes {
   static var paymentHistory = _Paths.paymentHistory;
   static var patient = _Paths.patient;
   static var doctorRegistration = _Paths.doctorRegistration;
+  static var doctorstatistics = _Paths.doctorstatistics;
 }
 
 abstract class _Paths {
@@ -56,4 +57,5 @@ abstract class _Paths {
   static const String paymentHistory = '/payment-history';
   static const String patient = '/patient';
   static const String doctorRegistration = '/doctor-registration';
+  static const String doctorstatistics = '/doctorstatisticspage';
 }

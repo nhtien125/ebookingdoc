@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:ebookingdoc/src/constants/app_page.dart';
 import 'package:ebookingdoc/src/constants/services/Doctorservice.dart';
+import 'package:ebookingdoc/src/constants/services/api_caller.dart';
 import 'package:ebookingdoc/src/constants/services/specialization_service.dart';
 import 'package:ebookingdoc/src/data/model/doctor_model.dart';
 import 'package:ebookingdoc/src/data/model/specialization_model.dart';
@@ -14,7 +15,7 @@ class DoctorHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Get.put(DoctorHomeController());
+    final DoctorHomeController controller = Get.put(DoctorHomeController());
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8FA),
       body: SingleChildScrollView(
@@ -49,8 +50,7 @@ class _HeaderSection extends StatelessWidget {
       }
 
       return Container(
-        padding:
-            const EdgeInsets.only(top: 40, left: 22, right: 22, bottom: 24),
+        padding: const EdgeInsets.only(top: 40, left: 22, right: 22, bottom: 24),
         width: double.infinity,
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -86,7 +86,7 @@ class _HeaderSection extends StatelessWidget {
                   const Text('Xin chào,',
                       style: TextStyle(color: Colors.white70, fontSize: 16)),
                   Text(
-                    user.name ?? 'Unknown User', // Provide default value
+                    user.name ?? 'Unknown User',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 19,
@@ -95,8 +95,8 @@ class _HeaderSection extends StatelessWidget {
                   ),
                   Text(
                     specialization != null
-                        ? specialization.name // Hiển thị tên chuyên khoa nếu có
-                        : 'Chuyên khoa không xác định', // Nếu không có chuyên khoa
+                        ? specialization.name
+                        : 'Chuyên khoa không xác định',
                     style: const TextStyle(color: Colors.white70, fontSize: 15),
                   ),
                 ],
@@ -111,9 +111,9 @@ class _HeaderSection extends StatelessWidget {
 
 class DoctorHomeController extends GetxController {
   final isLoading = false.obs;
-  final doctor = Rxn<Doctor>(); // Rxn<Doctor> cho phép giá trị null
+  final doctor = Rxn<Doctor>();
   final specialization = Rxn<Specialization>();
-  final user = Rxn<User>(); // Thêm biến để lưu user
+  final user = Rxn<User>();
   final DoctorService _doctorService = DoctorService();
   final SpecializationService _specialization = SpecializationService();
 
@@ -137,7 +137,6 @@ class DoctorHomeController extends GetxController {
     final doctorJson = prefs.getString('doctor_data');
     if (doctorJson != null) {
       doctor.value = Doctor.fromJson(jsonDecode(doctorJson));
-      // Sau khi doctor được gán giá trị, gọi fetchSpecializationFromAPI
       await fetchSpecializationFromAPI();
     } else {
       await fetchDoctorFromAPI();
@@ -148,12 +147,10 @@ class DoctorHomeController extends GetxController {
     final currentUser = user.value;
     if (currentUser != null) {
       try {
-        final doctors =
-            await _doctorService.getDoctorsByUserId(currentUser.uuid);
+        final doctors = await _doctorService.getDoctorsByUserId(currentUser.uuid);
         if (doctors.isNotEmpty) {
           doctor.value = doctors.first;
           await saveDoctorToPrefs(doctor.value!);
-          // Sau khi doctor được gán giá trị, gọi fetchSpecializationFromAPI
           await fetchSpecializationFromAPI();
         }
       } catch (e) {
@@ -165,32 +162,27 @@ class DoctorHomeController extends GetxController {
   Future<void> fetchSpecializationFromAPI() async {
     final currentDoctor = doctor.value;
 
-    // Kiểm tra nếu currentDoctor không phải là null
     if (currentDoctor != null) {
       try {
-        // Log ID bác sĩ trước khi lấy chuyên khoa
         print('Fetching specialization for Doctor ID: ${currentDoctor.uuid}');
 
-        // Lấy chuyên khoa từ API
-        final fetchedSpecialization =
-            await _specialization.getById(currentDoctor.specializationId);
+        final fetchedSpecialization = await _specialization.getById(currentDoctor.specializationId);
 
-        // Log kết quả trả về từ API (In toàn bộ đối tượng chuyên khoa)
         print('Received specialization: $fetchedSpecialization');
 
         if (fetchedSpecialization != null) {
-          // Kiểm tra xem fetchedSpecialization có thuộc tính name không, và log tên chuyên khoa
-          print('Specialization Name: ${fetchedSpecialization.name}');
+          if (fetchedSpecialization.name != null) {
+            print('Specialization Name: ${fetchedSpecialization.name}');
+          } else {
+            print('Specialization does not have a name');
+          }
 
-          specialization.value = fetchedSpecialization; // Cập nhật chuyên khoa
-          // Log khi chuyên khoa được cập nhật
-          print(
-              'Specialization value updated successfully: ${fetchedSpecialization.name}');
+          specialization.value = fetchedSpecialization;
+          print('Specialization value updated successfully: ${fetchedSpecialization.name}');
         } else {
           print('No specialization found for Doctor ID: ${currentDoctor.uuid}');
         }
       } catch (e) {
-        // Log lỗi nếu có
         print('Error fetching specialization: $e');
       }
     } else {
@@ -221,35 +213,49 @@ class DoctorHomeController extends GetxController {
 class _QuickStatsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    // Data cứng, sau này truyền từ controller
-
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 22),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
             child: _StatCard(
               label: "Lịch hôm nay",
-              value: "",
               icon: Icons.calendar_today,
               color: Colors.orange,
               onTap: () {
                 print('Đã click Lịch hôm nay');
-                Get.toNamed(Routes.todayschedule);
+                try {
+                  Get.toNamed(Routes.todayschedule);
+                } catch (e) {
+                  print('Error navigating to today schedule: $e');
+                  // Fallback navigation
+                  Get.to(() => Scaffold(
+                    appBar: AppBar(title: const Text('Lịch hôm nay')),
+                    body: const Center(child: Text('Trang lịch hôm nay')),
+                  ));
+                }
               },
             ),
           ),
-          const SizedBox(width: 8), // Giảm khoảng cách giữa các phần tử
+          const SizedBox(width: 8),
           Expanded(
             child: _StatCard(
-              label: "Lịch khám",
-              value: "",
+              label: "Cần xác nhận",
               icon: Icons.pending_actions,
               color: Colors.redAccent,
               onTap: () {
-                print('Đã click Lịch hôm nay');
-                Get.to(Routes.confirmschedule);
+                print('Đã click Cần xác nhận');
+                try {
+                  Get.toNamed(Routes.confirmschedule);
+                } catch (e) {
+                  print('Error navigating to confirm schedule: $e');
+                  // Fallback navigation
+                  Get.to(() => Scaffold(
+                    appBar: AppBar(title: const Text('Cần xác nhận')),
+                    body: const Center(child: Text('Trang cần xác nhận')),
+                  ));
+                }
               },
             ),
           ),
@@ -260,13 +266,13 @@ class _QuickStatsSection extends StatelessWidget {
 }
 
 class _StatCard extends StatelessWidget {
-  final String label, value;
+  final String label;
   final IconData icon;
   final Color color;
   final VoidCallback? onTap;
+  
   const _StatCard({
     required this.label,
-    required this.value,
     required this.icon,
     required this.color,
     this.onTap,
@@ -276,7 +282,16 @@ class _StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       borderRadius: BorderRadius.circular(18),
-      onTap: onTap, // <-- Thêm dòng này để nhận sự kiện click
+      onTap: () {
+        print('StatCard clicked: $label');
+        if (onTap != null) {
+          try {
+            onTap!();
+          } catch (e) {
+            print('Error in onTap: $e');
+          }
+        }
+      },
       child: Card(
         elevation: 5,
         shadowColor: color.withOpacity(0.15),
@@ -286,38 +301,12 @@ class _StatCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 18),
           child: Column(
             children: [
-              Stack(
-                children: [
-                  CircleAvatar(
-                    backgroundColor: color.withOpacity(0.14),
-                    radius: 18,
-                    child: Icon(icon, color: color, size: 21),
-                  ),
-                  if (label == "Cần xác nhận" &&
-                      int.tryParse(value) != null &&
-                      int.parse(value) > 0)
-                    Positioned(
-                      right: -1,
-                      top: -3,
-                      child: Container(
-                        padding: const EdgeInsets.all(3),
-                        decoration: BoxDecoration(
-                            color: Colors.red,
-                            borderRadius: BorderRadius.circular(9)),
-                        child: Text(value,
-                            style: const TextStyle(
-                                fontSize: 11,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold)),
-                      ),
-                    ),
-                ],
+              CircleAvatar(
+                backgroundColor: color.withOpacity(0.14),
+                radius: 18,
+                child: Icon(icon, color: color, size: 21),
               ),
               const SizedBox(height: 8),
-              Text(value,
-                  style: TextStyle(
-                      fontSize: 20, color: color, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 2),
               Text(label,
                   style: const TextStyle(fontSize: 14, color: Colors.black54)),
             ],
@@ -336,7 +325,7 @@ class _QuickActionGrid extends StatelessWidget {
         'icon': Icons.person,
         'label': "Thông tin cá nhân",
         'color': Colors.blue,
-        'route': '/personal',
+        'route': '/profile',
       },
       {
         'icon': Icons.check_circle,
@@ -350,6 +339,13 @@ class _QuickActionGrid extends StatelessWidget {
         'color': Colors.purple,
         'route': '/doctorworkschedulepage',
       },
+      {
+        'label': "Thống kê số tiền",
+        'icon': Icons.pie_chart,
+        'color': Colors.green,
+        'route': '/doctorstatisticspage',
+        
+      }
     ];
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 22),
@@ -370,7 +366,13 @@ class _QuickActionGrid extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             child: InkWell(
               borderRadius: BorderRadius.circular(16),
-              onTap: () => Get.toNamed(item['route'] as String),
+              onTap: () {
+                try {
+                  Get.toNamed(item['route'] as String);
+                } catch (e) {
+                  print('Error navigating to ${item['route']}: $e');
+                }
+              },
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 18),
                 child: Column(
@@ -412,12 +414,17 @@ class _ManageSection extends StatelessWidget {
             color: Colors.red.shade50,
             borderRadius: BorderRadius.circular(14),
             child: ListTile(
-              leading:
-                  const Icon(Icons.exit_to_app, color: Colors.red, size: 28),
+              leading: const Icon(Icons.exit_to_app, color: Colors.red, size: 28),
               title: const Text("Đăng xuất",
                   style: TextStyle(
                       fontWeight: FontWeight.bold, color: Colors.red)),
-              onTap: () => Get.toNamed('/login'),
+              onTap: () {
+                try {
+                  Get.offAllNamed('/login');
+                } catch (e) {
+                  print('Error navigating to login: $e');
+                }
+              },
             ),
           ),
         ],
