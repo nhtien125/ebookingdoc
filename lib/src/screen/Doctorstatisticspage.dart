@@ -51,7 +51,7 @@ class _DoctorStatisticsPageState extends State<DoctorStatisticsPage> {
   Future<void> fetchDoctorFromAPI() async {
     // Example implementation (replace with your actual API call)
     final response =
-        await http.get(Uri.parse('http://192.168.1.17:3210/api/doctor'));
+        await http.get(Uri.parse('http://192.168.1.16:3210/api/doctor'));
     if (response.statusCode == 200) {
       doctor.value = Doctor.fromJson(jsonDecode(response.body));
     } else {
@@ -66,7 +66,7 @@ class _DoctorStatisticsPageState extends State<DoctorStatisticsPage> {
     try {
       final doctorId = widget.doctorId ?? doctor.value?.uuid ?? '';
       final response = await http.get(
-        Uri.parse('http://192.168.1.17:3210/api/$doctorId/revenue'),
+        Uri.parse('http://192.168.1.16:3210/api/$doctorId/revenue'),
       );
 
       if (response.statusCode == 200) {

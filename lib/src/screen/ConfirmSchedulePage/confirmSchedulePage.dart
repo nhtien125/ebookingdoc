@@ -3,7 +3,6 @@ import 'package:ebookingdoc/src/widgets/controller/confirmSchedulepagecontroller
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-// Helper: Định dạng ngày giờ
 String formatDateTime(String? dateTime) {
   if (dateTime == null || dateTime.isEmpty) return '';
   try {
@@ -24,8 +23,7 @@ class ConfirmSchedulePage extends StatefulWidget {
 
 class _ConfirmSchedulePageState extends State<ConfirmSchedulePage>
     with SingleTickerProviderStateMixin {
-  final ConfirmScheduleController controller = 
-      Get.put(ConfirmScheduleController());
+  final ConfirmScheduleController controller = Get.put(ConfirmScheduleController());
   late TabController tabController;
 
   final List<Map<String, dynamic>> tabs = [
@@ -40,25 +38,7 @@ class _ConfirmSchedulePageState extends State<ConfirmSchedulePage>
   void initState() {
     super.initState();
     tabController = TabController(length: tabs.length, vsync: this);
-    // Chỉ làm mới dữ liệu nếu cần
-    if (controller.doctorId == null || controller.appointments.isEmpty) {
-      controller.initializeData(); // Sử dụng _initializeData thay vì loadDoctorIdAndFetch
-    }
-  }
-
-  List<Appointment> getTabAppointments(AppointmentStatus status) {
-    switch (status) {
-      case AppointmentStatus.pending:
-        return controller.pendingAppointments;
-      case AppointmentStatus.confirmed:
-        return controller.confirmedAppointments;
-      case AppointmentStatus.rejected:
-        return controller.rejectedAppointments;
-      case AppointmentStatus.cancelled:
-        return controller.cancelledAppointments;
-      case AppointmentStatus.done:
-        return controller.doneAppointments;
-    }
+    controller.initializeData();
   }
 
   @override
@@ -81,9 +61,7 @@ class _ConfirmSchedulePageState extends State<ConfirmSchedulePage>
         bottom: TabBar(
           controller: tabController,
           tabs: tabs
-              .map((tab) => Tab(
-                    text: tab['title'],
-                  ))
+              .map((tab) => Tab(text: tab['title']))
               .toList(),
           indicatorColor: Colors.white,
           labelColor: Colors.white,
@@ -93,151 +71,145 @@ class _ConfirmSchedulePageState extends State<ConfirmSchedulePage>
       ),
       backgroundColor: const Color(0xFFF6F8FA),
       body: Obx(
-        () => TabBarView(
-          controller: tabController,
-          children: tabs.map((tab) {
-            final status = tab['status'] as AppointmentStatus;
-            final filteredList = getTabAppointments(status);
-            if (filteredList.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.event_busy,
-                        size: 44, color: Colors.blue.shade200),
-                    const SizedBox(height: 18),
-                    const Text(
-                      "Không có lịch hẹn nào.",
-                      style: TextStyle(
-                        color: Colors.black54,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }
-            return ListView.separated(
-              padding: const EdgeInsets.all(18),
-              separatorBuilder: (_, __) => const SizedBox(height: 16),
-              itemCount: filteredList.length,
-              itemBuilder: (_, idx) {
-                final appt = filteredList[idx];
-                return Card(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(22)),
-                  elevation: 6,
-                  shadowColor: Colors.blue.withOpacity(0.15),
-                  color: Colors.white,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 20, horizontal: 18),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            CircleAvatar(
-                              radius: 28,
-                              backgroundColor: Colors.blue.withOpacity(0.13),
-                              child: Icon(
-                                Icons.local_hospital,
-                                color: Colors.blue,
-                                size: 32,
-                              ),
+        () => Stack(
+          children: [
+            RefreshIndicator(
+              onRefresh: () => controller.doctorId != null
+                  ? controller.fetchSchedulesByDoctorId(controller.doctorId!)
+                  : Future.value(),
+              child: TabBarView(
+                controller: tabController,
+                children: tabs.map((tab) {
+                  final status = tab['status'] as AppointmentStatus;
+                  final filteredList = controller.getTabAppointments(status);
+                  if (filteredList.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.event_busy, size: 44, color: Colors.blue.shade200),
+                          const SizedBox(height: 18),
+                          const Text(
+                            "Không có lịch hẹn nào.",
+                            style: TextStyle(
+                              color: Colors.black54,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
                             ),
-                            const SizedBox(width: 18),
-                            Expanded(
-                              child: Column(
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  return ListView.separated(
+                    padding: const EdgeInsets.all(18),
+                    separatorBuilder: (_, __) => const SizedBox(height: 16),
+                    itemCount: filteredList.length,
+                    itemBuilder: (_, idx) {
+                      final appt = filteredList[idx];
+                      return Card(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+                        elevation: 6,
+                        shadowColor: Colors.blue.withOpacity(0.15),
+                        color: Colors.white,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 18),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          controller.getPatientNameById(
-                                                  appt.patientId) ??
-                                              '(Chưa có tên)',
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 19,
-                                            color: Color(0xFF1A237E),
-                                          ),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                      Container(
-                                        margin: const EdgeInsets.only(left: 10),
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 12, vertical: 6),
-                                        decoration: BoxDecoration(
-                                          color: controller
-                                              .statusColor(appt.status.value)
-                                              .withOpacity(0.12),
-                                          borderRadius:
-                                              BorderRadius.circular(13),
-                                        ),
-                                        child: Text(
-                                          controller.statusText(appt.status.value),
-                                          style: TextStyle(
-                                            color: controller
-                                                .statusColor(appt.status.value),
-                                            fontWeight: FontWeight.w700,
-                                            fontSize: 13,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                                  CircleAvatar(
+                                    radius: 28,
+                                    backgroundColor: Colors.blue.withOpacity(0.13),
+                                    child: Icon(
+                                      Icons.local_hospital,
+                                      color: Colors.blue,
+                                      size: 32,
+                                    ),
                                   ),
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const Icon(Icons.info_outline,
-                                          size: 16, color: Colors.redAccent),
-                                      const SizedBox(width: 3),
-                                      Expanded(
-                                        child: Text(
-                                          "Tình trạng sức khỏe: " +
-                                              ((appt.healthStatus == null ||
-                                                      appt.healthStatus!
-                                                          .trim()
-                                                          .isEmpty)
-                                                  ? "Không có"
-                                                  : appt.healthStatus!),
-                                          style: const TextStyle(
-                                            fontSize: 13,
-                                            color: Colors.black54,
-                                            fontStyle: FontStyle.italic,
-                                          ),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 5),
-                                  Text.rich(
-                                    TextSpan(
+                                  const SizedBox(width: 18),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        const TextSpan(
-                                          text: 'Đặt khám: ',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 14,
-                                            color: Colors.black87,
-                                          ),
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                controller.getPatientNameById(appt.patientId) ?? '(Chưa có tên)',
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 19,
+                                                  color: Color(0xFF1A237E),
+                                                ),
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                            Container(
+                                              margin: const EdgeInsets.only(left: 10),
+                                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                              decoration: BoxDecoration(
+                                                color: controller.statusColor(appt.status.value).withOpacity(0.12),
+                                                borderRadius: BorderRadius.circular(13),
+                                              ),
+                                              child: Text(
+                                                controller.statusText(appt.status.value),
+                                                style: TextStyle(
+                                                  color: controller.statusColor(appt.status.value),
+                                                  fontWeight: FontWeight.w700,
+                                                  fontSize: 13,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                        TextSpan(
-                                          text: formatDateTime(appt.dateTime),
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.normal,
-                                            fontSize: 14,
-                                            color: Colors.black87,
+                                        const SizedBox(height: 8),
+                                        Row(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            const Icon(Icons.info_outline, size: 16, color: Colors.redAccent),
+                                            const SizedBox(width: 3),
+                                            Expanded(
+                                              child: Text(
+                                                "Tình trạng sức khỏe: " +
+                                                    ((appt.healthStatus == null || appt.healthStatus!.trim().isEmpty)
+                                                        ? "Không có"
+                                                        : appt.healthStatus!),
+                                                style: const TextStyle(
+                                                  fontSize: 13,
+                                                  color: Colors.black54,
+                                                  fontStyle: FontStyle.italic,
+                                                ),
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 5),
+                                        Text.rich(
+                                          TextSpan(
+                                            children: [
+                                              const TextSpan(
+                                                text: 'Đặt khám: ',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 14,
+                                                  color: Colors.black87,
+                                                ),
+                                              ),
+                                              TextSpan(
+                                                text: formatDateTime(appt.dateTime),
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.normal,
+                                                  fontSize: 14,
+                                                  color: Colors.black87,
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ),
                                       ],
@@ -245,88 +217,75 @@ class _ConfirmSchedulePageState extends State<ConfirmSchedulePage>
                                   ),
                                 ],
                               ),
-                            ),
-                          ],
+                              if (appt.status.value == AppointmentStatus.pending)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 12),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      ElevatedButton.icon(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.green.shade600,
+                                          foregroundColor: Colors.white,
+                                          minimumSize: const Size(0, 38),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                          elevation: 0,
+                                        ),
+                                        icon: const Icon(Icons.check, size: 18),
+                                        label: const Text("Xác nhận", style: TextStyle(fontWeight: FontWeight.w600)),
+                                        onPressed: () => controller.confirmAppointment(appt),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      OutlinedButton.icon(
+                                        style: OutlinedButton.styleFrom(
+                                          foregroundColor: Colors.red.shade600,
+                                          side: BorderSide(color: Colors.red.shade400),
+                                          minimumSize: const Size(0, 38),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                          elevation: 0,
+                                        ),
+                                        icon: const Icon(Icons.close, size: 18),
+                                        label: const Text("Từ chối", style: TextStyle(fontWeight: FontWeight.w600)),
+                                        onPressed: () => controller.rejectAppointment(appt),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              if (appt.status.value == AppointmentStatus.confirmed)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 12),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      ElevatedButton.icon(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.blue.shade600,
+                                          foregroundColor: Colors.white,
+                                          minimumSize: const Size(0, 38),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                          elevation: 0,
+                                        ),
+                                        icon: const Icon(Icons.done_all, size: 18),
+                                        label: const Text("Đã khám", style: TextStyle(fontWeight: FontWeight.w600)),
+                                        onPressed: controller.canMarkAsDone(appt)
+                                            ? () => controller.markAsDone(appt)
+                                            : null,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
-                        if (appt.status.value == AppointmentStatus.pending)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 12),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                ElevatedButton.icon(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.green.shade600,
-                                    foregroundColor: Colors.white,
-                                    minimumSize: const Size(0, 38),
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(10)),
-                                    elevation: 0,
-                                  ),
-                                  icon: const Icon(Icons.check, size: 18),
-                                  label: const Text("Xác nhận",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w600)),
-                                  onPressed: () =>
-                                      controller.confirmAppointment(appt),
-                                ),
-                                const SizedBox(width: 10),
-                                OutlinedButton.icon(
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: Colors.red.shade600,
-                                    side:
-                                        BorderSide(color: Colors.red.shade400),
-                                    minimumSize: const Size(0, 38),
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(10)),
-                                    elevation: 0,
-                                  ),
-                                  icon: const Icon(Icons.close, size: 18),
-                                  label: const Text("Từ chối",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w600)),
-                                  onPressed: () =>
-                                      controller.rejectAppointment(appt),
-                                ),
-                              ],
-                            ),
-                          ),
-                        if (appt.status.value == AppointmentStatus.confirmed)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 12),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                ElevatedButton.icon(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.blue.shade600,
-                                    foregroundColor: Colors.white,
-                                    minimumSize: const Size(0, 38),
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(10)),
-                                    elevation: 0,
-                                  ),
-                                  icon: const Icon(Icons.done_all, size: 18),
-                                  label: const Text("Đã khám",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w600)),
-                                  onPressed: controller.canMarkAsDone(appt)
-                                      ? () => controller.markAsDone(appt)
-                                      : null, // Vô hiệu hóa khi không thỏa mãn
-                                ),
-                              ],
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            );
-          }).toList(),
+                      );
+                    },
+                  );
+                }).toList(),
+              ),
+            ),
+            if (controller.isLoading.value)
+              const Center(child: CircularProgressIndicator()),
+          ],
         ),
       ),
     );

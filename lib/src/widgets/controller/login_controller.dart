@@ -51,8 +51,11 @@ class LoginController extends GetxController {
 
   Future<void> saveUserToPrefs(User user) async {
     final prefs = await SharedPreferences.getInstance();
+    // Xóa dữ liệu cũ trước khi lưu dữ liệu mới
+    await prefs.remove('user_data');
     final userJson = jsonEncode(user.toJson());
     await prefs.setString('user_data', userJson);
+    print("user_data sau khi lưu: ${prefs.getString('user_data')}");
   }
 
   Future<User?> getUserFromPrefs() async {
